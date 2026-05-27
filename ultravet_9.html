@@ -1077,10 +1077,10 @@ function buildLaudoHTML(l, orgRows) {
     + (l.fotos && l.fotos.length ? (
         '<div style="padding:10px 28px 20px;border-top:1px solid #edf2ef">'
           + '<div style="font-size:10px;font-weight:700;color:#3d7a52;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Imagens do Exame</div>'
-          + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">'
+          + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">'
             + l.fotos.map(function(f) {
-                return '<div style="border:1px solid #d8e8de;border-radius:4px;overflow:hidden">'
-                  + '<img src="' + f.src + '" style="width:100%;height:150px;object-fit:cover;display:block">'
+                return '<div style="border:1px solid #d8e8de;border-radius:4px;overflow:hidden;background:#f8faf9;page-break-inside:avoid">'
+                  + '<img src="' + f.src + '" style="width:100%;max-height:340px;object-fit:contain;display:block">'
                 + '</div>';
               }).join('')
           + '</div>'
