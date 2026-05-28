@@ -231,16 +231,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         Relatórios
       </a>
-      <div class="nav-section">Dados</div>
-      <a class="nav-item" onclick="exportarBackup()" href="#">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-        Exportar backup
+      <div class="nav-section">Sistema</div>
+      <a class="nav-item" onclick="goPage('painel')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+        Painel de controle
       </a>
-      <label class="nav-item" style="cursor:pointer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Importar backup
-        <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
-      </label>
     </nav>
     <div class="sidebar-footer" style="display:flex;align-items:center;justify-content:space-between">
       <div>
@@ -778,6 +773,70 @@
         </div>
       </div>
 
+      <!-- PAINEL DE CONTROLE -->
+      <div class="page" id="page-painel">
+
+        <!-- Identidade visual -->
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎨 Identidade visual</div><div class="card-sub">Logo e nome exibidos no cabeçalho dos laudos impressos</div></div></div>
+          <div class="form-grid fg-2" style="align-items:start">
+            <div class="form-field">
+              <label>Nome da veterinária</label>
+              <input id="cfg-nome" placeholder="Ex: Patrine Cagnini">
+              <label style="margin-top:8px">Especialidade</label>
+              <input id="cfg-esp" placeholder="Ex: Médica Veterinária | Ultrassonografista">
+              <label style="margin-top:8px">CRMV</label>
+              <input id="cfg-crmv" placeholder="Ex: CRMV-SC 09377">
+              <div class="actions-bar" style="justify-content:flex-start;padding-top:12px;margin-top:4px">
+                <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Logo do laudo</label>
+              <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+                <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
+              </div>
+              <label class="btn" style="cursor:pointer;justify-content:center">
+                📁 Carregar logo
+                <input type="file" accept="image/*" style="display:none" onchange="carregarLogo(this)">
+              </label>
+              <button class="btn btn-danger btn-sm" onclick="removerLogo()" style="margin-top:6px">Remover logo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados -->
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">💾 Dados</div><div class="card-sub">Backup e restauração dos dados do sistema</div></div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="exportarBackup()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar backup
+            </button>
+            <label class="btn" style="cursor:pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Importar backup
+              <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
+            </label>
+          </div>
+          <div class="tip" style="margin-top:14px;margin-bottom:0">Os dados já ficam salvos automaticamente no Supabase. Use o backup para exportar para Excel ou como segurança extra.</div>
+        </div>
+
+        <!-- Sistema -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚙️ Sistema</div></div>
+          <table class="data-table">
+            <tbody>
+              <tr><td style="color:var(--text2);width:160px">Versão</td><td>UltraVet v1.9</td></tr>
+              <tr><td style="color:var(--text2)">Banco de dados</td><td>Supabase · <span id="painel-sync-status">—</span></td></tr>
+              <tr><td style="color:var(--text2)">URL do sistema</td><td><a href="https://glittering-narwhal-2da210.netlify.app/ultravet_9.html" target="_blank" style="color:var(--teal)">glittering-narwhal-2da210.netlify.app</a></td></tr>
+              <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
     </div><!-- /content -->
   </main>
 </div>
@@ -857,6 +916,7 @@ const pageTitles = {
   'viz-laudo': ['Visualizar laudo', 'Pré-visualização do relatório'],
   financeiro: ['Financeiro', 'Gestão financeira do negócio'],
   relatorios: ['Relatórios', 'Análise de desempenho e dados'],
+  painel: ['Painel de controle', 'Configurações e parametrização do sistema'],
 };
 
 let curRpSec = 'rp-laudos';
@@ -874,6 +934,7 @@ function goPage(name) {
   if (name === 'laudos') renderLaudos();
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
+  if (name === 'painel') renderPainel();
 }
 
 function strp(name) {
@@ -1077,7 +1138,7 @@ function buildLaudoHTML(l, orgRows) {
       + '<div style="width:1px;background:#c5ddd0;margin:0 20px"></div>'
       /* Direita: Logo */
       + '<div style="display:flex;align-items:center;justify-content:center;min-width:160px">'
-        + '<img src="' + LOGO_B64 + '" style="max-height:80px;max-width:160px;object-fit:contain" alt="Patrine Cagnini">'
+        + '<img src="' + getLogo() + '" style="max-height:80px;max-width:160px;object-fit:contain" alt="Logo">'
       + '</div>'
     + '</div>'
     /* TÍTULO */
@@ -1100,9 +1161,9 @@ function buildLaudoHTML(l, orgRows) {
     + '<div style="padding:14px 28px 20px;display:flex;justify-content:flex-end">'
       + '<div style="text-align:center">'
         + '<div style="border:1.5px solid #3d7a52;border-radius:5px;padding:10px 28px 8px;min-width:200px">'
-          + '<div style="font-size:13px;font-weight:700;color:#1e1e1c">Patrine Cagnini</div>'
-          + '<div style="font-size:11px;color:#6b6a65">Médica Veterinária</div>'
-          + '<div style="font-size:11px;color:#6b6a65">CRMV-SC 09377</div>'
+          + '<div style="font-size:13px;font-weight:700;color:#1e1e1c">' + (getConfig().nome||'Patrine Cagnini') + '</div>'
+          + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().esp||'Médica Veterinária') + '</div>'
+          + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().crmv||'CRMV-SC 09377') + '</div>'
         + '</div>'
         + '<div style="font-size:10px;color:#9b9a95;margin-top:4px">Responsável técnico</div>'
       + '</div>'
@@ -1668,6 +1729,63 @@ function importarBackup(input) {
   };
   reader.readAsText(file);
   input.value = '';
+}
+
+// ─── PAINEL DE CONTROLE ───────────────────────────────────────────────────────
+function renderPainel() {
+  // carrega configurações salvas
+  const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  document.getElementById('cfg-nome').value  = cfg.nome  || 'Patrine Cagnini';
+  document.getElementById('cfg-esp').value   = cfg.esp   || 'Médica Veterinária | Ultrassonografista';
+  document.getElementById('cfg-crmv').value  = cfg.crmv  || 'CRMV-SC 09377';
+  // logo preview
+  const logo = localStorage.getItem('uv_logo') || LOGO_B64;
+  const prev = document.getElementById('logo-preview');
+  prev.innerHTML = logo
+    ? '<img src="' + logo + '" style="max-height:90px;max-width:160px;object-fit:contain">'
+    : '<span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>';
+  // status supabase
+  const lbl = document.getElementById('sync-label');
+  const el = document.getElementById('painel-sync-status');
+  if (el) el.textContent = lbl ? lbl.textContent : '—';
+}
+
+function salvarConfig() {
+  const cfg = {
+    nome: document.getElementById('cfg-nome').value,
+    esp:  document.getElementById('cfg-esp').value,
+    crmv: document.getElementById('cfg-crmv').value,
+  };
+  localStorage.setItem('uv_config', JSON.stringify(cfg));
+  toast('Configurações salvas!');
+}
+
+function carregarLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    localStorage.setItem('uv_logo', e.target.result);
+    renderPainel();
+    toast('Logo carregada!');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removerLogo() {
+  if (!confirm('Remover a logo atual?')) return;
+  localStorage.removeItem('uv_logo');
+  renderPainel();
+  toast('Logo removida.');
+}
+
+function getLogo() {
+  return localStorage.getItem('uv_logo') || LOGO_B64;
+}
+
+function getConfig() {
+  return JSON.parse(localStorage.getItem('uv_config') || '{}');
 }
 
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
