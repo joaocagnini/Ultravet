@@ -777,103 +777,134 @@
       <!-- PAINEL DE CONTROLE -->
       <div class="page" id="page-painel">
 
-        <!-- Identidade visual -->
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">🎨 Identidade visual</div><div class="card-sub">Logo e nome exibidos no cabeçalho dos laudos impressos</div></div></div>
-          <div class="form-grid fg-2" style="align-items:start">
-            <div class="form-field">
-              <label>Nome da veterinária</label>
-              <input id="cfg-nome" placeholder="Ex: Patrine Cagnini">
-              <label style="margin-top:8px">Especialidade</label>
-              <input id="cfg-esp" placeholder="Ex: Médica Veterinária | Ultrassonografista">
-              <label style="margin-top:8px">CRMV</label>
-              <input id="cfg-crmv" placeholder="Ex: CRMV-SC 09377">
-              <div class="actions-bar" style="justify-content:flex-start;padding-top:12px;margin-top:4px">
-                <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+        <div class="subtabs">
+          <div class="stab active" onclick="stpc('pc-layout')">📄 Layout do Laudo</div>
+          <div class="stab" onclick="stpc('pc-dados')">💾 Dados</div>
+          <div class="stab" onclick="stpc('pc-sistema')">⚙️ Sistema</div>
+          <div class="stab" onclick="stpc('pc-previa')">👁️ Prévia</div>
+        </div>
+
+        <!-- ABA: Layout do Laudo -->
+        <div class="ssec active" id="pc-layout">
+
+          <!-- Identidade visual -->
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">🎨 Identidade visual</div><div class="card-sub">Logo e nome exibidos no cabeçalho dos laudos impressos</div></div></div>
+            <div class="form-grid fg-2" style="align-items:start">
+              <div class="form-field">
+                <label>Nome da veterinária</label>
+                <input id="cfg-nome" placeholder="Ex: Patrine Cagnini">
+                <label style="margin-top:8px">Especialidade</label>
+                <input id="cfg-esp" placeholder="Ex: Médica Veterinária | Ultrassonografista">
+                <label style="margin-top:8px">CRMV</label>
+                <input id="cfg-crmv" placeholder="Ex: CRMV-SC 09377">
+                <div class="actions-bar" style="justify-content:flex-start;padding-top:12px;margin-top:4px">
+                  <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label>Logo do laudo impresso</label>
+                <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+                  <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
+                </div>
+                <label class="btn" style="cursor:pointer;justify-content:center">
+                  📁 Carregar logo
+                  <input type="file" accept="image/*" style="display:none" onchange="carregarLogo(this)">
+                </label>
+                <button class="btn btn-danger btn-sm" onclick="removerLogo()" style="margin-top:6px">Remover logo</button>
               </div>
             </div>
-            <div class="form-field">
-              <label>Logo do laudo impresso</label>
-              <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
-                <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
+          </div>
+
+          <!-- Configuração do Laudo -->
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">📄 Configuração do Laudo</div><div class="card-sub">Personaliza estrutura e textos do laudo impresso</div></div></div>
+            <div class="form-section" style="margin-top:0">Estrutura</div>
+            <div class="form-grid fg-2">
+              <div class="form-field">
+                <label>Título do documento</label>
+                <input id="cfg-titulo" placeholder="Relatório Ultrassonográfico">
               </div>
-              <label class="btn" style="cursor:pointer;justify-content:center">
-                📁 Carregar logo
-                <input type="file" accept="image/*" style="display:none" onchange="carregarLogo(this)">
+              <div class="form-field">
+                <label>Cor principal do laudo</label>
+                <input type="color" id="cfg-cor" value="#3d7a52" style="height:36px;padding:3px 6px;width:100%">
+              </div>
+              <div class="form-field">
+                <label>Label — seção de achados</label>
+                <input id="cfg-label-achados" placeholder="Achados Ultrassonográficos">
+              </div>
+              <div class="form-field">
+                <label>Label — seção de conclusão</label>
+                <input id="cfg-label-conclusao" placeholder="Impressão Diagnóstica">
+              </div>
+            </div>
+            <div class="form-section">Seções visíveis no laudo</div>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-achados"> Achados</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-conclusao"> Conclusão</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-assinatura"> Assinatura</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-fotos"> Fotos</label>
+            </div>
+            <div class="form-section">Modelo de conclusão</div>
+            <div class="form-field">
+              <label>Texto padrão (pré-preenchido em novos laudos)</label>
+              <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame realizado com paciente em jejum de ___ horas..."></textarea>
+            </div>
+            <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
+              <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
+            </div>
+          </div>
+
+        </div><!-- /pc-layout -->
+
+        <!-- ABA: Dados -->
+        <div class="ssec" id="pc-dados">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">💾 Dados</div><div class="card-sub">Backup e restauração dos dados do sistema</div></div></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="exportarBackup()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar backup
+              </button>
+              <label class="btn" style="cursor:pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Importar backup
+                <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
               </label>
-              <button class="btn btn-danger btn-sm" onclick="removerLogo()" style="margin-top:6px">Remover logo</button>
             </div>
+            <div class="tip" style="margin-top:14px;margin-bottom:0">Os dados já ficam salvos automaticamente no Supabase. Use o backup para exportar para Excel ou como segurança extra.</div>
           </div>
-        </div>
+        </div><!-- /pc-dados -->
 
-        <!-- Configuração do Laudo -->
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">📄 Configuração do Laudo</div><div class="card-sub">Personaliza estrutura e textos do laudo impresso</div></div></div>
-          <div class="form-section" style="margin-top:0">Estrutura</div>
-          <div class="form-grid fg-2">
-            <div class="form-field">
-              <label>Título do documento</label>
-              <input id="cfg-titulo" placeholder="Relatório Ultrassonográfico">
-            </div>
-            <div class="form-field">
-              <label>Cor principal do laudo</label>
-              <input type="color" id="cfg-cor" value="#3d7a52" style="height:36px;padding:3px 6px;width:100%">
-            </div>
-            <div class="form-field">
-              <label>Label — seção de achados</label>
-              <input id="cfg-label-achados" placeholder="Achados Ultrassonográficos">
-            </div>
-            <div class="form-field">
-              <label>Label — seção de conclusão</label>
-              <input id="cfg-label-conclusao" placeholder="Impressão Diagnóstica">
-            </div>
+        <!-- ABA: Sistema -->
+        <div class="ssec" id="pc-sistema">
+          <div class="card">
+            <div class="card-header"><div class="card-title">⚙️ Sistema</div></div>
+            <table class="data-table">
+              <tbody>
+                <tr><td style="color:var(--text2);width:160px">Versão</td><td>VetRoutine v1.10</td></tr>
+                <tr><td style="color:var(--text2)">Banco de dados</td><td>Supabase · <span id="painel-sync-status">—</span></td></tr>
+                <tr><td style="color:var(--text2)">URL do sistema</td><td><a href="https://vetroutine.netlify.app/" target="_blank" style="color:var(--teal)">vetroutine.netlify.app</a></td></tr>
+                <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="form-section">Seções visíveis no laudo</div>
-          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-achados"> Achados</label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-conclusao"> Conclusão</label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-assinatura"> Assinatura</label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-fotos"> Fotos</label>
-          </div>
-          <div class="form-section">Modelo de conclusão</div>
-          <div class="form-field">
-            <label>Texto padrão (pré-preenchido em novos laudos)</label>
-            <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame realizado com paciente em jejum de ___ horas..."></textarea>
-          </div>
-          <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
-            <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
-          </div>
-        </div>
+        </div><!-- /pc-sistema -->
 
-        <!-- Dados -->
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">💾 Dados</div><div class="card-sub">Backup e restauração dos dados do sistema</div></div></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="exportarBackup()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Exportar backup
+        <!-- ABA: Prévia -->
+        <div class="ssec" id="pc-previa">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--text)">Prévia do laudo impresso</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px">Renderizado com o último laudo salvo e as configurações atuais</div>
+            </div>
+            <button class="btn btn-primary" onclick="imprimirPrevia()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir
             </button>
-            <label class="btn" style="cursor:pointer">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Importar backup
-              <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
-            </label>
           </div>
-          <div class="tip" style="margin-top:14px;margin-bottom:0">Os dados já ficam salvos automaticamente no Supabase. Use o backup para exportar para Excel ou como segurança extra.</div>
-        </div>
-
-        <!-- Sistema -->
-        <div class="card">
-          <div class="card-header"><div class="card-title">⚙️ Sistema</div></div>
-          <table class="data-table">
-            <tbody>
-              <tr><td style="color:var(--text2);width:160px">Versão</td><td>VetRoutine v1.10</td></tr>
-              <tr><td style="color:var(--text2)">Banco de dados</td><td>Supabase · <span id="painel-sync-status">—</span></td></tr>
-              <tr><td style="color:var(--text2)">URL do sistema</td><td><a href="https://vetroutine.netlify.app/" target="_blank" style="color:var(--teal)">vetroutine.netlify.app</a></td></tr>
-              <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
-            </tbody>
-          </table>
-        </div>
+          <div id="previa-area"></div>
+        </div><!-- /pc-previa -->
 
       </div>
 
@@ -890,7 +921,7 @@
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let laudos = [], receitas = [], despesas = [], clinicas = [];
-let editId = null, viewId = null, curFSec = 'f-overview';
+let editId = null, viewId = null, curFSec = 'f-overview', curPSec = 'pc-layout';
 let fotosTmp = []; // fotos do laudo em edição (base64)
 
 // ─── PERSISTENCE ─────────────────────────────────────────────────────────────
@@ -1004,6 +1035,17 @@ function stf(name) {
   if (name === 'f-despesas') renderDespesas();
   if (name === 'f-receber') renderReceber();
   if (name === 'f-clinicas') renderClinicas();
+}
+
+function stpc(name) {
+  curPSec = name;
+  const page = document.getElementById('page-painel');
+  page.querySelectorAll('.ssec').forEach(s => s.classList.remove('active'));
+  page.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  const map = {'pc-layout':0,'pc-dados':1,'pc-sistema':2,'pc-previa':3};
+  page.querySelectorAll('.stab')[map[name]].classList.add('active');
+  if (name === 'pc-previa') renderPrevia();
 }
 
 // ─── LAUDO FORM ───────────────────────────────────────────────────────────────
@@ -1795,32 +1837,63 @@ document.getElementById('sb-logo').src = LOGO_B64;
 
 // ─── PAINEL DE CONTROLE ───────────────────────────────────────────────────────
 function renderPainel() {
-  // carrega configurações salvas
   const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
   document.getElementById('cfg-nome').value  = cfg.nome  || 'Patrine Cagnini';
   document.getElementById('cfg-esp').value   = cfg.esp   || 'Médica Veterinária | Ultrassonografista';
   document.getElementById('cfg-crmv').value  = cfg.crmv  || 'CRMV-SC 09377';
-  // logo preview
   const logo = localStorage.getItem('uv_logo') || LOGO_B64;
   const prev = document.getElementById('logo-preview');
   prev.innerHTML = logo
     ? '<img src="' + logo + '" style="max-height:90px;max-width:160px;object-fit:contain">'
     : '<span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>';
-  // laudo config
   const lc = cfg.laudo || {};
-  document.getElementById('cfg-titulo').value           = lc.titulo        || 'Relatório Ultrassonográfico';
-  document.getElementById('cfg-cor').value              = lc.cor           || '#3d7a52';
-  document.getElementById('cfg-label-achados').value    = lc.labelAchados  || 'Achados Ultrassonográficos';
-  document.getElementById('cfg-label-conclusao').value  = lc.labelConclusao|| 'Impressão Diagnóstica';
-  document.getElementById('cfg-sec-achados').checked    = lc.secAchados    !== false;
-  document.getElementById('cfg-sec-conclusao').checked  = lc.secConclusao  !== false;
-  document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura !== false;
-  document.getElementById('cfg-sec-fotos').checked      = lc.secFotos      !== false;
+  document.getElementById('cfg-titulo').value           = lc.titulo         || 'Relatório Ultrassonográfico';
+  document.getElementById('cfg-cor').value              = lc.cor            || '#3d7a52';
+  document.getElementById('cfg-label-achados').value    = lc.labelAchados   || 'Achados Ultrassonográficos';
+  document.getElementById('cfg-label-conclusao').value  = lc.labelConclusao || 'Impressão Diagnóstica';
+  document.getElementById('cfg-sec-achados').checked    = lc.secAchados     !== false;
+  document.getElementById('cfg-sec-conclusao').checked  = lc.secConclusao   !== false;
+  document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura  !== false;
+  document.getElementById('cfg-sec-fotos').checked      = lc.secFotos       !== false;
   document.getElementById('cfg-modelo-conclusao').value = lc.modeloConclusao || '';
-  // status supabase
   const lbl = document.getElementById('sync-label');
   const el = document.getElementById('painel-sync-status');
   if (el) el.textContent = lbl ? lbl.textContent : '—';
+  stpc(curPSec);
+}
+
+function renderPrevia() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : {
+    paciente: 'Rex', tutor: 'João Silva', especie: 'Canino', raca: 'Labrador',
+    sexo: 'Macho', idade: '5 anos', veterinario: 'Dra. Patrine Cagnini',
+    data: new Date().toISOString().split('T')[0],
+    tipo: 'Abdominal', resultado: 'Normal',
+    orgAbdom: { bexiga: { texto: orgDefaults.bexiga }, figado: { texto: orgDefaults.figado }, rins: { texto: orgDefaults.rins } },
+    conclusao: 'Exame dentro dos limites da normalidade. Aspectos sonográficos não revelam alterações significativas na janela avaliada.'
+  };
+  const isGest = l.tipo === 'Gestacional';
+  const orgs = isGest ? l.orgGest : l.orgAbdom;
+  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
+  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
+    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
+  }).join('') : '';
+  document.getElementById('previa-area').innerHTML =
+    '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l, orgRows) + '</div>';
+}
+
+function imprimirPrevia() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : null;
+  if (!l) { toast('Nenhum laudo salvo para imprimir.'); return; }
+  const isGest = l.tipo === 'Gestacional';
+  const orgs = isGest ? l.orgGest : l.orgAbdom;
+  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
+  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
+    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
+  }).join('') : '';
+  const body = buildLaudoHTML(l, orgRows);
+  const win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{margin:12mm}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.close();
 }
 
 function salvarConfig() {
