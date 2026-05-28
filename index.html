@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" id="favicon" type="image/png">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><defs><linearGradient id="g" x1="0%25" y1="0%25" x2="100%25" y2="100%25"><stop offset="0%25" stop-color="%231a4a6e"/><stop offset="100%25" stop-color="%2300c9a7"/></linearGradient></defs><rect width="32" height="32" rx="8" fill="url(%23g)"/><text x="16" y="23" font-family="Arial,sans-serif" font-weight="bold" font-size="20" text-anchor="middle" fill="white">V</text></svg>">
 <title>VetRoutine — Gestão de Laudos</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -933,7 +933,6 @@ function goPage(name) {
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') updateDashboard();
 document.getElementById('sb-logo').src = getLogo();
-document.getElementById('favicon').href = getLogo();
   if (name === 'laudos') renderLaudos();
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
@@ -1114,7 +1113,6 @@ function delLaudo(id) {
   laudos = laudos.filter(l => l.id !== id);
   save(); renderLaudos(); updateDashboard();
 document.getElementById('sb-logo').src = getLogo();
-document.getElementById('favicon').href = getLogo();
   cloudDelete('uv_laudos', id);
   toast('Laudo excluído.');
 }
@@ -1504,7 +1502,6 @@ function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); updateDashboard();
 document.getElementById('sb-logo').src = getLogo();
-document.getElementById('favicon').href = getLogo();
   toast('Marcado como pago!');
 }
 
@@ -1513,7 +1510,6 @@ function delRec(id) {
   cloudDelete('uv_receitas', id);
   save(); renderReceitas(); updateFinOverview(); updateDashboard();
 document.getElementById('sb-logo').src = getLogo();
-document.getElementById('favicon').href = getLogo();
 }
 
 function renderReceitas() {
@@ -1732,7 +1728,6 @@ function importarBackup(input) {
       populateClinicaSelects();
       updateDashboard();
 document.getElementById('sb-logo').src = getLogo();
-document.getElementById('favicon').href = getLogo();
       toast('Backup importado! ' + laudos.length + ' laudos, ' + receitas.length + ' receitas.');
     } catch(err) {
       alert('Erro ao ler o arquivo: ' + err.message);
@@ -1867,7 +1862,6 @@ async function initCloud() {
     populateClinicaSelects();
     updateDashboard();
 document.getElementById('sb-logo').src = getLogo();
-document.getElementById('favicon').href = getLogo();
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
 }
@@ -1882,7 +1876,6 @@ document.getElementById('d-data').value = today();
 populateClinicaSelects();
 updateDashboard();
 document.getElementById('sb-logo').src = getLogo();
-document.getElementById('favicon').href = getLogo();
 initCloud();
 </script>
 </body>
