@@ -243,7 +243,8 @@
       </label>
     </nav>
     <div class="sidebar-footer">
-      Dados salvos localmente · v1.9
+      <span id="sync-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9b9a95;margin-right:5px;vertical-align:middle"></span>
+      <span id="sync-label">Carregando...</span> · v1.9
     </div>
   </aside>
 
@@ -796,6 +797,7 @@ function save() {
   localStorage.setItem('uv_receitas', JSON.stringify(receitas));
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
+  syncCloud();
 }
 function load() {
   try { laudos = JSON.parse(localStorage.getItem('uv_laudos') || '[]'); } catch(e){laudos=[];}
@@ -1016,6 +1018,7 @@ function delLaudo(id) {
   if (!confirm('Excluir este laudo permanentemente?')) return;
   laudos = laudos.filter(l => l.id !== id);
   save(); renderLaudos(); updateDashboard();
+  cloudDelete('uv_laudos', id);
   toast('Laudo excluído.');
 }
 
@@ -1408,6 +1411,7 @@ function marcarPago(id) {
 
 function delRec(id) {
   receitas = receitas.filter(r => r.id!==id);
+  cloudDelete('uv_receitas', id);
   save(); renderReceitas(); updateFinOverview(); updateDashboard();
 }
 
@@ -1444,6 +1448,7 @@ function addDespesa() {
 
 function delDesp(id) {
   despesas = despesas.filter(d => d.id!==id);
+  cloudDelete('uv_despesas', id);
   save(); renderDespesas(); updateFinOverview();
 }
 
@@ -1492,6 +1497,7 @@ function addClinica() {
 
 function delCl(id) {
   clinicas = clinicas.filter(c => c.id!==id);
+  cloudDelete('uv_clinicas', id);
   save(); renderClinicas(); populateClinicaSelects();
 }
 
@@ -1633,12 +1639,86 @@ function importarBackup(input) {
   input.value = '';
 }
 
+// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+const SB_URL = 'https://iisxmfepvqpswdnurtuo.supabase.co';
+const SB_KEY = 'sb_publishable_4yj6xy0vvxLypajgqtEMCQ_fR6nE2DY';
+const SB_H = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' };
+
+function setSyncStatus(s) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (s === 'ok')      { dot.style.background = '#0f7a5a'; lbl.textContent = 'Sincronizado'; }
+  else if (s === 'sync') { dot.style.background = '#b35c00'; lbl.textContent = 'Sincronizando…'; }
+  else                 { dot.style.background = '#c0392b'; lbl.textContent = 'Offline (local)'; }
+}
+
+async function sbFetch(table) {
+  const r = await fetch(SB_URL + '/rest/v1/' + table + '?select=*', { headers: SB_H });
+  if (!r.ok) throw new Error(r.status);
+  const rows = await r.json();
+  return rows.map(row => row.payload);
+}
+
+async function sbUpsert(table, items) {
+  if (!items.length) return;
+  await fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: SB_H,
+    body: JSON.stringify(items.map(item => ({ id: item.id, payload: item })))
+  });
+}
+
+async function cloudDelete(table, id) {
+  try {
+    await fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+      method: 'DELETE',
+      headers: SB_H
+    });
+  } catch(e) {}
+}
+
+async function syncCloud() {
+  setSyncStatus('sync');
+  try {
+    await Promise.all([
+      sbUpsert('uv_laudos',   laudos),
+      sbUpsert('uv_receitas', receitas),
+      sbUpsert('uv_despesas', despesas),
+      sbUpsert('uv_clinicas', clinicas),
+    ]);
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('offline'); }
+}
+
+async function initCloud() {
+  setSyncStatus('sync');
+  try {
+    const [rl, rr, rd, rc] = await Promise.all([
+      sbFetch('uv_laudos'),
+      sbFetch('uv_receitas'),
+      sbFetch('uv_despesas'),
+      sbFetch('uv_clinicas'),
+    ]);
+    laudos    = rl;
+    receitas  = rr;
+    despesas  = rd;
+    clinicas  = rc;
+    save();
+    populateClinicaSelects();
+    updateDashboard();
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('offline'); }
+}
+
+window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
+
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 load();
 document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
 updateDashboard();
+initCloud();
 </script>
 </body>
 </html>
