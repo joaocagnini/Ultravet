@@ -793,7 +793,7 @@
               </div>
             </div>
             <div class="form-field">
-              <label>Logo do laudo</label>
+              <label>Logo do laudo impresso</label>
               <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
                 <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
               </div>
@@ -971,7 +971,7 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, financeiro:3};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') updateDashboard();
-document.getElementById('sb-logo').src = getLogo();
+document.getElementById('sb-logo').src = LOGO_B64;
   if (name === 'laudos') renderLaudos();
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
@@ -1151,7 +1151,7 @@ function delLaudo(id) {
   if (!confirm('Excluir este laudo permanentemente?')) return;
   laudos = laudos.filter(l => l.id !== id);
   save(); renderLaudos(); updateDashboard();
-document.getElementById('sb-logo').src = getLogo();
+document.getElementById('sb-logo').src = LOGO_B64;
   cloudDelete('uv_laudos', id);
   toast('Laudo excluído.');
 }
@@ -1557,7 +1557,7 @@ function addReceita() {
 function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); updateDashboard();
-document.getElementById('sb-logo').src = getLogo();
+document.getElementById('sb-logo').src = LOGO_B64;
   toast('Marcado como pago!');
 }
 
@@ -1565,7 +1565,7 @@ function delRec(id) {
   receitas = receitas.filter(r => r.id!==id);
   cloudDelete('uv_receitas', id);
   save(); renderReceitas(); updateFinOverview(); updateDashboard();
-document.getElementById('sb-logo').src = getLogo();
+document.getElementById('sb-logo').src = LOGO_B64;
 }
 
 function renderReceitas() {
@@ -1783,7 +1783,7 @@ function importarBackup(input) {
       save();
       populateClinicaSelects();
       updateDashboard();
-document.getElementById('sb-logo').src = getLogo();
+document.getElementById('sb-logo').src = LOGO_B64;
       toast('Backup importado! ' + laudos.length + ' laudos, ' + receitas.length + ' receitas.');
     } catch(err) {
       alert('Erro ao ler o arquivo: ' + err.message);
@@ -1944,7 +1944,7 @@ async function initCloud() {
     save();
     populateClinicaSelects();
     updateDashboard();
-document.getElementById('sb-logo').src = getLogo();
+document.getElementById('sb-logo').src = LOGO_B64;
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
 }
@@ -1958,7 +1958,7 @@ document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
 updateDashboard();
-document.getElementById('sb-logo').src = getLogo();
+document.getElementById('sb-logo').src = LOGO_B64;
 initCloud();
 </script>
 </body>
