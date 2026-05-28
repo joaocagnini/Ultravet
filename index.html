@@ -1,0 +1,1881 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VetRoutine — Gestão de Laudos</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efeb;
+    --border: #e2e1dc;
+    --border2: #d0cfc9;
+    --text: #1a1a18;
+    --text2: #6b6a65;
+    --text3: #9b9a95;
+    --teal: #0f7a5a;
+    --teal-bg: #e4f5ef;
+    --teal-text: #0a5c42;
+    --purple: #5b4fd4;
+    --purple-bg: #edeafc;
+    --purple-text: #3d33a0;
+    --amber: #b35c00;
+    --amber-bg: #fdf0dc;
+    --amber-text: #8a4700;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --red-text: #9b2c20;
+    --blue: #1a5fa8;
+    --blue-bg: #e8f1fb;
+    --blue-text: #134980;
+    --radius: 8px;
+    --radius-lg: 12px;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 2px 4px rgba(0,0,0,.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 14px; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Layout */
+  .app { display: flex; min-height: 100vh; }
+  .sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+  .sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo .logo-mark { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -.3px; }
+  .sidebar-logo .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius); font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; transition: all .12s; text-decoration: none; }
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active { background: var(--teal-bg); color: var(--teal-text); }
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  .nav-section { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .08em; padding: 12px 10px 4px; }
+  .sidebar-footer { padding: 12px 10px; border-top: 1px solid var(--border); font-size: 11px; color: var(--text3); }
+  .main { margin-left: 220px; flex: 1; min-height: 100vh; }
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+  .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .topbar-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+  .content { padding: 28px; max-width: 1100px; }
+
+  /* Pages */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Metrics */
+  .metrics { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .metric-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; box-shadow: var(--shadow); }
+  .metric-label { font-size: 11px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .metric-value { font-size: 22px; font-weight: 600; color: var(--text); }
+  .metric-value.green { color: var(--teal); }
+  .metric-value.red { color: var(--red); }
+  .metric-value.amber { color: var(--amber); }
+  .metric-value.purple { color: var(--purple); }
+  .metric-delta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* Cards */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow); margin-bottom: 16px; }
+  .card-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 16px; }
+  .card-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .card-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+
+  /* Form */
+  .form-section { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .07em; margin: 20px 0 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+  .form-section:first-child { margin-top: 0; }
+  .form-grid { display: grid; gap: 14px; }
+  .fg-2 { grid-template-columns: 1fr 1fr; }
+  .fg-3 { grid-template-columns: 1fr 1fr 1fr; }
+  .fg-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .form-field { display: flex; flex-direction: column; gap: 5px; }
+  .form-field.span2 { grid-column: span 2; }
+  .form-field.full { grid-column: 1 / -1; }
+  .form-field label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
+  .form-field input, .form-field select, .form-field textarea {
+    padding: 8px 11px; border: 1px solid var(--border2); border-radius: var(--radius);
+    font-size: 13px; font-family: 'Inter', sans-serif; background: var(--surface);
+    color: var(--text); transition: border .12s, box-shadow .12s; outline: none;
+  }
+  .form-field input:focus, .form-field select:focus, .form-field textarea:focus {
+    border-color: var(--teal); box-shadow: 0 0 0 3px rgba(15,122,90,.1);
+  }
+  .form-field textarea { resize: vertical; line-height: 1.55; }
+
+  /* Organ rows */
+  .organ-table { width: 100%; }
+  .organ-row { display: grid; grid-template-columns: 130px 170px 1fr; gap: 10px; align-items: start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .organ-row:last-child { border-bottom: none; }
+  .organ-name { font-size: 13px; font-weight: 500; color: var(--text); padding-top: 7px; }
+  .organ-row textarea { width: 100%; padding: 6px 9px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; font-family: 'Inter', sans-serif; background: var(--surface); color: var(--text); outline: none; resize: vertical; min-height: 36px; line-height: 1.5; }
+  .organ-row textarea:focus { border-color: var(--teal); box-shadow: 0 0 0 2px rgba(15,122,90,.1); }
+  .organ-row select { width: 100%; padding: 7px 8px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 12px; background: var(--surface); color: var(--text); outline: none; cursor: pointer; }
+  .organ-row select:focus { border-color: var(--teal); box-shadow: 0 0 0 2px rgba(15,122,90,.1); }
+
+  /* Buttons */
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; font-size: 13px; font-weight: 500; font-family: 'Inter', sans-serif; border-radius: var(--radius); border: 1px solid var(--border2); background: var(--surface); color: var(--text); cursor: pointer; transition: all .12s; text-decoration: none; white-space: nowrap; }
+  .btn:hover { background: var(--surface2); border-color: var(--border2); }
+  .btn-primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+  .btn-primary:hover { background: #0a5c42; border-color: #0a5c42; }
+  .btn-sm { padding: 4px 9px; font-size: 12px; }
+  .btn-danger { border-color: #f5c6c2; color: var(--red); }
+  .btn-danger:hover { background: var(--red-bg); }
+  .btn-success { border-color: #b8e8d6; color: var(--teal-text); }
+  .btn-success:hover { background: var(--teal-bg); }
+  .actions-bar { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+
+  /* Table */
+  .table-wrap { overflow-x: auto; }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.data-table th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; padding: 0 10px 10px; border-bottom: 1px solid var(--border); }
+  table.data-table td { padding: 11px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; color: var(--text); }
+  table.data-table tr:last-child td { border-bottom: none; }
+  table.data-table tr:hover td { background: var(--surface2); }
+
+  /* Badges */
+  .badge { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; white-space: nowrap; }
+  .badge-normal { background: var(--teal-bg); color: var(--teal-text); }
+  .badge-atencao { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-alterado { background: var(--red-bg); color: var(--red-text); }
+  .badge-pago { background: var(--teal-bg); color: var(--teal-text); }
+  .badge-pendente { background: var(--amber-bg); color: var(--amber-text); }
+  .badge-atrasado { background: var(--red-bg); color: var(--red-text); }
+  .pill { display: inline-flex; align-items: center; font-size: 11px; font-weight: 500; padding: 2px 8px; border-radius: 20px; background: var(--blue-bg); color: var(--blue-text); }
+
+  /* Search bar */
+  .search-bar { display: flex; gap: 10px; margin-bottom: 16px; }
+  .search-bar input, .search-bar select { padding: 7px 11px; border: 1px solid var(--border2); border-radius: var(--radius); font-size: 13px; font-family: 'Inter', sans-serif; background: var(--surface); color: var(--text); outline: none; }
+  .search-bar input:focus, .search-bar select:focus { border-color: var(--teal); }
+  .search-bar input { flex: 1; }
+
+  /* Sub-tabs */
+  .subtabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .stab { padding: 8px 14px; font-size: 13px; font-weight: 500; color: var(--text2); cursor: pointer; border-bottom: 2px solid transparent; transition: all .12s; white-space: nowrap; }
+  .stab:hover { color: var(--text); }
+  .stab.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .ssec { display: none; }
+  .ssec.active { display: block; }
+
+  /* Bar chart */
+  .bar-item { margin-bottom: 10px; }
+  .bar-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text2); margin-bottom: 4px; }
+  .bar-track { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 2px; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width .5s ease; }
+  .fill-teal { background: var(--teal); }
+  .fill-red { background: #e85d4a; }
+  .fill-purple { background: var(--purple); }
+  .fill-amber { background: #e8960a; }
+  .fill-blue { background: var(--blue); }
+
+  /* Preview */
+  .preview-block { background: var(--surface2); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 8px; font-size: 13px; line-height: 1.65; }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 40px 20px; color: var(--text3); }
+  .empty-state svg { width: 40px; height: 40px; margin: 0 auto 12px; display: block; opacity: .4; }
+  .empty-state p { font-size: 13px; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--text); color: #fff; padding: 10px 18px; border-radius: var(--radius); font-size: 13px; font-weight: 500; z-index: 9999; opacity: 0; transform: translateY(8px); transition: all .2s; pointer-events: none; }
+  .toast.show { opacity: 1; transform: translateY(0); }
+
+  /* Tip */
+  .tip { background: var(--blue-bg); color: var(--blue-text); border-radius: var(--radius); padding: 9px 13px; font-size: 12px; margin-bottom: 16px; }
+
+  /* Responsive adjustments */
+  @media (max-width: 900px) {
+    .metrics { grid-template-columns: repeat(2,1fr); }
+    .fg-4 { grid-template-columns: 1fr 1fr; }
+    .fg-3 { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-logo" onclick="goPage('dashboard')" style="cursor:pointer;text-align:center" title="Ir para o início">
+      <img id="sb-logo" style="width:130px;height:auto;display:block;margin:0 auto" alt="VetRoutine">
+      
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section">Principal</div>
+      <a class="nav-item active" onclick="goPage('dashboard')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        Dashboard
+      </a>
+      <div class="nav-section">Laudos</div>
+      <a class="nav-item" onclick="goPage('laudos')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Todos os laudos
+      </a>
+      <a class="nav-item" onclick="novoLaudo()" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        Novo laudo
+      </a>
+      <div class="nav-section">Financeiro</div>
+      <a class="nav-item" onclick="goPage('financeiro')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Financeiro
+      </a>
+      <a class="nav-item" onclick="goPage('financeiro');stf('f-clinicas')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Clínicas parceiras
+      </a>
+      <div class="nav-section">Análises</div>
+      <a class="nav-item" onclick="goPage('relatorios')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        Relatórios
+      </a>
+      <div class="nav-section">Sistema</div>
+      <a class="nav-item" onclick="goPage('painel')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
+        Painel de controle
+      </a>
+    </nav>
+    <div class="sidebar-footer" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <span id="sync-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9b9a95;margin-right:5px;vertical-align:middle"></span>
+        <span id="sync-label">Carregando...</span> · v1.10
+      </div>
+      <button onclick="initCloud()" title="Sincronizar agora" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--text3);line-height:1" id="sync-btn">🔄</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-sub" id="topbar-sub">Visão geral do sistema</div>
+      </div>
+      <button class="btn btn-primary" onclick="novoLaudo()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Novo laudo
+      </button>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="metrics">
+          <div class="metric-card">
+            <div class="metric-label">Laudos este mês</div>
+            <div class="metric-value" id="m-laudos">0</div>
+            <div class="metric-delta" id="m-laudos-d"></div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Receita do mês</div>
+            <div class="metric-value green" id="m-rec">R$ 0,00</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">A receber</div>
+            <div class="metric-value amber" id="m-arec">R$ 0,00</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Saldo mensal</div>
+            <div class="metric-value" id="m-saldo">R$ 0,00</div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Laudos recentes</div></div>
+              <button class="btn btn-sm" onclick="goPage('laudos')">Ver todos →</button>
+            </div>
+            <div id="d-laudos-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">Fluxo de caixa</div><div class="card-sub">Últimos 4 meses</div></div></div>
+            <div id="d-fc"></div>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Contas a receber</div></div>
+            <div id="d-arec-list"></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Receita por forma de pagamento</div></div>
+            <div id="d-forma"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LAUDOS -->
+      <div class="page" id="page-laudos">
+        <div class="search-bar">
+          <input id="ls-q" placeholder="Buscar por paciente, tutor ou veterinário..." oninput="renderLaudos()">
+          <select id="ls-tipo" onchange="renderLaudos()" style="width:160px">
+            <option value="">Todos os tipos</option>
+            <option value="Abdominal total">Abdominal total</option>
+            <option value="Gestacional">Gestacional</option>
+          </select>
+          <select id="ls-res" onchange="renderLaudos()" style="width:160px">
+            <option value="">Todos os resultados</option>
+            <option value="Normal">Normal</option>
+            <option value="Atenção">Atenção</option>
+            <option value="Alterado">Alterado</option>
+          </select>
+        </div>
+        <div class="card" id="laudos-card">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Nenhum laudo cadastrado.<br>Clique em "Novo laudo" para começar.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- NOVO / EDITAR LAUDO -->
+      <div class="page" id="page-novo-laudo">
+        <div class="tip">💡 Os campos de achados já vêm preenchidos com o texto padrão do modelo. Edite apenas o que for diferente.</div>
+
+        <div class="card">
+          <div class="form-section">Tipo de exame</div>
+          <div class="form-grid fg-2">
+            <div class="form-field">
+              <label>Tipo de exame</label>
+              <select id="f-tipo" onchange="toggleGest()">
+                <option value="Abdominal total">Abdominal total</option>
+                <option value="Gestacional">Gestacional / obstétrico</option>
+              </select>
+            </div>
+            <div class="form-field">
+              <label>Resultado geral</label>
+              <select id="f-resultado">
+                <option>Normal</option><option>Atenção</option><option>Alterado</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-section">Dados do paciente</div>
+          <div class="form-grid fg-3">
+            <div class="form-field"><label>Paciente</label><input id="f-pac" placeholder="Nome do animal"></div>
+            <div class="form-field"><label>Espécie</label><select id="f-esp"><option>Canino</option><option>Felino</option><option>Outro</option></select></div>
+            <div class="form-field"><label>Raça</label><input id="f-raca" placeholder="Raça"></div>
+            <div class="form-field"><label>Sexo</label><select id="f-sexo"><option>Macho</option><option>Macho castrado</option><option>Fêmea</option><option>Fêmea castrada</option></select></div>
+            <div class="form-field"><label>Idade</label><input id="f-idade" placeholder="Ex: 5 anos"></div>
+            <div class="form-field"><label>Data do exame</label><input type="date" id="f-data"></div>
+          </div>
+          <div class="form-section">Responsável e financeiro</div>
+          <div class="form-grid fg-3">
+            <div class="form-field"><label>Tutor</label><input id="f-tutor" placeholder="Nome do tutor"></div>
+            <div class="form-field"><label>Veterinário solicitante</label><input id="f-vet" placeholder="Dr(a)."></div>
+            <div class="form-field"><label>Clínica parceira</label><select id="f-clinica"><option value="">— Selecione —</option></select></div>
+            <div class="form-field"><label>Valor do exame (R$)</label><input type="text" inputmode="decimal" id="f-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
+            <div class="form-field"><label>Forma de pagamento</label><select id="f-forma"><option>Pix</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option></select></div>
+            <div class="form-field"><label>Status do pagamento</label><select id="f-fpago"><option>Pago</option><option>Pendente</option><option>Atrasado</option></select></div>
+          </div>
+        </div>
+
+        <!-- ACHADOS ABDOMINAL -->
+        <div class="card" id="card-abdominal">
+          <div class="form-section" style="margin-top:0">Achados — Abdominal total</div>
+          <div class="organ-table">
+            <div class="organ-row">
+              <div class="organ-name">Vesícula urinária</div>
+              <select onchange="setOrganText('o-bexiga', this.value, 'bexiga')">
+                <option value="normal">Normal</option>
+                <option value="cistolitiase">Cistolitíase</option>
+                <option value="cistite">Cistite</option>
+                <option value="espessamento">Espessamento de parede</option>
+                <option value="na">N/A</option>
+              </select>
+              <textarea id="o-bexiga" rows="2">Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Rins</div>
+              <select onchange="setOrganText('o-rins', this.value, 'rins')">
+                <option value="normal">Normal</option>
+                <option value="nefropatia">Nefropatia crônica</option>
+                <option value="nefrolitiase">Nefrolitíase</option>
+                <option value="hidronefrose">Hidronefrose</option>
+                <option value="cisto">Cisto renal</option>
+              </select>
+              <textarea id="o-rins" rows="2">Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Fígado</div>
+              <select onchange="setOrganText('o-figado', this.value, 'figado')">
+                <option value="normal">Normal</option>
+                <option value="hepatopatia">Hepatopatia crônica / Esteatose</option>
+                <option value="cisto_hepatico">Doença cística hepática</option>
+                <option value="nodulo_hepatico">Nódulo hepático</option>
+                <option value="hepatomegalia">Hepatomegalia</option>
+              </select>
+              <textarea id="o-figado" rows="2">Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Vesícula biliar</div>
+              <select onchange="setOrganText('o-vbiliar', this.value, 'vbiliar')">
+                <option value="normal">Normal</option>
+                <option value="lama_biliar">Lama biliar</option>
+                <option value="colelitíase">Colelitíase</option>
+                <option value="colecistite">Colecistite</option>
+              </select>
+              <textarea id="o-vbiliar" rows="2">Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Baço</div>
+              <select onchange="setOrganText('o-baco', this.value, 'baco')">
+                <option value="normal">Normal</option>
+                <option value="esplenomegalia">Esplenomegalia</option>
+                <option value="nodulo_baco">Nódulo esplênico</option>
+                <option value="hematoma_baco">Hematoma esplênico</option>
+              </select>
+              <textarea id="o-baco" rows="2">Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Estômago</div>
+              <select onchange="setOrganText('o-estomago', this.value, 'estomago')">
+                <option value="normal">Normal</option>
+                <option value="gastrite">Gastrite</option>
+                <option value="corpo_estranho">Corpo estranho gástrico</option>
+                <option value="espessamento_gastrico">Espessamento parietal</option>
+              </select>
+              <textarea id="o-estomago" rows="2">Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Alças intestinais</div>
+              <select onchange="setOrganText('o-intestino', this.value, 'intestino')">
+                <option value="normal">Normal</option>
+                <option value="enteropatia">Enteropatia difusa</option>
+                <option value="obstrucao">Suspeita de obstrução</option>
+                <option value="intussuscepcao">Intussuscepção</option>
+                <option value="corpo_estranho_int">Corpo estranho intestinal</option>
+              </select>
+              <textarea id="o-intestino" rows="2">Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Pâncreas</div>
+              <select onchange="setOrganText('o-pancreas', this.value, 'pancreas')">
+                <option value="normal">Normal</option>
+                <option value="pancreatite">Pancreatite</option>
+                <option value="massa_pancreas">Massa pancreática</option>
+              </select>
+              <textarea id="o-pancreas" rows="2">Ecogenicidade e ecotextura preservadas.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Adrenais</div>
+              <select onchange="setOrganText('o-adrenais', this.value, 'adrenais')">
+                <option value="normal">Normal</option>
+                <option value="hiperplasia_adrenal">Hiperplasia adrenal bilateral</option>
+                <option value="nodulo_adrenal">Nódulo adrenal</option>
+                <option value="massa_adrenal">Massa adrenal</option>
+              </select>
+              <textarea id="o-adrenais" rows="2">Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Linfonodos</div>
+              <select onchange="setOrganText('o-linfo', this.value, 'linfo')">
+                <option value="normal">Normal</option>
+                <option value="linfadenomegalia">Linfadenomegalia abdominal</option>
+              </select>
+              <textarea id="o-linfo" rows="2">Não foram observadas alterações ecográficas neste exame.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Próstata</div>
+              <select onchange="setOrganText('o-prostata', this.value, 'prostata')">
+                <option value="normal">Normal</option>
+                <option value="hiperplasia_prostata">Hiperplasia prostática</option>
+                <option value="prostatite">Prostatite</option>
+                <option value="cisto_prostata">Cisto prostático</option>
+                <option value="na">N/A</option>
+              </select>
+              <textarea id="o-prostata" rows="2">Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.</textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- ACHADOS GESTACIONAL -->
+        <div class="card" id="card-gestacional" style="display:none">
+          <div class="form-section" style="margin-top:0">Achados — Gestacional / obstétrico</div>
+          <div class="organ-table">
+            <div class="organ-row">
+              <div class="organ-name">Útero</div>
+              <select onchange="setOrganText('o-utero', this.value, 'utero')">
+                <option value="normal">Normal (gestante)</option>
+                <option value="reabsorcao">Reabsorção fetal</option>
+                <option value="morte_fetal">Óbito fetal</option>
+              </select>
+              <textarea id="o-utero" rows="2">Útero gravídico, com vesículas embrionárias identificadas, conteúdo anecogênico homogêneo.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Número de fetos</div>
+              <select onchange="setOrganText('o-fetos', this.value, 'fetos')">
+                <option value="custom">Informar manualmente</option>
+              </select>
+              <textarea id="o-fetos" rows="1" placeholder="Ex: 3 fetos identificados, BCF presentes."></textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Batimentos (BCF)</div>
+              <select onchange="setOrganText('o-bcf', this.value, 'bcf')">
+                <option value="normal">Presentes e rítmicos</option>
+                <option value="bcf_ausente">Ausentes</option>
+                <option value="bcf_irregular">Irregulares</option>
+              </select>
+              <textarea id="o-bcf" rows="1">Batimentos cardíacos fetais presentes e rítmicos.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Placenta</div>
+              <select onchange="setOrganText('o-placenta', this.value, 'placenta')">
+                <option value="normal">Normal</option>
+                <option value="placentite">Placentite</option>
+                <option value="descolamento">Descolamento placentário</option>
+              </select>
+              <textarea id="o-placenta" rows="1">Inserção placentária sem alterações, espessura preservada.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Líquido amniótico</div>
+              <select onchange="setOrganText('o-amnio', this.value, 'amnio')">
+                <option value="normal">Normal</option>
+                <option value="oligodramnio">Oligodrâmnio</option>
+                <option value="polidramnio">Polidrâmnio</option>
+              </select>
+              <textarea id="o-amnio" rows="1">Volume de líquido amniótico dentro da normalidade.</textarea>
+            </div>
+            <div class="organ-row">
+              <div class="organ-name">Idade gestacional</div>
+              <select onchange="setOrganText('o-ig', this.value, 'ig')">
+                <option value="custom">Informar manualmente</option>
+              </select>
+              <textarea id="o-ig" rows="1" placeholder="Ex: IG estimada em 35 dias."></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="form-section" style="margin-top:0">Impressão diagnóstica</div>
+          <div class="form-grid" style="grid-template-columns:1fr">
+            <div class="form-field"><label>Conclusão / comentários</label>
+              <textarea id="f-conclusao" rows="4">- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.
+- Sem evidências de alterações estruturais significativas nos órgãos avaliados.</textarea>
+            </div>
+            <div class="form-field"><label>Observações adicionais</label>
+              <textarea id="f-obs" rows="2">A interposição de barreiras físicas pode interferir na formação das imagens abdominais e na definição das estruturas.</textarea>
+            </div>
+          </div>
+          <div class="actions-bar">
+            <button class="btn" onclick="cancelarLaudo()">Cancelar</button>
+            <button class="btn" onclick="previewLaudo()">👁 Pré-visualizar</button>
+            <button class="btn btn-primary" onclick="salvarLaudo()">💾 Salvar laudo</button>
+          </div>
+        </div>
+
+        <!-- FOTOS DO LAUDO -->
+        <div class="card" id="card-fotos">
+          <div class="card-header">
+            <div>
+              <div class="card-title">📸 Fotos do exame</div>
+              <div class="card-sub">As imagens serão impressas no final do laudo</div>
+            </div>
+            <label class="btn btn-primary" style="cursor:pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Adicionar fotos
+              <input type="file" id="foto-input" accept="image/*" multiple style="display:none" onchange="adicionarFotos(this)">
+            </label>
+          </div>
+          <div id="fotos-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;min-height:0"></div>
+          <div id="fotos-empty" style="text-align:center;padding:28px 20px;color:var(--text3);font-size:13px">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin:0 auto 10px;display:block;opacity:.4"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Nenhuma foto adicionada. Clique em "Adicionar fotos" para inserir imagens do exame.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- VISUALIZAR LAUDO -->
+      <div class="page" id="page-viz-laudo">
+        <div id="viz-area"></div>
+        <div class="actions-bar" style="border-top:none; padding-top:0">
+          <button class="btn" onclick="goPage('laudos')">← Voltar</button>
+          <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir laudo</button>
+        </div>
+      </div>
+
+      <!-- FINANCEIRO -->
+      <div class="page" id="page-financeiro">
+        <div class="subtabs">
+          <div class="stab active" onclick="stf('f-overview')">Visão geral</div>
+          <div class="stab" onclick="stf('f-receitas')">Receitas</div>
+          <div class="stab" onclick="stf('f-despesas')">Despesas</div>
+          <div class="stab" onclick="stf('f-receber')">A receber</div>
+          <div class="stab" onclick="stf('f-clinicas')">Clínicas</div>
+        </div>
+
+        <!-- FIN OVERVIEW -->
+        <div class="ssec active" id="f-overview">
+          <div class="metrics">
+            <div class="metric-card"><div class="metric-label">Receita do mês</div><div class="metric-value green" id="f-m-rec">R$ 0,00</div></div>
+            <div class="metric-card"><div class="metric-label">Despesas do mês</div><div class="metric-value red" id="f-m-desp">R$ 0,00</div></div>
+            <div class="metric-card"><div class="metric-label">Saldo</div><div class="metric-value" id="f-m-saldo">R$ 0,00</div></div>
+            <div class="metric-card"><div class="metric-label">A receber</div><div class="metric-value amber" id="f-m-arec">R$ 0,00</div></div>
+          </div>
+          <div class="grid-2">
+            <div class="card"><div class="card-header"><div class="card-title">Fluxo de caixa — 6 meses</div></div><div id="f-fc"></div></div>
+            <div class="card"><div class="card-header"><div class="card-title">Receita por forma de pagamento</div></div><div id="f-forma"></div></div>
+          </div>
+        </div>
+
+        <!-- RECEITAS -->
+        <div class="ssec" id="f-receitas">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Nova receita</div></div>
+            <div class="form-grid fg-4">
+              <div class="form-field"><label>Data</label><input type="date" id="r-data"></div>
+              <div class="form-field"><label>Descrição</label><input id="r-desc" placeholder="Tipo de exame ou serviço"></div>
+              <div class="form-field"><label>Clínica parceira</label><select id="r-clinica"><option value="">— Selecione —</option></select></div>
+              <div class="form-field"><label>Valor (R$)</label><input type="text" inputmode="decimal" id="r-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
+              <div class="form-field"><label>Forma de pagamento</label><select id="r-forma"><option>Pix</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option></select></div>
+              <div class="form-field"><label>Status</label><select id="r-status"><option>Pago</option><option>Pendente</option><option>Atrasado</option></select></div>
+              <div class="form-field"><label>Veterinário</label><input id="r-vet" placeholder="Dr(a)."></div>
+              <div class="form-field"><label>Observação</label><input id="r-obs" placeholder="Opcional"></div>
+            </div>
+            <div class="actions-bar"><button class="btn btn-primary" onclick="addReceita()">+ Adicionar receita</button></div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">Histórico de receitas</div>
+              <div style="display:flex;gap:8px">
+                <input id="rs-q" placeholder="Buscar..." oninput="renderReceitas()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;font-family:Inter,sans-serif;width:160px;outline:none">
+                <select id="rs-st" onchange="renderReceitas()" style="padding:6px 10px;border:1px solid var(--border2);border-radius:var(--radius);font-size:12px;font-family:Inter,sans-serif;outline:none">
+                  <option value="">Todos</option><option>Pago</option><option>Pendente</option><option>Atrasado</option>
+                </select>
+              </div>
+            </div>
+            <div id="rec-list"><div class="empty-state"><p>Nenhuma receita lançada.</p></div></div>
+          </div>
+        </div>
+
+        <!-- DESPESAS -->
+        <div class="ssec" id="f-despesas">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Nova despesa</div></div>
+            <div class="form-grid fg-4">
+              <div class="form-field"><label>Data</label><input type="date" id="d-data"></div>
+              <div class="form-field"><label>Descrição</label><input id="d-desc" placeholder="Ex: Combustível, insumos"></div>
+              <div class="form-field"><label>Categoria</label>
+                <select id="d-cat"><option>Combustível / deslocamento</option><option>Material / insumos</option><option>Equipamento</option><option>Software / assinatura</option><option>Impostos / taxas</option><option>Marketing</option><option>Outros</option></select>
+              </div>
+              <div class="form-field"><label>Valor (R$)</label><input type="text" inputmode="decimal" id="d-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
+              <div class="form-field"><label>Recorrente?</label><select id="d-rec"><option value="nao">Não</option><option value="sim">Sim (mensal)</option></select></div>
+              <div class="form-field"><label>Observação</label><input id="d-obs" placeholder="Opcional"></div>
+            </div>
+            <div class="actions-bar"><button class="btn btn-primary" onclick="addDespesa()">+ Adicionar despesa</button></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Histórico de despesas</div></div>
+            <div id="desp-list"><div class="empty-state"><p>Nenhuma despesa lançada.</p></div></div>
+          </div>
+        </div>
+
+        <!-- A RECEBER -->
+        <div class="ssec" id="f-receber">
+          <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+            <div class="metric-card"><div class="metric-label">Total a receber</div><div class="metric-value amber" id="ar-tot">R$ 0,00</div></div>
+            <div class="metric-card"><div class="metric-label">Pendente</div><div class="metric-value" id="ar-pend">R$ 0,00</div></div>
+            <div class="metric-card"><div class="metric-label">Atrasado</div><div class="metric-value red" id="ar-atras">R$ 0,00</div></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Contas a receber</div></div>
+            <div id="ar-list"><div class="empty-state"><p>Nenhuma pendência.</p></div></div>
+          </div>
+        </div>
+
+        <!-- CLÍNICAS -->
+        <div class="ssec" id="f-clinicas">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Cadastrar clínica parceira</div></div>
+            <div class="form-grid fg-3">
+              <div class="form-field"><label>Nome da clínica</label><input id="cl-nome" placeholder="Nome da clínica"></div>
+              <div class="form-field"><label>Responsável</label><input id="cl-responsavel" placeholder="Nome do responsável"></div>
+              <div class="form-field"><label>Telefone</label><input id="cl-telefone" placeholder="(XX) XXXXX-XXXX"></div>
+              <div class="form-field"><label>E-mail</label><input id="cl-email" placeholder="email@clinica.com.br" type="email"></div>
+              <div class="form-field"><label>Condição de pagamento</label><select id="cl-cond"><option>À vista</option><option>7 dias</option><option>15 dias</option><option>30 dias</option><option>Personalizado</option></select></div>
+              <div class="form-field"><label>Desconto (%)</label><input type="number" id="cl-desc" placeholder="0" min="0" max="100"></div>
+              <div class="form-field"><label>Observação</label><input id="cl-obs" placeholder="Opcional"></div>
+            </div>
+            <div class="actions-bar"><button class="btn btn-primary" onclick="addClinica()">+ Cadastrar clínica</button></div>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">Clínicas cadastradas</div></div>
+            <div id="cl-list"><div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RELATÓRIOS -->
+      <div class="page" id="page-relatorios">
+        <div class="subtabs">
+          <div class="stab active" onclick="strp('rp-laudos')">Laudos</div>
+          <div class="stab" onclick="strp('rp-financeiro')">Financeiro</div>
+          <div class="stab" onclick="strp('rp-clinicas')">Clínicas</div>
+          <div class="stab" onclick="strp('rp-vets')">Veterinários</div>
+        </div>
+
+        <!-- LAUDOS -->
+        <div class="ssec active" id="rp-laudos">
+          <div class="metrics" style="grid-template-columns:repeat(4,1fr)">
+            <div class="metric-card"><div class="metric-label">Total de laudos</div><div class="metric-value" id="rp-total-laudos">0</div></div>
+            <div class="metric-card"><div class="metric-label">Este mês</div><div class="metric-value green" id="rp-laudos-mes">0</div></div>
+            <div class="metric-card"><div class="metric-label">Abdominais</div><div class="metric-value" id="rp-abdom">0</div></div>
+            <div class="metric-card"><div class="metric-label">Gestacionais</div><div class="metric-value purple" id="rp-gest">0</div></div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Laudos por mês</div><div class="card-sub">Últimos 6 meses</div></div></div>
+              <div id="rp-laudos-fc"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Resultado dos exames</div></div>
+              <div id="rp-resultados"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FINANCEIRO -->
+        <div class="ssec" id="rp-financeiro">
+          <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+            <div class="metric-card"><div class="metric-label">Receita total</div><div class="metric-value green" id="rp-rec-total">R$ 0,00</div></div>
+            <div class="metric-card"><div class="metric-label">Despesas totais</div><div class="metric-value red" id="rp-desp-total">R$ 0,00</div></div>
+            <div class="metric-card"><div class="metric-label">Margem líquida</div><div class="metric-value" id="rp-margem">R$ 0,00</div></div>
+          </div>
+          <div class="grid-2">
+            <div class="card">
+              <div class="card-header"><div><div class="card-title">Faturamento × Despesas</div><div class="card-sub">Últimos 6 meses</div></div></div>
+              <div id="rp-fat-fc"></div>
+            </div>
+            <div class="card">
+              <div class="card-header"><div class="card-title">Receita por forma de pagamento</div></div>
+              <div id="rp-forma-fat"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CLÍNICAS -->
+        <div class="ssec" id="rp-clinicas">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Ranking de clínicas parceiras</div></div>
+            <div id="rp-clinicas-rank"></div>
+          </div>
+        </div>
+
+        <!-- VETERINÁRIOS -->
+        <div class="ssec" id="rp-vets">
+          <div class="card">
+            <div class="card-header"><div class="card-title">Veterinários solicitantes mais frequentes</div></div>
+            <div id="rp-vets-rank"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAINEL DE CONTROLE -->
+      <div class="page" id="page-painel">
+
+        <!-- Identidade visual -->
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">🎨 Identidade visual</div><div class="card-sub">Logo e nome exibidos no cabeçalho dos laudos impressos</div></div></div>
+          <div class="form-grid fg-2" style="align-items:start">
+            <div class="form-field">
+              <label>Nome da veterinária</label>
+              <input id="cfg-nome" placeholder="Ex: Patrine Cagnini">
+              <label style="margin-top:8px">Especialidade</label>
+              <input id="cfg-esp" placeholder="Ex: Médica Veterinária | Ultrassonografista">
+              <label style="margin-top:8px">CRMV</label>
+              <input id="cfg-crmv" placeholder="Ex: CRMV-SC 09377">
+              <div class="actions-bar" style="justify-content:flex-start;padding-top:12px;margin-top:4px">
+                <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Logo do laudo</label>
+              <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+                <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
+              </div>
+              <label class="btn" style="cursor:pointer;justify-content:center">
+                📁 Carregar logo
+                <input type="file" accept="image/*" style="display:none" onchange="carregarLogo(this)">
+              </label>
+              <button class="btn btn-danger btn-sm" onclick="removerLogo()" style="margin-top:6px">Remover logo</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dados -->
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">💾 Dados</div><div class="card-sub">Backup e restauração dos dados do sistema</div></div></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="exportarBackup()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              Exportar backup
+            </button>
+            <label class="btn" style="cursor:pointer">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Importar backup
+              <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
+            </label>
+          </div>
+          <div class="tip" style="margin-top:14px;margin-bottom:0">Os dados já ficam salvos automaticamente no Supabase. Use o backup para exportar para Excel ou como segurança extra.</div>
+        </div>
+
+        <!-- Sistema -->
+        <div class="card">
+          <div class="card-header"><div class="card-title">⚙️ Sistema</div></div>
+          <table class="data-table">
+            <tbody>
+              <tr><td style="color:var(--text2);width:160px">Versão</td><td>VetRoutine v1.10</td></tr>
+              <tr><td style="color:var(--text2)">Banco de dados</td><td>Supabase · <span id="painel-sync-status">—</span></td></tr>
+              <tr><td style="color:var(--text2)">URL do sistema</td><td><a href="https://glittering-narwhal-2da210.netlify.app/ultravet_10.html" target="_blank" style="color:var(--teal)">glittering-narwhal-2da210.netlify.app</a></td></tr>
+              <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- PRINT STYLES -->
+<style id="print-style"></style>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let laudos = [], receitas = [], despesas = [], clinicas = [];
+let editId = null, viewId = null, curFSec = 'f-overview';
+let fotosTmp = []; // fotos do laudo em edição (base64)
+
+// ─── PERSISTENCE ─────────────────────────────────────────────────────────────
+function save() {
+  localStorage.setItem('uv_laudos', JSON.stringify(laudos));
+  localStorage.setItem('uv_receitas', JSON.stringify(receitas));
+  localStorage.setItem('uv_despesas', JSON.stringify(despesas));
+  localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
+  syncCloud();
+}
+function load() {
+  try { laudos = JSON.parse(localStorage.getItem('uv_laudos') || '[]'); } catch(e){laudos=[];}
+  try { receitas = JSON.parse(localStorage.getItem('uv_receitas') || '[]'); } catch(e){receitas=[];}
+  try { despesas = JSON.parse(localStorage.getItem('uv_despesas') || '[]'); } catch(e){despesas=[];}
+  try { clinicas = JSON.parse(localStorage.getItem('uv_clinicas') || '[]'); } catch(e){clinicas=[];}
+}
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+const fmt = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+// Máscara de moeda brasileira (digitação)
+function maskCurrency(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (!v) { el.value = ''; return; }
+  v = parseInt(v, 10).toString().padStart(3, '0');
+  const cents = v.slice(-2);
+  let reais = v.slice(0, -2).replace(/^0+/, '') || '0';
+  reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = reais + ',' + cents;
+}
+
+// Lê valor numérico de um input de moeda
+function parseCurrency(id) {
+  const v = (document.getElementById(id).value || '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(v) || 0;
+}
+
+// Define valor formatado em input de moeda
+function setCurrency(id, v) {
+  const el = document.getElementById(id);
+  if (!v) { el.value = ''; return; }
+  const cents = Math.round(Number(v) * 100).toString().padStart(3, '0');
+  const c = cents.slice(-2);
+  let r = cents.slice(0, -2).replace(/^0+/, '') || '0';
+  r = r.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = r + ',' + c;
+}
+const fmtD = d => { if(!d) return '—'; const p = d.split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : d; };
+const today = () => new Date().toISOString().split('T')[0];
+const isMes = d => { if(!d) return false; const n=new Date(), dt=new Date(d+'T12:00:00'); return dt.getMonth()===n.getMonth() && dt.getFullYear()===n.getFullYear(); };
+
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+const pageTitles = {
+  dashboard: ['Dashboard', 'Visão geral do sistema'],
+  laudos: ['Laudos', 'Todos os exames registrados'],
+  'novo-laudo': ['Novo laudo', 'Preencher relatório ultrassonográfico'],
+  'viz-laudo': ['Visualizar laudo', 'Pré-visualização do relatório'],
+  financeiro: ['Financeiro', 'Gestão financeira do negócio'],
+  relatorios: ['Relatórios', 'Análise de desempenho e dados'],
+  painel: ['Painel de controle', 'Configurações e parametrização do sistema'],
+};
+
+let curRpSec = 'rp-laudos';
+
+function goPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  const [title, sub] = pageTitles[name] || [name, ''];
+  document.getElementById('topbar-title').textContent = title;
+  document.getElementById('topbar-sub').textContent = sub;
+  const map = {dashboard:0, laudos:1, financeiro:3};
+  if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
+  if (name === 'dashboard') updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
+  if (name === 'laudos') renderLaudos();
+  if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
+  if (name === 'relatorios') strp(curRpSec);
+  if (name === 'painel') renderPainel();
+}
+
+function strp(name) {
+  curRpSec = name;
+  const page = document.getElementById('page-relatorios');
+  page.querySelectorAll('.ssec').forEach(s => s.classList.remove('active'));
+  page.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  const map = {'rp-laudos':0,'rp-financeiro':1,'rp-clinicas':2,'rp-vets':3};
+  if (map[name] !== undefined) page.querySelectorAll('.stab')[map[name]].classList.add('active');
+  if (name === 'rp-laudos') renderRpLaudos();
+  if (name === 'rp-financeiro') renderRpFinanceiro();
+  if (name === 'rp-clinicas') renderRpClinicas();
+  if (name === 'rp-vets') renderRpVets();
+}
+
+function stf(name) {
+  curFSec = name;
+  document.querySelectorAll('#page-financeiro .ssec').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#page-financeiro .stab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  const map = {'f-overview':0,'f-receitas':1,'f-despesas':2,'f-receber':3,'f-clinicas':4};
+  document.querySelectorAll('#page-financeiro .stab')[map[name]].classList.add('active');
+  if (name === 'f-overview') updateFinOverview();
+  if (name === 'f-receitas') { renderReceitas(); populateClinicaSelects(); }
+  if (name === 'f-despesas') renderDespesas();
+  if (name === 'f-receber') renderReceber();
+  if (name === 'f-clinicas') renderClinicas();
+}
+
+// ─── LAUDO FORM ───────────────────────────────────────────────────────────────
+const orgDefaults = {
+  bexiga: 'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.',
+  rins: 'Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.',
+  figado: 'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.',
+  vbiliar: 'Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.',
+  baco: 'Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.',
+  estomago: 'Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.',
+  intestino: 'Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.',
+  pancreas: 'Ecogenicidade e ecotextura preservadas.',
+  adrenais: 'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
+  linfo: 'Não foram observadas alterações ecográficas neste exame.',
+  prostata: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.',
+};
+const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',prostata:'Próstata'};
+const orgNomesGest = {utero:'Útero',fetos:'Número de fetos',bcf:'Batimentos (BCF)',placenta:'Placenta',amnio:'Líquido amniótico',ig:'Idade gestacional'};
+
+function toggleGest() {
+  const t = document.getElementById('f-tipo').value;
+  document.getElementById('card-abdominal').style.display = t === 'Gestacional' ? 'none' : 'block';
+  document.getElementById('card-gestacional').style.display = t === 'Gestacional' ? 'block' : 'none';
+  document.getElementById('f-conclusao').value = t === 'Gestacional'
+    ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
+    : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+}
+
+function novoLaudo() {
+  editId = null;
+  clearLaudoForm();
+  document.getElementById('f-data').value = today();
+  populateClinicaSelects();
+  goPage('novo-laudo');
+}
+
+function clearLaudoForm() {
+  ['f-pac','f-raca','f-idade','f-tutor','f-vet','f-valor'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('f-clinica').selectedIndex = 0;
+  document.getElementById('f-tipo').value = 'Abdominal total';
+  document.getElementById('f-esp').value = 'Canino';
+  document.getElementById('f-sexo').value = 'Macho';
+  document.getElementById('f-resultado').value = 'Normal';
+  document.getElementById('f-forma').value = 'Pix';
+  document.getElementById('f-fpago').value = 'Pago';
+  document.getElementById('f-conclusao').value = '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  document.getElementById('f-obs').value = 'A interposição de barreiras físicas pode interferir na formação das imagens abdominais e na definição das estruturas.';
+  Object.keys(orgDefaults).forEach(k => { const el = document.getElementById('o-'+k); if(el) el.value = orgDefaults[k]; });
+  ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
+  // reset all patologia selects to first option
+  document.querySelectorAll('#card-abdominal select, #card-gestacional select').forEach(s => s.selectedIndex = 0);
+  fotosTmp = [];
+  renderFotosGrid();
+  toggleGest();
+}
+
+function getLaudoData() {
+  const orgAbdom = {};
+  Object.keys(orgNomesAbdom).forEach(k => { orgAbdom[k] = { texto: (document.getElementById('o-'+k)||{}).value||'' }; });
+  const orgGest = {};
+  Object.keys(orgNomesGest).forEach(k => { orgGest[k] = { texto: (document.getElementById('o-'+k)||{}).value||'' }; });
+  return {
+    tipo: document.getElementById('f-tipo').value,
+    resultado: document.getElementById('f-resultado').value,
+    paciente: document.getElementById('f-pac').value,
+    especie: document.getElementById('f-esp').value,
+    raca: document.getElementById('f-raca').value,
+    sexo: document.getElementById('f-sexo').value,
+    idade: document.getElementById('f-idade').value,
+    data: document.getElementById('f-data').value,
+    tutor: document.getElementById('f-tutor').value,
+    vet: document.getElementById('f-vet').value,
+    clinica: document.getElementById('f-clinica').value,
+    valor: parseCurrency('f-valor'),
+    forma: document.getElementById('f-forma').value,
+    fpago: document.getElementById('f-fpago').value,
+    conclusao: document.getElementById('f-conclusao').value,
+    obs: document.getElementById('f-obs').value,
+    fotos: fotosTmp.slice(),
+    orgAbdom, orgGest
+  };
+}
+
+function salvarLaudo() {
+  const d = getLaudoData();
+  if (!d.paciente) { alert('Informe o nome do paciente.'); return; }
+  if (editId) {
+    laudos = laudos.map(l => l.id === editId ? {...l, ...d} : l);
+    toast('Laudo atualizado com sucesso!');
+  } else {
+    laudos.push({id: Date.now(), ...d});
+    if (d.valor > 0) {
+      receitas.push({id: Date.now()+1, data: d.data, desc: d.tipo + ' — ' + d.paciente, clinica: d.clinica, valor: d.valor, forma: d.forma, status: d.fpago, vet: d.vet, obs: ''});
+    }
+    toast('Laudo salvo! Receita lançada automaticamente.');
+  }
+  save();
+  goPage('laudos');
+}
+
+function cancelarLaudo() { goPage('laudos'); }
+
+function previewLaudo() {
+  viewId = null;
+  renderPreview(getLaudoData());
+  goPage('viz-laudo');
+}
+
+function viewLaudo(id) {
+  viewId = id;
+  const l = laudos.find(x => x.id === id);
+  renderPreview(l);
+  goPage('viz-laudo');
+}
+
+function editLaudo(id) {
+  editId = id;
+  const l = laudos.find(x => x.id === id);
+  document.getElementById('f-tipo').value = l.tipo || 'Abdominal total';
+  document.getElementById('f-resultado').value = l.resultado || 'Normal';
+  document.getElementById('f-pac').value = l.paciente || '';
+  document.getElementById('f-esp').value = l.especie || 'Canino';
+  document.getElementById('f-raca').value = l.raca || '';
+  document.getElementById('f-sexo').value = l.sexo || 'Macho';
+  document.getElementById('f-idade').value = l.idade || '';
+  document.getElementById('f-data').value = l.data || '';
+  document.getElementById('f-tutor').value = l.tutor || '';
+  document.getElementById('f-vet').value = l.vet || '';
+  document.getElementById('f-clinica').value = l.clinica || '';
+  setCurrency('f-valor', l.valor || 0);
+  document.getElementById('f-forma').value = l.forma || 'Pix';
+  document.getElementById('f-fpago').value = l.fpago || 'Pago';
+  document.getElementById('f-conclusao').value = l.conclusao || '';
+  document.getElementById('f-obs').value = l.obs || '';
+  toggleGest();
+  populateClinicaSelects();
+  if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgAbdom[k].texto||''; });
+  if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgGest[k].texto||''; });
+  fotosTmp = (l.fotos || []).slice();
+  renderFotosGrid();
+  goPage('novo-laudo');
+}
+
+function delLaudo(id) {
+  if (!confirm('Excluir este laudo permanentemente?')) return;
+  laudos = laudos.filter(l => l.id !== id);
+  save(); renderLaudos(); updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
+  cloudDelete('uv_laudos', id);
+  toast('Laudo excluído.');
+}
+
+// ─── PREVIEW & PRINT ──────────────────────────────────────────────────────────
+function fmtDP(d) { if(!d) return '___'; const p = d.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : d; }
+
+const LOGO_B64 = 'data:image/webp;base64,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';
+
+function buildLaudoHTML(l, orgRows) {
+  return '<div style="max-width:800px;overflow:hidden;font-family:Arial,sans-serif;background:#fff">'
+    /* CABEÇALHO */
+    + '<div style="display:flex;align-items:stretch;padding:18px 28px 14px;border-bottom:2px solid #3d7a52">'
+      /* Esquerda: dados do paciente em grid */
+      + '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;align-content:center">'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Paciente</span><div style="font-size:12px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></div>'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Sexo</span><div style="font-size:12px;color:#1a1a18">' + (l.sexo||'—') + '</div></div>'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Tutor</span><div style="font-size:12px;color:#1a1a18">' + (l.tutor||'—') + '</div></div>'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Idade</span><div style="font-size:12px;color:#1a1a18">' + (l.idade||'—') + '</div></div>'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Espécie</span><div style="font-size:12px;color:#1a1a18">' + (l.especie||'—') + '</div></div>'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Raça</span><div style="font-size:12px;color:#1a1a18">' + (l.raca||'—') + '</div></div>'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Veterinário</span><div style="font-size:12px;color:#1a1a18">' + (l.vet||'—') + '</div></div>'
+        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Data</span><div style="font-size:12px;color:#1a1a18">' + fmtDP(l.data) + '</div></div>'
+      + '</div>'
+      /* Separador vertical */
+      + '<div style="width:1px;background:#c5ddd0;margin:0 20px"></div>'
+      /* Direita: Logo */
+      + '<div style="display:flex;align-items:center;justify-content:center;min-width:160px">'
+        + '<img src="' + getLogo() + '" style="max-height:80px;max-width:160px;object-fit:contain" alt="Logo">'
+      + '</div>'
+    + '</div>'
+    /* TÍTULO */
+    + '<div style="text-align:center;padding:10px 28px 8px">'
+      + '<div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1e1e1c">Relatório Ultrassonográfico</div>'
+      + '<div style="font-size:10px;color:#9b9a95;margin-top:2px;letter-spacing:.08em;text-transform:uppercase">' + (l.tipo||'') + '</div>'
+    + '</div>'
+    /* ACHADOS */
+    + '<div style="padding:10px 28px 14px">'
+      + '<div style="font-size:10px;font-weight:700;color:#3d7a52;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Achados Ultrassonográficos</div>'
+      + '<table style="width:100%;border-collapse:collapse">' + orgRows + '</table>'
+    + '</div>'
+    /* DIAGNÓSTICO */
+    + '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef">'
+      + '<div style="font-size:10px;font-weight:700;color:#3d7a52;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Impressão Diagnóstica</div>'
+      + '<div style="font-size:12px;color:#1e1e1c;line-height:1.7;white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
+      + (l.obs ? '<div style="margin-top:8px;font-size:11px;color:#6b6a65;font-style:italic;line-height:1.6">' + l.obs + '</div>' : '')
+    + '</div>'
+    /* ASSINATURA */
+    + '<div style="padding:14px 28px 20px;display:flex;justify-content:flex-end">'
+      + '<div style="text-align:center">'
+        + '<div style="border:1.5px solid #3d7a52;border-radius:5px;padding:10px 28px 8px;min-width:200px">'
+          + '<div style="font-size:13px;font-weight:700;color:#1e1e1c">' + (getConfig().nome||'Patrine Cagnini') + '</div>'
+          + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().esp||'Médica Veterinária') + '</div>'
+          + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().crmv||'CRMV-SC 09377') + '</div>'
+        + '</div>'
+        + '<div style="font-size:10px;color:#9b9a95;margin-top:4px">Responsável técnico</div>'
+      + '</div>'
+    + '</div>'
+    /* FOTOS */
+    + (l.fotos && l.fotos.length ? (
+        '<div style="padding:10px 28px 20px;border-top:1px solid #edf2ef">'
+          + '<div style="font-size:10px;font-weight:700;color:#3d7a52;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Imagens do Exame</div>'
+          + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">'
+            + l.fotos.map(function(f) {
+                return '<div style="border:1px solid #d8e8de;border-radius:4px;overflow:hidden;background:#f8faf9;page-break-inside:avoid">'
+                  + '<img src="' + f.src + '" style="width:100%;max-height:340px;object-fit:contain;display:block">'
+                + '</div>';
+              }).join('')
+          + '</div>'
+        + '</div>'
+      ) : '')
+  + '</div>';
+}
+
+function renderPreview(l) {
+  const isGest = l.tipo === 'Gestacional';
+  const orgs = isGest ? l.orgGest : l.orgAbdom;
+  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
+  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k].texto; }).map(function(k){
+    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
+  }).join('') : '';
+  document.getElementById('viz-area').innerHTML = '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l, orgRows) + '</div>';
+}
+
+function imprimirLaudo() {
+  const l = viewId ? laudos.find(function(x){ return x.id === viewId; }) : getLaudoData();
+  if (!l) return;
+  const isGest = l.tipo === 'Gestacional';
+  const orgs = isGest ? l.orgGest : l.orgAbdom;
+  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
+  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k].texto; }).map(function(k){
+    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
+  }).join('') : '';
+  const body = buildLaudoHTML(l, orgRows);
+  const win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{margin:12mm}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.close();
+}
+
+// ─── FOTOS ────────────────────────────────────────────────────────────────────
+function adicionarFotos(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  let done = 0;
+  files.forEach(function(file) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      fotosTmp.push({ src: e.target.result, name: file.name });
+      done++;
+      if (done === files.length) renderFotosGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = ''; // reset input para permitir re-upload do mesmo arquivo
+}
+
+function removerFoto(idx) {
+  fotosTmp.splice(idx, 1);
+  renderFotosGrid();
+}
+
+function renderFotosGrid() {
+  const grid = document.getElementById('fotos-grid');
+  const empty = document.getElementById('fotos-empty');
+  if (!fotosTmp.length) {
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  grid.innerHTML = fotosTmp.map(function(f, i) {
+    return '<div style="position:relative;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--surface2)">'
+      + '<img src="' + f.src + '" style="width:100%;height:130px;object-fit:cover;display:block">'
+      + '<div style="padding:5px 8px;font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + f.name + '</div>'
+      + '<button onclick="removerFoto(' + i + ')" title="Remover foto" style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:50%;width:22px;height:22px;cursor:pointer;font-size:13px;line-height:22px;text-align:center;padding:0">×</button>'
+      + '</div>';
+  }).join('');
+}
+
+// ─── PATOLOGIAS ───────────────────────────────────────────────────────────────
+const organPatologias = {
+  bexiga: {
+    normal: 'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.',
+    cistolitiase: 'Vesícula urinária com presença de estrutura hiperecogênica em lúmen, formadora de intenso sombreamento acústico posterior, medindo aproximadamente ___ cm.\n\nImpressão: Cistolitíase. Recomenda-se correlação com urinálise e avaliação da possibilidade de obstrução urinária.',
+    cistite: 'Vesícula urinária com paredes espessadas e hiperecogênicas, medindo aproximadamente ___ cm de espessura, associada a conteúdo ecogênico em suspensão.\n\nImpressão: Alterações compatíveis com cistite. Recomenda-se correlação com urinálise e cultura urinária.',
+    espessamento: 'Vesícula urinária com paredes espessadas, medindo aproximadamente ___ cm de espessura. Conteúdo luminal heterogêneo com material em suspensão.',
+    na: ''
+  },
+  rins: {
+    normal: 'Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.',
+    nefropatia: 'Rins localizados em topografia habitual, apresentando redução/perda da definição córtico-medular, aumento difuso da ecogenicidade cortical, contornos irregulares e discreta redução dimensional.\n\nImpressão: Alterações ultrassonográficas compatíveis com nefropatia crônica. Recomenda-se correlação com função renal e urinálise.',
+    nefrolitiase: 'Rim direito/esquerdo apresentando estrutura hiperecogênica em pelve renal, formadora de sombreamento acústico posterior, medindo aproximadamente ___ cm. Sem sinais de dilatação pielocalicial evidente.',
+    hidronefrose: 'Rim direito/esquerdo apresentando dilatação do sistema pielocalicial, com pelve medindo aproximadamente ___ cm. Parênquima renal com espessura reduzida.',
+    cisto: 'Rim direito/esquerdo apresentando formação cavitária arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm, sem sinais de vascularização ao Doppler.'
+  },
+  figado: {
+    normal: 'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.',
+    hepatopatia: 'Fígado apresentando aumento difuso da ecogenicidade do parênquima, ecotextura grosseira/heterogênea, margens arredondadas e discreto aumento das dimensões, podendo dificultar a caracterização dos vasos intra-hepáticos. Não foram observadas formações focais evidentes.\n\nImpressão: Hepatopatia crônica/degeneração gordurosa. Pode estar associada a processo metabólico, endocrinopatia ou colestase. Recomenda-se correlação com exames laboratoriais e acompanhamento clínico.',
+    cisto_hepatico: 'Fígado apresentando múltiplas formações cavitárias arredondadas, anecogênicas, de paredes finas, distribuídas pelo parênquima hepático.\n\nImpressão: Alterações compatíveis com doença cística hepática/fibropolicistose. Recomenda-se correlação com exames complementares e acompanhamento clínico.',
+    nodulo_hepatico: 'Fígado apresentando formação nodular hipo/hiperecogênica em ___ lobo hepático, medindo aproximadamente ___ cm, com contornos bem definidos. Não foram observadas outras formações focais evidentes.\n\nImpressão: Nódulo hepático. Não se descarta processo infiltrativo/neoplásico. Recomenda-se análise citológica/histopatológica.',
+    hepatomegalia: 'Fígado com dimensões aumentadas, ultrapassando o gradil costal, superfície lisa, ecogenicidade e ecotextura preservadas.'
+  },
+  vbiliar: {
+    normal: 'Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.',
+    lama_biliar: 'Vesícula biliar com repleção adequada, paredes finas e regulares, contendo material ecogênico amorfo/dependente em lúmen, sem formação de sombreamento acústico posterior, ocupando aproximadamente __% do lúmen vesicular.\n\nImpressão: Presença de lama biliar discreta/moderada/importante. Achado pode estar relacionado à estase biliar, jejum prolongado ou alterações hepatobiliares.',
+    colelitíase: 'Vesícula biliar com presença de estrutura(s) hiperecogênica(s) em lúmen, formadora(s) de sombreamento acústico posterior, medindo aproximadamente ___ cm.',
+    colecistite: 'Vesícula biliar com paredes espessadas medindo ___ cm, conteúdo heterogêneo com material em suspensão. Sinal de Murphy ultrassonográfico positivo.'
+  },
+  baco: {
+    normal: 'Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.',
+    esplenomegalia: 'Baço com dimensões aumentadas, medindo aproximadamente ___ cm no maior eixo. Ecogenicidade e ecotextura preservadas, sem formações focais evidentes.',
+    nodulo_baco: 'Baço apresentando formação nodular hipo/hiperecogênica, medindo aproximadamente ___ cm, com contornos bem/mal definidos.\n\nImpressão: Nódulo esplênico. Não se descarta processo infiltrativo/neoplásico. Recomenda-se correlação clínica.',
+    hematoma_baco: 'Baço com formação heterogênea em região ___, apresentando área hipo/anecogênica irregular, sugestiva de hematoma/lesão traumática.'
+  },
+  estomago: {
+    normal: 'Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.',
+    gastrite: 'Estômago com paredes discretamente espessadas, medindo aproximadamente ___ cm, preservando estratificação em camadas. Conteúdo luminal heterogêneo.',
+    corpo_estranho: 'Estômago com conteúdo luminal heterogêneo, evidenciando estrutura hiperecogênica com formação de sombreamento acústico/reverberação posterior, sugestiva de corpo estranho.',
+    espessamento_gastrico: 'Estômago com espessamento parietal focal/difuso, medindo aproximadamente ___ cm, com estratificação parietal preservada/alterada.'
+  },
+  intestino: {
+    normal: 'Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.',
+    enteropatia: 'Alças intestinais apresentando discreto/moderado espessamento difuso das paredes, preservando estratificação parietal, associado à hipomotilidade e conteúdo gasoso/líquido em lúmen.\n\nImpressão: Enteropatia difusa. Alterações podem estar relacionadas a processo inflamatório/infeccioso intestinal.',
+    obstrucao: 'Alças intestinais dilatadas, com acúmulo de conteúdo líquido/gasoso em lúmen, hipomotilidade e ausência de peristaltismo em segmento avaliado.\n\nImpressão: Alterações sugestivas de obstrução intestinal. Recomenda-se avaliação clínica urgente.',
+    intussuscepcao: 'Evidencia-se imagem em alvo/rosca em corte transversal, com múltiplas camadas concêntricas, compatível com intussuscepção intestinal em região ___.',
+    corpo_estranho_int: 'Segmento intestinal com estrutura hiperecogênica em lúmen, formadora de sombreamento acústico/reverberação posterior, associada a dilatação a montante, sugestiva de corpo estranho.'
+  },
+  pancreas: {
+    normal: 'Ecogenicidade e ecotextura preservadas.',
+    pancreatite: 'Pâncreas aumentado de dimensões, hipoecogênico/heterogêneo, associado à hiperecogenicidade da gordura adjacente.\n\nImpressão: Alterações ultrassonográficas sugestivas de pancreatite. Recomenda-se correlação com exames laboratoriais específicos.',
+    massa_pancreas: 'Pâncreas apresentando formação nodular hipo/heterogênea em ___, medindo aproximadamente ___ cm, com contornos irregulares.\n\nImpressão: Massa pancreática. Não se descarta neoplasia. Recomenda-se análise histopatológica.'
+  },
+  adrenais: {
+    normal: 'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
+    hiperplasia_adrenal: 'Adrenais apresentando aumento bilateral das dimensões, mantendo formato habitual, associado à presença de nodulação em polo cranial.\n\nImpressão: Hiperplasia adrenal bilateral associada à nodulação em polo cranial, podendo sugerir alteração endócrina/neoplásica. Recomenda-se correlação com exames hormonais.',
+    nodulo_adrenal: 'Adrenal direita/esquerda apresentando formação nodular medindo aproximadamente ___ cm, de ecogenicidade homogênea, com contornos regulares.',
+    massa_adrenal: 'Adrenal direita/esquerda apresentando formação expansiva medindo aproximadamente ___ cm, heterogênea, com contornos irregulares.\n\nImpressão: Massa adrenal. Não se descarta feocromocitoma ou carcinoma adrenocortical. Recomenda-se avaliação com especialista.'
+  },
+  linfo: {
+    normal: 'Não foram observadas alterações ecográficas neste exame.',
+    linfadenomegalia: 'Evidenciou-se aumento generalizado dos linfonodos abdominais, incluindo linfonodos do tronco celíaco, mesentéricos e ilíacos mediais.\n\nImpressão: Linfadenomegalia abdominal generalizada. Alterações podem estar relacionadas a processo inflamatório, infeccioso ou infiltrativo/neoplásico.'
+  },
+  prostata: {
+    normal: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.',
+    hiperplasia_prostata: 'Próstata com aumento simétrico das dimensões, mantendo contornos regulares, ecogenicidade homogênea e ecotextura preservada. Medindo aproximadamente ___ cm.',
+    prostatite: 'Próstata com dimensões aumentadas, ecogenicidade heterogênea, contornos irregulares, associada a áreas hipoecogênicas sugestivas de processo inflamatório/abscedação.',
+    cisto_prostata: 'Próstata com presença de formação cística arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm.',
+    na: ''
+  },
+  // Gestacional
+  utero: {
+    normal: 'Útero gravídico, com vesículas embrionárias identificadas, conteúdo anecogênico homogêneo.',
+    reabsorcao: 'Útero gravídico com vesícula(s) embrionária(s) sem embrião identificado e/ou ausência de batimentos cardíacos fetais.\n\nImpressão: Achados compatíveis com reabsorção fetal. Recomenda-se acompanhamento.',
+    morte_fetal: 'Útero gravídico com feto(s) sem batimentos cardíacos identificáveis, apresentando colapso estrutural.\n\nImpressão: Óbito fetal. Recomenda-se correlação clínica imediata.'
+  },
+  bcf: {
+    normal: 'Batimentos cardíacos fetais presentes e rítmicos.',
+    bcf_ausente: 'Batimentos cardíacos fetais não identificados neste exame.',
+    bcf_irregular: 'Batimentos cardíacos fetais presentes, porém com ritmo irregular. Recomenda-se acompanhamento.'
+  },
+  placenta: {
+    normal: 'Inserção placentária sem alterações, espessura preservada.',
+    placentite: 'Placenta com espessamento difuso e ecogenicidade heterogênea, sugestivos de processo inflamatório.',
+    descolamento: 'Evidencia-se área de separação entre placenta e parede uterina, sugestiva de descolamento placentário parcial. Recomenda-se avaliação clínica urgente.'
+  },
+  amnio: {
+    normal: 'Volume de líquido amniótico dentro da normalidade.',
+    oligodramnio: 'Redução do volume de líquido amniótico evidenciada. Achado compatível com oligodrâmnio. Recomenda-se acompanhamento.',
+    polidramnio: 'Aumento do volume de líquido amniótico evidenciado. Achado compatível com polidrâmnio. Recomenda-se correlação clínica.'
+  }
+};
+
+function setOrganText(fieldId, value, organ) {
+  if (value === 'custom') return; // campos manuais
+  const el = document.getElementById(fieldId);
+  if (!el) return;
+  const textos = organPatologias[organ];
+  if (textos && textos[value] !== undefined) {
+    el.value = textos[value];
+    // auto-resize
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+}
+
+// ─── CLÍNICA SELECTS ─────────────────────────────────────────────────────────
+function populateClinicaSelects() {
+  const ids = ['f-clinica', 'r-clinica'];
+  ids.forEach(function(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const current = el.value;
+    el.innerHTML = '<option value="">— Selecione a clínica —</option>';
+    clinicas.forEach(function(c) {
+      const opt = document.createElement('option');
+      opt.value = c.nome;
+      opt.textContent = c.nome + (c.responsavel ? ' · ' + c.responsavel : '');
+      if (c.nome === current) opt.selected = true;
+      el.appendChild(opt);
+    });
+    if (!clinicas.length) {
+      const opt = document.createElement('option');
+      opt.value = '';
+      opt.textContent = 'Nenhuma clínica cadastrada';
+      opt.disabled = true;
+      el.appendChild(opt);
+    }
+  });
+}
+
+// ─── LAUDOS LIST ──────────────────────────────────────────────────────────────
+function renderLaudos() {
+  const q = (document.getElementById('ls-q').value||'').toLowerCase();
+  const tp = document.getElementById('ls-tipo').value;
+  const rs = document.getElementById('ls-res').value;
+  const f = laudos.filter(l =>
+    (!q || (l.paciente||'').toLowerCase().includes(q) || (l.tutor||'').toLowerCase().includes(q) || (l.vet||'').toLowerCase().includes(q)) &&
+    (!tp || l.tipo === tp) && (!rs || l.resultado === rs)
+  );
+  const el = document.getElementById('laudos-card');
+  if (!f.length) { el.innerHTML = '<div class="empty-state"><p>Nenhum laudo encontrado.</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Paciente</th><th>Tipo</th><th>Tutor</th><th>Veterinário</th><th>Clínica</th><th>Resultado</th><th></th></tr></thead>
+    <tbody>${[...f].sort((a,b)=>b.id-a.id).map(l => `<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(l.data)}</td>
+      <td><strong>${l.paciente||'—'}</strong> <span style="color:var(--text3);font-size:12px">${l.especie||''}</span></td>
+      <td><span class="pill">${l.tipo||'—'}</span></td>
+      <td style="color:var(--text2)">${l.tutor||'—'}</td>
+      <td style="color:var(--text2)">${l.vet||'—'}</td>
+      <td style="color:var(--text2)">${l.clinica||'—'}</td>
+      <td><span class="badge badge-${(l.resultado||'Normal').toLowerCase().replace('ã','a').replace('ç','c')}">${l.resultado}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" onclick="viewLaudo(${l.id})" title="Ver">👁</button>
+        <button class="btn btn-sm" onclick="editLaudo(${l.id})" title="Editar">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="delLaudo(${l.id})" title="Excluir">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
+function updateDashboard() {
+  const laudosMes = laudos.filter(l => isMes(l.data)).length;
+  const recMes = receitas.filter(r => isMes(r.data)).reduce((s,r)=>s+r.valor,0);
+  const despMes = despesas.filter(d => isMes(d.data)).reduce((s,d)=>s+d.valor,0);
+  const arec = receitas.filter(r => r.status !== 'Pago').reduce((s,r)=>s+r.valor,0);
+  document.getElementById('m-laudos').textContent = laudosMes;
+  document.getElementById('m-rec').textContent = fmt(recMes);
+  document.getElementById('m-arec').textContent = fmt(arec);
+  const sal = document.getElementById('m-saldo');
+  sal.textContent = fmt(recMes - despMes);
+  sal.className = 'metric-value ' + (recMes - despMes >= 0 ? 'green' : 'red');
+
+  const rl = [...laudos].sort((a,b)=>b.id-a.id).slice(0,5);
+  document.getElementById('d-laudos-list').innerHTML = rl.length ? rl.map(l =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:13px;font-weight:500">${l.paciente} <span style="font-weight:400;color:var(--text3);font-size:12px">${l.especie}</span></div>
+      <div style="font-size:12px;color:var(--text3)">${fmtD(l.data)} · ${l.vet||'—'}</div></div>
+      <span class="badge badge-${(l.resultado||'Normal').toLowerCase().replace('ã','a').replace('ç','c')}">${l.resultado}</span>
+    </div>`).join('')
+    : '<div class="empty-state"><p>Nenhum laudo ainda.</p></div>';
+
+  const pend = receitas.filter(r => r.status !== 'Pago').slice(0,4);
+  document.getElementById('d-arec-list').innerHTML = pend.length ? pend.map(r =>
+    `<div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:13px">${r.desc}</div><div style="font-size:12px;color:var(--text3)">${r.clinica||'—'} · ${fmtD(r.data)}</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:600">${fmt(r.valor)}</span>
+      <span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></div>
+    </div>`).join('')
+    : '<div class="empty-state"><p>Nenhuma pendência.</p></div>';
+
+  renderBarFC('d-fc', 4);
+  renderBarForma('d-forma');
+}
+
+// ─── FIN OVERVIEW ────────────────────────────────────────────────────────────
+function updateFinOverview() {
+  const recMes = receitas.filter(r=>isMes(r.data)).reduce((s,r)=>s+r.valor,0);
+  const despMes = despesas.filter(d=>isMes(d.data)).reduce((s,d)=>s+d.valor,0);
+  const arec = receitas.filter(r=>r.status!=='Pago').reduce((s,r)=>s+r.valor,0);
+  document.getElementById('f-m-rec').textContent = fmt(recMes);
+  document.getElementById('f-m-desp').textContent = fmt(despMes);
+  document.getElementById('f-m-arec').textContent = fmt(arec);
+  const sal = document.getElementById('f-m-saldo');
+  sal.textContent = fmt(recMes - despMes);
+  sal.className = 'metric-value ' + (recMes-despMes>=0?'green':'red');
+  renderBarFC('f-fc', 6);
+  renderBarForma('f-forma');
+}
+
+function renderBarFC(elId, n) {
+  const meses = [];
+  for (let i=n-1; i>=0; i--) { const d=new Date(); d.setMonth(d.getMonth()-i); meses.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, label:`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(2)}`}); }
+  const maxV = Math.max(...meses.map(m => { const r=receitas.filter(x=>x.data&&x.data.startsWith(m.key)).reduce((s,x)=>s+x.valor,0); const d=despesas.filter(x=>x.data&&x.data.startsWith(m.key)).reduce((s,x)=>s+x.valor,0); return Math.max(r,d,1); }), 1);
+  document.getElementById(elId).innerHTML = meses.map(m => {
+    const r = receitas.filter(x=>x.data&&x.data.startsWith(m.key)).reduce((s,x)=>s+x.valor,0);
+    const d = despesas.filter(x=>x.data&&x.data.startsWith(m.key)).reduce((s,x)=>s+x.valor,0);
+    return `<div class="bar-item">
+      <div class="bar-labels"><span>${m.label}</span><span style="color:var(--teal)">${fmt(r)}</span><span style="color:var(--red)">${fmt(d)}</span></div>
+      <div class="bar-track" style="margin-bottom:3px"><div class="bar-fill fill-teal" style="width:${Math.round(r/maxV*100)}%"></div></div>
+      <div class="bar-track"><div class="bar-fill fill-red" style="width:${Math.round(d/maxV*100)}%"></div></div>
+    </div>`;
+  }).join('');
+}
+
+function renderBarForma(elId) {
+  const formas = [['Pix','fill-teal'],['Cartão de crédito','fill-purple'],['Cartão de débito','fill-amber'],['Dinheiro','fill-blue']];
+  const total = receitas.reduce((s,r)=>s+r.valor,0)||1;
+  document.getElementById(elId).innerHTML = formas.map(([f,c]) => {
+    const v = receitas.filter(r=>r.forma===f).reduce((s,r)=>s+r.valor,0);
+    const p = Math.round(v/total*100);
+    return `<div class="bar-item"><div class="bar-labels"><span>${f}</span><span>${fmt(v)} (${p}%)</span></div><div class="bar-track"><div class="bar-fill ${c}" style="width:${p}%"></div></div></div>`;
+  }).join('');
+}
+
+// ─── RECEITAS ────────────────────────────────────────────────────────────────
+function addReceita() {
+  const v = parseCurrency('r-valor');
+  if (!document.getElementById('r-desc').value || !v) { alert('Preencha descrição e valor.'); return; }
+  receitas.push({id:Date.now(), data:document.getElementById('r-data').value, desc:document.getElementById('r-desc').value, clinica:document.getElementById('r-clinica').value, valor:v, forma:document.getElementById('r-forma').value, status:document.getElementById('r-status').value, vet:document.getElementById('r-vet').value, obs:document.getElementById('r-obs').value});
+  ['r-desc','r-valor','r-vet','r-obs'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('r-clinica').selectedIndex = 0;
+  save(); renderReceitas(); toast('Receita adicionada!');
+}
+
+function marcarPago(id) {
+  receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
+  save(); renderReceitas(); renderReceber(); updateFinOverview(); updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
+  toast('Marcado como pago!');
+}
+
+function delRec(id) {
+  receitas = receitas.filter(r => r.id!==id);
+  cloudDelete('uv_receitas', id);
+  save(); renderReceitas(); updateFinOverview(); updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
+}
+
+function renderReceitas() {
+  const q = (document.getElementById('rs-q').value||'').toLowerCase();
+  const st = document.getElementById('rs-st').value;
+  const f = receitas.filter(r => (!q||(r.desc||'').toLowerCase().includes(q)||(r.clinica||'').toLowerCase().includes(q)) && (!st||r.status===st));
+  const el = document.getElementById('rec-list');
+  if (!f.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma receita encontrada.</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Descrição</th><th>Clínica</th><th>Forma</th><th>Status</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${[...f].sort((a,b)=>b.id-a.id).map(r=>`<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(r.data)}</td>
+      <td>${r.desc}</td>
+      <td style="color:var(--text2)">${r.clinica||'—'}</td>
+      <td><span class="pill">${r.forma}</span></td>
+      <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+      <td style="text-align:right;font-weight:600;color:var(--teal)">${fmt(r.valor)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm btn-success" onclick="marcarPago(${r.id})" title="Marcar pago">✓</button>
+        <button class="btn btn-sm btn-danger" onclick="delRec(${r.id})" title="Excluir">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── DESPESAS ────────────────────────────────────────────────────────────────
+function addDespesa() {
+  const v = parseCurrency('d-valor');
+  if (!document.getElementById('d-desc').value || !v) { alert('Preencha descrição e valor.'); return; }
+  despesas.push({id:Date.now(), data:document.getElementById('d-data').value, desc:document.getElementById('d-desc').value, cat:document.getElementById('d-cat').value, valor:v, rec:document.getElementById('d-rec').value, obs:document.getElementById('d-obs').value});
+  ['d-desc','d-valor','d-obs'].forEach(id => document.getElementById(id).value='');
+  save(); renderDespesas(); toast('Despesa adicionada!');
+}
+
+function delDesp(id) {
+  despesas = despesas.filter(d => d.id!==id);
+  cloudDelete('uv_despesas', id);
+  save(); renderDespesas(); updateFinOverview();
+}
+
+function renderDespesas() {
+  const el = document.getElementById('desp-list');
+  if (!despesas.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma despesa lançada.</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Recorrente</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${[...despesas].sort((a,b)=>b.id-a.id).map(d=>`<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(d.data)}</td>
+      <td>${d.desc}</td>
+      <td style="color:var(--text2)">${d.cat}</td>
+      <td>${d.rec==='sim'?'<span class="badge badge-pendente">Mensal</span>':'—'}</td>
+      <td style="text-align:right;font-weight:600;color:var(--red)">${fmt(d.valor)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delDesp(${d.id})">🗑</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── A RECEBER ────────────────────────────────────────────────────────────────
+function renderReceber() {
+  const pend = receitas.filter(r => r.status !== 'Pago');
+  document.getElementById('ar-tot').textContent = fmt(pend.reduce((s,r)=>s+r.valor,0));
+  document.getElementById('ar-pend').textContent = fmt(pend.filter(r=>r.status==='Pendente').reduce((s,r)=>s+r.valor,0));
+  document.getElementById('ar-atras').textContent = fmt(pend.filter(r=>r.status==='Atrasado').reduce((s,r)=>s+r.valor,0));
+  const el = document.getElementById('ar-list');
+  if (!pend.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma pendência. 🎉</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Descrição</th><th>Clínica</th><th>Status</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${[...pend].sort((a,b)=>b.id-a.id).map(r=>`<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(r.data)}</td>
+      <td>${r.desc}</td>
+      <td style="color:var(--text2)">${r.clinica||'—'}</td>
+      <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+      <td style="text-align:right;font-weight:600">${fmt(r.valor)}</td>
+      <td><button class="btn btn-sm btn-success" onclick="marcarPago(${r.id})">✓ Pago</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── CLÍNICAS ─────────────────────────────────────────────────────────────────
+function addClinica() {
+  if (!document.getElementById('cl-nome').value) { alert('Informe o nome da clínica.'); return; }
+  clinicas.push({id:Date.now(), nome:document.getElementById('cl-nome').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, obs:document.getElementById('cl-obs').value});
+  ['cl-nome','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-obs'].forEach(id => document.getElementById(id).value='');
+  save(); renderClinicas(); populateClinicaSelects(); toast('Clínica cadastrada!');
+}
+
+function delCl(id) {
+  clinicas = clinicas.filter(c => c.id!==id);
+  cloudDelete('uv_clinicas', id);
+  save(); renderClinicas(); populateClinicaSelects();
+}
+
+function renderClinicas() {
+  const el = document.getElementById('cl-list');
+  if (!clinicas.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Clínica</th><th>Responsável</th><th>Telefone</th><th>E-mail</th><th>Condição</th><th>Desconto</th><th>Laudos</th><th>Receita total</th><th></th></tr></thead>
+    <tbody>${clinicas.map(c => {
+      const tot = receitas.filter(r=>(r.clinica||'').toLowerCase()===c.nome.toLowerCase()).reduce((s,r)=>s+r.valor,0);
+      const qtdLaudos = laudos.filter(l=>(l.clinica||'').toLowerCase()===c.nome.toLowerCase()).length;
+      return `<tr>
+        <td><strong>${c.nome}</strong>${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
+        <td style="color:var(--text2)">${c.responsavel||c.contato||'—'}</td>
+        <td style="color:var(--text2);white-space:nowrap">${c.telefone||'—'}</td>
+        <td style="color:var(--text2)">${c.email||'—'}</td>
+        <td><span class="pill">${c.cond}</span></td>
+        <td>${c.desc>0?c.desc+'%':'—'}</td>
+        <td style="color:var(--text2)">${qtdLaudos}</td>
+        <td style="font-weight:600;color:var(--teal)">${fmt(tot)}</td>
+        <td><button class="btn btn-sm btn-danger" onclick="delCl(${c.id})">🗑</button></td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+}
+
+// ─── RELATÓRIOS ───────────────────────────────────────────────────────────────
+function renderRpLaudos() {
+  const total = laudos.length;
+  const mes = laudos.filter(l => isMes(l.data)).length;
+  const abdom = laudos.filter(l => l.tipo === 'Abdominal total').length;
+  const gest = laudos.filter(l => l.tipo === 'Gestacional').length;
+  document.getElementById('rp-total-laudos').textContent = total;
+  document.getElementById('rp-laudos-mes').textContent = mes;
+  document.getElementById('rp-abdom').textContent = abdom;
+  document.getElementById('rp-gest').textContent = gest;
+
+  // laudos por mês (6 meses)
+  const meses = [];
+  for (let i = 5; i >= 0; i--) { const d = new Date(); d.setMonth(d.getMonth() - i); meses.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, label:`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(2)}`}); }
+  const maxL = Math.max(...meses.map(m => laudos.filter(l => l.data && l.data.startsWith(m.key)).length), 1);
+  document.getElementById('rp-laudos-fc').innerHTML = meses.map(m => {
+    const cnt = laudos.filter(l => l.data && l.data.startsWith(m.key)).length;
+    return `<div class="bar-item"><div class="bar-labels"><span>${m.label}</span><span>${cnt} laudo${cnt !== 1 ? 's' : ''}</span></div><div class="bar-track"><div class="bar-fill fill-teal" style="width:${Math.round(cnt/maxL*100)}%"></div></div></div>`;
+  }).join('');
+
+  // resultados
+  const res = [['Normal','fill-teal'],['Atenção','fill-amber'],['Alterado','fill-red']];
+  const totRes = laudos.length || 1;
+  document.getElementById('rp-resultados').innerHTML = res.map(([r, c]) => {
+    const cnt = laudos.filter(l => l.resultado === r).length;
+    const pct = Math.round(cnt / totRes * 100);
+    return `<div class="bar-item"><div class="bar-labels"><span>${r}</span><span>${cnt} (${pct}%)</span></div><div class="bar-track"><div class="bar-fill ${c}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function renderRpFinanceiro() {
+  const recTot = receitas.reduce((s, r) => s + r.valor, 0);
+  const despTot = despesas.reduce((s, d) => s + d.valor, 0);
+  const margem = recTot - despTot;
+  document.getElementById('rp-rec-total').textContent = fmt(recTot);
+  document.getElementById('rp-desp-total').textContent = fmt(despTot);
+  const el = document.getElementById('rp-margem');
+  el.textContent = fmt(margem);
+  el.className = 'metric-value ' + (margem >= 0 ? 'green' : 'red');
+  renderBarFC('rp-fat-fc', 6);
+  renderBarForma('rp-forma-fat');
+}
+
+function renderRpClinicas() {
+  const el = document.getElementById('rp-clinicas-rank');
+  if (!clinicas.length) { el.innerHTML = '<div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div>'; return; }
+  const dados = clinicas.map(c => ({
+    nome: c.nome,
+    laudos: laudos.filter(l => (l.clinica||'').toLowerCase() === c.nome.toLowerCase()).length,
+    receita: receitas.filter(r => (r.clinica||'').toLowerCase() === c.nome.toLowerCase()).reduce((s,r) => s + r.valor, 0)
+  })).sort((a, b) => b.receita - a.receita);
+  const maxR = Math.max(...dados.map(d => d.receita), 1);
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Clínica</th><th>Laudos</th><th style="text-align:right">Receita total</th><th style="width:200px">Participação</th></tr></thead>
+    <tbody>${dados.map(d => `<tr>
+      <td><strong>${d.nome}</strong></td>
+      <td>${d.laudos}</td>
+      <td style="text-align:right;font-weight:600;color:var(--teal)">${fmt(d.receita)}</td>
+      <td><div class="bar-track" style="margin:0"><div class="bar-fill fill-teal" style="width:${Math.round(d.receita/maxR*100)}%"></div></div></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderRpVets() {
+  const el = document.getElementById('rp-vets-rank');
+  const mapa = {};
+  laudos.forEach(l => { const v = (l.vet || '').trim(); if (v) mapa[v] = (mapa[v] || 0) + 1; });
+  const dados = Object.entries(mapa).sort((a, b) => b[1] - a[1]);
+  if (!dados.length) { el.innerHTML = '<div class="empty-state"><p>Nenhum veterinário registrado ainda.</p></div>'; return; }
+  const maxV = dados[0][1] || 1;
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Veterinário</th><th>Laudos solicitados</th><th style="width:200px">Frequência</th></tr></thead>
+    <tbody>${dados.map(([v, cnt]) => `<tr>
+      <td><strong>${v}</strong></td>
+      <td>${cnt}</td>
+      <td><div class="bar-track" style="margin:0"><div class="bar-fill fill-purple" style="width:${Math.round(cnt/maxV*100)}%"></div></div></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── BACKUP ───────────────────────────────────────────────────────────────────
+function exportarBackup() {
+  const dados = { versao: '1.9', exportadoEm: new Date().toISOString(), laudos, receitas, despesas, clinicas };
+  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'vetroutine_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup exportado com sucesso!');
+}
+
+function importarBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const dados = JSON.parse(e.target.result);
+      if (!dados.laudos || !dados.receitas) { alert('Arquivo de backup inválido.'); return; }
+      if (!confirm('Importar backup irá substituir todos os dados atuais. Deseja continuar?')) return;
+      laudos = dados.laudos || [];
+      receitas = dados.receitas || [];
+      despesas = dados.despesas || [];
+      clinicas = dados.clinicas || [];
+      save();
+      populateClinicaSelects();
+      updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
+      toast('Backup importado! ' + laudos.length + ' laudos, ' + receitas.length + ' receitas.');
+    } catch(err) {
+      alert('Erro ao ler o arquivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ─── PAINEL DE CONTROLE ───────────────────────────────────────────────────────
+function renderPainel() {
+  // carrega configurações salvas
+  const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  document.getElementById('cfg-nome').value  = cfg.nome  || 'Patrine Cagnini';
+  document.getElementById('cfg-esp').value   = cfg.esp   || 'Médica Veterinária | Ultrassonografista';
+  document.getElementById('cfg-crmv').value  = cfg.crmv  || 'CRMV-SC 09377';
+  // logo preview
+  const logo = localStorage.getItem('uv_logo') || LOGO_B64;
+  const prev = document.getElementById('logo-preview');
+  prev.innerHTML = logo
+    ? '<img src="' + logo + '" style="max-height:90px;max-width:160px;object-fit:contain">'
+    : '<span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>';
+  // status supabase
+  const lbl = document.getElementById('sync-label');
+  const el = document.getElementById('painel-sync-status');
+  if (el) el.textContent = lbl ? lbl.textContent : '—';
+}
+
+function salvarConfig() {
+  const cfg = {
+    nome: document.getElementById('cfg-nome').value,
+    esp:  document.getElementById('cfg-esp').value,
+    crmv: document.getElementById('cfg-crmv').value,
+  };
+  localStorage.setItem('uv_config', JSON.stringify(cfg));
+  toast('Configurações salvas!');
+}
+
+function carregarLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    localStorage.setItem('uv_logo', e.target.result);
+    renderPainel();
+    toast('Logo carregada!');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removerLogo() {
+  if (!confirm('Remover a logo atual?')) return;
+  localStorage.removeItem('uv_logo');
+  renderPainel();
+  toast('Logo removida.');
+}
+
+function getLogo() {
+  return localStorage.getItem('uv_logo') || LOGO_B64;
+}
+
+function getConfig() {
+  return JSON.parse(localStorage.getItem('uv_config') || '{}');
+}
+
+// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+const SB_URL = 'https://iisxmfepvqpswdnurtuo.supabase.co';
+const SB_KEY = 'sb_publishable_4yj6xy0vvxLypajgqtEMCQ_fR6nE2DY';
+const SB_H = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' };
+
+function setSyncStatus(s) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (s === 'ok')      { dot.style.background = '#0f7a5a'; lbl.textContent = 'Sincronizado'; }
+  else if (s === 'sync') { dot.style.background = '#b35c00'; lbl.textContent = 'Sincronizando…'; }
+  else                 { dot.style.background = '#c0392b'; lbl.textContent = 'Offline (local)'; }
+}
+
+async function sbFetch(table) {
+  const r = await fetch(SB_URL + '/rest/v1/' + table + '?select=*', { headers: SB_H });
+  if (!r.ok) throw new Error(r.status);
+  const rows = await r.json();
+  return rows.map(row => row.payload);
+}
+
+async function sbUpsert(table, items) {
+  if (!items.length) return;
+  await fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: SB_H,
+    body: JSON.stringify(items.map(item => ({ id: item.id, payload: item })))
+  });
+}
+
+async function cloudDelete(table, id) {
+  try {
+    await fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+      method: 'DELETE',
+      headers: SB_H
+    });
+  } catch(e) {}
+}
+
+async function syncCloud() {
+  setSyncStatus('sync');
+  try {
+    await Promise.all([
+      sbUpsert('uv_laudos',   laudos),
+      sbUpsert('uv_receitas', receitas),
+      sbUpsert('uv_despesas', despesas),
+      sbUpsert('uv_clinicas', clinicas),
+    ]);
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('offline'); }
+}
+
+async function initCloud() {
+  setSyncStatus('sync');
+  try {
+    const [rl, rr, rd, rc] = await Promise.all([
+      sbFetch('uv_laudos'),
+      sbFetch('uv_receitas'),
+      sbFetch('uv_despesas'),
+      sbFetch('uv_clinicas'),
+    ]);
+    laudos    = rl;
+    receitas  = rr;
+    despesas  = rd;
+    clinicas  = rc;
+    save();
+    populateClinicaSelects();
+    updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('offline'); }
+}
+
+window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
+setInterval(() => { if (document.getElementById('sync-dot')) initCloud(); }, 60000);
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+load();
+document.getElementById('r-data').value = today();
+document.getElementById('d-data').value = today();
+populateClinicaSelects();
+updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
+initCloud();
+</script>
+</body>
+</html>
