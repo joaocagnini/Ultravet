@@ -45,7 +45,7 @@
   /* Layout */
   .app { display: flex; min-height: 100vh; }
   .sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
-  .sidebar-logo { padding: 20px 20px 16px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { padding: 16px 14px 12px; border-bottom: 1px solid var(--border); }
   .sidebar-logo .logo-mark { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -.3px; }
   .sidebar-logo .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
   .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
@@ -200,7 +200,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo" onclick="goPage('dashboard')" style="cursor:pointer;text-align:center" title="Ir para o início">
-      <img id="sb-logo" style="width:130px;height:auto;display:block;margin:0 auto" alt="VetRoutine">
+      <img id="sb-logo" style="width:100%;height:auto;display:block" alt="VetRoutine">
       
     </div>
     <nav class="sidebar-nav">
