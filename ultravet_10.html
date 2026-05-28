@@ -844,6 +844,7 @@
               <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-conclusao"> Conclusão</label>
               <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-assinatura"> Assinatura</label>
               <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-fotos"> Fotos</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-footer"> Rodapé</label>
             </div>
             <div class="form-section">Modelo de conclusão</div>
             <div class="form-field">
@@ -1064,7 +1065,7 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, financeiro:3};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
+document.getElementById('sb-logo').src = getLogo();
   if (name === 'laudos') renderLaudos();
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
@@ -1255,7 +1256,7 @@ function delLaudo(id) {
   if (!confirm('Excluir este laudo permanentemente?')) return;
   laudos = laudos.filter(l => l.id !== id);
   save(); renderLaudos(); updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
+document.getElementById('sb-logo').src = getLogo();
   cloudDelete('uv_laudos', id);
   toast('Laudo excluído.');
 }
@@ -1275,6 +1276,7 @@ function buildLaudoHTML(l) {
   const secConclusao  = lc.secConclusao  !== false;
   const secAssinatura = lc.secAssinatura !== false;
   const secFotos      = lc.secFotos      !== false;
+  const secFooter     = lc.secFooter     !== false;
   const nome = getConfig().nome || 'Patrine Cagnini';
   const esp  = getConfig().esp  || 'Médica Veterinária | Ultrassonografista';
   const crmv = getConfig().crmv || 'CRMV-SC 09377';
@@ -1381,6 +1383,31 @@ function buildLaudoHTML(l) {
           + '</div>'
         + '</div>'
       ) : '')
+    /* RODAPÉ */
+    + (secFooter ?
+        '<div style="border-top:1.5px solid ' + cor + ';margin-top:4px;padding:7px 28px;display:flex;align-items:center;justify-content:space-between;background:#f5f4f0">'
+          + '<div style="display:flex;align-items:center;gap:10px">'
+            + '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="26" height="26">'
+              + '<path d="M24 44 A22 22 0 0 1 2 22"  fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".18"/>'
+              + '<path d="M24 44 A22 22 0 0 0 46 22" fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".18"/>'
+              + '<path d="M24 44 A14 14 0 0 1 10 30" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".38"/>'
+              + '<path d="M24 44 A14 14 0 0 0 38 30" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".38"/>'
+              + '<path d="M24 44 A7  7  0 0 1 17 37" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".65"/>'
+              + '<path d="M24 44 A7  7  0 0 0 31 37" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".65"/>'
+              + '<ellipse cx="24" cy="40" rx="5.5" ry="5"   fill="' + cor + '"/>'
+              + '<ellipse cx="13" cy="30" rx="3.5" ry="4"   fill="' + cor + '"/>'
+              + '<ellipse cx="21" cy="26" rx="3.5" ry="4"   fill="' + cor + '"/>'
+              + '<ellipse cx="27" cy="26" rx="3.5" ry="4"   fill="' + cor + '"/>'
+              + '<ellipse cx="35" cy="30" rx="3.5" ry="4"   fill="' + cor + '"/>'
+            + '</svg>'
+            + '<div>'
+              + '<div style="font-size:9px;font-weight:700;color:#2a2826;letter-spacing:.9px;text-transform:uppercase">' + nome + '</div>'
+              + '<div style="font-size:7.5px;color:#5a5854;letter-spacing:1.2px;text-transform:uppercase;margin-top:1px">' + esp + '</div>'
+            + '</div>'
+          + '</div>'
+          + '<div style="font-size:8px;color:' + cor + ';font-weight:600;letter-spacing:1px">' + crmv + '</div>'
+        + '</div>'
+      : '')
   + '</div>';
 }
 
@@ -1689,7 +1716,7 @@ function addReceita() {
 function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
+document.getElementById('sb-logo').src = getLogo();
   toast('Marcado como pago!');
 }
 
@@ -1697,7 +1724,7 @@ function delRec(id) {
   receitas = receitas.filter(r => r.id!==id);
   cloudDelete('uv_receitas', id);
   save(); renderReceitas(); updateFinOverview(); updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
+document.getElementById('sb-logo').src = getLogo();
 }
 
 function renderReceitas() {
@@ -1915,7 +1942,7 @@ function importarBackup(input) {
       save();
       populateClinicaSelects();
       updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
+document.getElementById('sb-logo').src = getLogo();
       toast('Backup importado! ' + laudos.length + ' laudos, ' + receitas.length + ' receitas.');
     } catch(err) {
       alert('Erro ao ler o arquivo: ' + err.message);
@@ -1931,7 +1958,7 @@ function renderPainel() {
   document.getElementById('cfg-nome').value  = cfg.nome  || 'Patrine Cagnini';
   document.getElementById('cfg-esp').value   = cfg.esp   || 'Médica Veterinária | Ultrassonografista';
   document.getElementById('cfg-crmv').value  = cfg.crmv  || 'CRMV-SC 09377';
-  const logo = localStorage.getItem('uv_logo') || LOGO_B64;
+  const logo = getLogo();
   const prev = document.getElementById('logo-preview');
   prev.innerHTML = logo
     ? '<img src="' + logo + '" style="max-height:90px;max-width:160px;object-fit:contain">'
@@ -1945,6 +1972,7 @@ function renderPainel() {
   document.getElementById('cfg-sec-conclusao').checked  = lc.secConclusao   !== false;
   document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura  !== false;
   document.getElementById('cfg-sec-fotos').checked      = lc.secFotos       !== false;
+  document.getElementById('cfg-sec-footer').checked    = lc.secFooter      !== false;
   document.getElementById('cfg-modelo-conclusao').value = lc.modeloConclusao || '';
   document.getElementById('cfg-fonte').value            = lc.fonte        || 'Arial, sans-serif';
   document.getElementById('cfg-fontsize').value         = lc.fontsize     || '12';
@@ -2003,6 +2031,7 @@ function salvarConfigLaudo() {
     secConclusao:   document.getElementById('cfg-sec-conclusao').checked,
     secAssinatura:  document.getElementById('cfg-sec-assinatura').checked,
     secFotos:       document.getElementById('cfg-sec-fotos').checked,
+    secFooter:      document.getElementById('cfg-sec-footer').checked,
     modeloConclusao: document.getElementById('cfg-modelo-conclusao').value,
     fonte:       document.getElementById('cfg-fonte').value,
     fontsize:    document.getElementById('cfg-fontsize').value,
@@ -2035,8 +2064,41 @@ function removerLogo() {
   toast('Logo removida.');
 }
 
+function getDefaultLogoSVG() {
+  const cfg  = getConfig();
+  const cor  = (cfg.laudo && cfg.laudo.cor) || '#3d7a52';
+  const nome = (cfg.nome || 'Patrine Cagnini').toUpperCase();
+  const crmv =  cfg.crmv || 'CRMV-SC 09377';
+  const s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="300" height="80">'
+    // arcos de ultrassom emanando da pata
+    + '<path d="M40 76 A32 32 0 0 1 8 44"  fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".16"/>'
+    + '<path d="M40 76 A32 32 0 0 0 72 44" fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".16"/>'
+    + '<path d="M40 76 A22 22 0 0 1 18 54" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".34"/>'
+    + '<path d="M40 76 A22 22 0 0 0 62 54" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".34"/>'
+    + '<path d="M40 76 A11 11 0 0 1 29 65" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".62"/>'
+    + '<path d="M40 76 A11 11 0 0 0 51 65" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".62"/>'
+    // pata principal
+    + '<ellipse cx="40" cy="68" rx="8.5" ry="7.5" fill="' + cor + '"/>'
+    // dedos
+    + '<ellipse cx="24" cy="56" rx="5.5" ry="6"   fill="' + cor + '"/>'
+    + '<ellipse cx="34" cy="52" rx="5.5" ry="5.5" fill="' + cor + '"/>'
+    + '<ellipse cx="46" cy="52" rx="5.5" ry="5.5" fill="' + cor + '"/>'
+    + '<ellipse cx="56" cy="56" rx="5.5" ry="6"   fill="' + cor + '"/>'
+    // linha separadora vertical
+    + '<line x1="84" y1="8" x2="84" y2="74" stroke="' + cor + '" stroke-width="1" opacity=".28"/>'
+    // nome
+    + '<text x="98" y="30" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#1e1e1c" letter-spacing="1.5">' + nome + '</text>'
+    // especialidade
+    + '<text x="98" y="46" font-family="Arial,sans-serif" font-size="9"   fill="#5a5854" letter-spacing="2.4">MÉDICA VETERINÁRIA</text>'
+    + '<text x="98" y="60" font-family="Arial,sans-serif" font-size="9"   fill="#5a5854" letter-spacing="2.4">ULTRASSONOGRAFISTA</text>'
+    // CRMV
+    + '<text x="98" y="73" font-family="Arial,sans-serif" font-size="8.5" fill="' + cor + '" letter-spacing="1.5">' + crmv + '</text>'
+    + '</svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+}
+
 function getLogo() {
-  return localStorage.getItem('uv_logo') || LOGO_B64;
+  return localStorage.getItem('uv_logo') || getDefaultLogoSVG();
 }
 
 function getConfig() {
@@ -2110,7 +2172,7 @@ async function initCloud() {
     save();
     populateClinicaSelects();
     updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
+document.getElementById('sb-logo').src = getLogo();
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
 }
@@ -2124,7 +2186,7 @@ document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
 updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
+document.getElementById('sb-logo').src = getLogo();
 initCloud();
 </script>
 </body>
