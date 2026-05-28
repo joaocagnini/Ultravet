@@ -242,9 +242,12 @@
         <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
       </label>
     </nav>
-    <div class="sidebar-footer">
-      <span id="sync-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9b9a95;margin-right:5px;vertical-align:middle"></span>
-      <span id="sync-label">Carregando...</span> · v1.9
+    <div class="sidebar-footer" style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <span id="sync-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9b9a95;margin-right:5px;vertical-align:middle"></span>
+        <span id="sync-label">Carregando...</span> · v1.9
+      </div>
+      <button onclick="initCloud()" title="Sincronizar agora" style="background:none;border:none;cursor:pointer;font-size:14px;padding:2px 4px;color:var(--text3);line-height:1" id="sync-btn">🔄</button>
     </div>
   </aside>
 
@@ -1739,6 +1742,7 @@ async function initCloud() {
 }
 
 window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
+setInterval(() => { if (document.getElementById('sync-dot')) initCloud(); }, 60000);
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 load();
