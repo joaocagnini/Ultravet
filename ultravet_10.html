@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PGRlZnM+PGxpbmVhckdyYWRpZW50IGlkPSJnIiB4MT0iMCUiIHkxPSIwJSIgeDI9IjEwMCUiIHkyPSIxMDAlIj48c3RvcCBvZmZzZXQ9IjAlIiBzdG9wLWNvbG9yPSIjMWEzYTVjIi8+PHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDBjOWE3Ii8+PC9saW5lYXJHcmFkaWVudD48L2RlZnM+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9InVybCgjZykiLz48dGV4dCB4PSIzMiIgeT0iNDQiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iOTAwIiBmb250LXNpemU9IjMwIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSIgbGV0dGVyLXNwYWNpbmc9Ii0xIj5WUjwvdGV4dD48L3N2Zz4K">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NCA2NCI+PHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiMxYTNhNWMiLz48cGF0aCBkPSJNMTQsMTAgTDE0LDQ0IFExNCw1NCAyNCw1NCBMMzIsNTQiIHN0cm9rZT0iIzAwYzlhNyIgc3Ryb2tlLXdpZHRoPSI2IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMTQsMjIgUTI2LDggNDAsMTAgUTUwLDEyIDUwLDI0IFE1MCwzOCAzOCw0NiBRMzMsNTAgMzIsNTQiIHN0cm9rZT0iIzAwYzlhNyIgc3Ryb2tlLXdpZHRoPSI2IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz48cGF0aCBkPSJNMjQsNDAgUTI5LDM0IDM1LDM3IFEzOSw0MCAzNyw0NyBRMzMsNTIgMjgsNTAgUTIyLDQ3IDI0LDQwIiBzdHJva2U9IiM0ZGQ5YzAiIHN0cm9rZS13aWR0aD0iMy41IiBmaWxsPSJub25lIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iNDQiIHkxPSIxNiIgeDI9IjU0IiB5Mj0iMTYiIHN0cm9rZT0iIzAwYzlhNyIgc3Ryb2tlLXdpZHRoPSI0IiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iNDYiIHkxPSIyNCIgeDI9IjU0IiB5Mj0iMjQiIHN0cm9rZT0iIzAwYzlhNyIgc3Ryb2tlLXdpZHRoPSIzIiBzdHJva2UtbGluZWNhcD0icm91bmQiLz48bGluZSB4MT0iNDgiIHkxPSIzMSIgeDI9IjU0IiB5Mj0iMzEiIHN0cm9rZT0iIzAwYzlhNyIgc3Ryb2tlLXdpZHRoPSIyLjUiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIvPjwvc3ZnPgo=">
 <title>VetRoutine — Gestão de Laudos</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
@@ -45,7 +45,7 @@
   /* Layout */
   .app { display: flex; min-height: 100vh; }
   .sidebar { width: 220px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
-  .sidebar-logo { padding: 12px 8px 8px; border-bottom: 1px solid var(--border); }
+  .sidebar-logo { padding: 8px 8px 6px; border-bottom: 1px solid var(--border); }
   .sidebar-logo .logo-mark { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -.3px; }
   .sidebar-logo .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
   .sidebar-nav { flex: 1; padding: 12px 10px; display: flex; flex-direction: column; gap: 2px; }
@@ -200,7 +200,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-logo" onclick="goPage('dashboard')" style="cursor:pointer;text-align:center" title="Ir para o início">
-      <img id="sb-logo" style="width:100%;height:auto;display:block;border-radius:8px" alt="VetRoutine">
+      <img id="sb-logo" style="width:100%;height:110px;object-fit:cover;object-position:50% 12%;display:block" alt="VetRoutine">
       
     </div>
     <nav class="sidebar-nav">
