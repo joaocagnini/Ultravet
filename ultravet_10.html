@@ -806,6 +806,45 @@
           </div>
         </div>
 
+        <!-- Configuração do Laudo -->
+        <div class="card">
+          <div class="card-header"><div><div class="card-title">📄 Configuração do Laudo</div><div class="card-sub">Personaliza estrutura e textos do laudo impresso</div></div></div>
+          <div class="form-section" style="margin-top:0">Estrutura</div>
+          <div class="form-grid fg-2">
+            <div class="form-field">
+              <label>Título do documento</label>
+              <input id="cfg-titulo" placeholder="Relatório Ultrassonográfico">
+            </div>
+            <div class="form-field">
+              <label>Cor principal do laudo</label>
+              <input type="color" id="cfg-cor" value="#3d7a52" style="height:36px;padding:3px 6px;width:100%">
+            </div>
+            <div class="form-field">
+              <label>Label — seção de achados</label>
+              <input id="cfg-label-achados" placeholder="Achados Ultrassonográficos">
+            </div>
+            <div class="form-field">
+              <label>Label — seção de conclusão</label>
+              <input id="cfg-label-conclusao" placeholder="Impressão Diagnóstica">
+            </div>
+          </div>
+          <div class="form-section">Seções visíveis no laudo</div>
+          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
+            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-achados"> Achados</label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-conclusao"> Conclusão</label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-assinatura"> Assinatura</label>
+            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-fotos"> Fotos</label>
+          </div>
+          <div class="form-section">Modelo de conclusão</div>
+          <div class="form-field">
+            <label>Texto padrão (pré-preenchido em novos laudos)</label>
+            <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame realizado com paciente em jejum de ___ horas..."></textarea>
+          </div>
+          <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
+            <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
+          </div>
+        </div>
+
         <!-- Dados -->
         <div class="card">
           <div class="card-header"><div><div class="card-title">💾 Dados</div><div class="card-sub">Backup e restauração dos dados do sistema</div></div></div>
@@ -1010,7 +1049,7 @@ function clearLaudoForm() {
   document.getElementById('f-resultado').value = 'Normal';
   document.getElementById('f-forma').value = 'Pix';
   document.getElementById('f-fpago').value = 'Pago';
-  document.getElementById('f-conclusao').value = '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  document.getElementById('f-conclusao').value = getConfig().laudo && getConfig().laudo.modeloConclusao ? getConfig().laudo.modeloConclusao : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
   document.getElementById('f-obs').value = 'A interposição de barreiras físicas pode interferir na formação das imagens abdominais e na definição das estruturas.';
   Object.keys(orgDefaults).forEach(k => { const el = document.getElementById('o-'+k); if(el) el.value = orgDefaults[k]; });
   ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
@@ -1123,9 +1162,19 @@ function fmtDP(d) { if(!d) return '___'; const p = d.split('-'); return p.length
 const LOGO_B64 = 'logo.png';
 
 function buildLaudoHTML(l, orgRows) {
+  const lc = getConfig().laudo || {};
+  const cor = lc.cor || '#3d7a52';
+  const corLight = cor + '33'; // transparência para bordas
+  const titulo = lc.titulo || 'Relatório Ultrassonográfico';
+  const labelAchados = lc.labelAchados || 'Achados Ultrassonográficos';
+  const labelConclusao = lc.labelConclusao || 'Impressão Diagnóstica';
+  const secAchados = lc.secAchados !== false;
+  const secConclusao = lc.secConclusao !== false;
+  const secAssinatura = lc.secAssinatura !== false;
+  const secFotos = lc.secFotos !== false;
   return '<div style="max-width:800px;overflow:hidden;font-family:Arial,sans-serif;background:#fff">'
     /* CABEÇALHO */
-    + '<div style="display:flex;align-items:stretch;padding:18px 28px 14px;border-bottom:2px solid #3d7a52">'
+    + '<div style="display:flex;align-items:stretch;padding:18px 28px 14px;border-bottom:2px solid ' + cor + '">'
       /* Esquerda: dados do paciente em grid */
       + '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;align-content:center">'
         + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Paciente</span><div style="font-size:12px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></div>'
@@ -1146,35 +1195,35 @@ function buildLaudoHTML(l, orgRows) {
     + '</div>'
     /* TÍTULO */
     + '<div style="text-align:center;padding:10px 28px 8px">'
-      + '<div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1e1e1c">Relatório Ultrassonográfico</div>'
+      + '<div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1e1e1c">' + titulo + '</div>'
       + '<div style="font-size:10px;color:#9b9a95;margin-top:2px;letter-spacing:.08em;text-transform:uppercase">' + (l.tipo||'') + '</div>'
     + '</div>'
     /* ACHADOS */
     + '<div style="padding:10px 28px 14px">'
-      + '<div style="font-size:10px;font-weight:700;color:#3d7a52;text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Achados Ultrassonográficos</div>'
+      + '<div style="font-size:10px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">' + labelAchados + '</div>'
       + '<table style="width:100%;border-collapse:collapse">' + orgRows + '</table>'
     + '</div>'
     /* DIAGNÓSTICO */
-    + '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef">'
-      + '<div style="font-size:10px;font-weight:700;color:#3d7a52;text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Impressão Diagnóstica</div>'
+    + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef">'
+      + '<div style="font-size:10px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">' + labelConclusao + '</div>'
       + '<div style="font-size:12px;color:#1e1e1c;line-height:1.7;white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
       + (l.obs ? '<div style="margin-top:8px;font-size:11px;color:#6b6a65;font-style:italic;line-height:1.6">' + l.obs + '</div>' : '')
-    + '</div>'
+    + '</div>' : '')
     /* ASSINATURA */
-    + '<div style="padding:14px 28px 20px;display:flex;justify-content:flex-end">'
+    + (secAssinatura ? '<div style="padding:14px 28px 20px;display:flex;justify-content:flex-end">'
       + '<div style="text-align:center">'
-        + '<div style="border:1.5px solid #3d7a52;border-radius:5px;padding:10px 28px 8px;min-width:200px">'
+        + '<div style="border:1.5px solid ' + cor + ';border-radius:5px;padding:10px 28px 8px;min-width:200px">'
           + '<div style="font-size:13px;font-weight:700;color:#1e1e1c">' + (getConfig().nome||'Patrine Cagnini') + '</div>'
           + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().esp||'Médica Veterinária') + '</div>'
           + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().crmv||'CRMV-SC 09377') + '</div>'
         + '</div>'
         + '<div style="font-size:10px;color:#9b9a95;margin-top:4px">Responsável técnico</div>'
       + '</div>'
-    + '</div>'
+    + '</div>' : '')
     /* FOTOS */
-    + (l.fotos && l.fotos.length ? (
+    + (secFotos && l.fotos && l.fotos.length ? (
         '<div style="padding:10px 28px 20px;border-top:1px solid #edf2ef">'
-          + '<div style="font-size:10px;font-weight:700;color:#3d7a52;text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Imagens do Exame</div>'
+          + '<div style="font-size:10px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Imagens do Exame</div>'
           + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">'
             + l.fotos.map(function(f) {
                 return '<div style="border:1px solid #d8e8de;border-radius:4px;overflow:hidden;background:#f8faf9;page-break-inside:avoid">'
@@ -1750,6 +1799,17 @@ function renderPainel() {
   prev.innerHTML = logo
     ? '<img src="' + logo + '" style="max-height:90px;max-width:160px;object-fit:contain">'
     : '<span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>';
+  // laudo config
+  const lc = cfg.laudo || {};
+  document.getElementById('cfg-titulo').value           = lc.titulo        || 'Relatório Ultrassonográfico';
+  document.getElementById('cfg-cor').value              = lc.cor           || '#3d7a52';
+  document.getElementById('cfg-label-achados').value    = lc.labelAchados  || 'Achados Ultrassonográficos';
+  document.getElementById('cfg-label-conclusao').value  = lc.labelConclusao|| 'Impressão Diagnóstica';
+  document.getElementById('cfg-sec-achados').checked    = lc.secAchados    !== false;
+  document.getElementById('cfg-sec-conclusao').checked  = lc.secConclusao  !== false;
+  document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura !== false;
+  document.getElementById('cfg-sec-fotos').checked      = lc.secFotos      !== false;
+  document.getElementById('cfg-modelo-conclusao').value = lc.modeloConclusao || '';
   // status supabase
   const lbl = document.getElementById('sync-label');
   const el = document.getElementById('painel-sync-status');
@@ -1757,13 +1817,29 @@ function renderPainel() {
 }
 
 function salvarConfig() {
-  const cfg = {
-    nome: document.getElementById('cfg-nome').value,
-    esp:  document.getElementById('cfg-esp').value,
-    crmv: document.getElementById('cfg-crmv').value,
-  };
+  const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  cfg.nome = document.getElementById('cfg-nome').value;
+  cfg.esp  = document.getElementById('cfg-esp').value;
+  cfg.crmv = document.getElementById('cfg-crmv').value;
   localStorage.setItem('uv_config', JSON.stringify(cfg));
   toast('Configurações salvas!');
+}
+
+function salvarConfigLaudo() {
+  const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  cfg.laudo = {
+    titulo:         document.getElementById('cfg-titulo').value || 'Relatório Ultrassonográfico',
+    cor:            document.getElementById('cfg-cor').value || '#3d7a52',
+    labelAchados:   document.getElementById('cfg-label-achados').value || 'Achados Ultrassonográficos',
+    labelConclusao: document.getElementById('cfg-label-conclusao').value || 'Impressão Diagnóstica',
+    secAchados:     document.getElementById('cfg-sec-achados').checked,
+    secConclusao:   document.getElementById('cfg-sec-conclusao').checked,
+    secAssinatura:  document.getElementById('cfg-sec-assinatura').checked,
+    secFotos:       document.getElementById('cfg-sec-fotos').checked,
+    modeloConclusao: document.getElementById('cfg-modelo-conclusao').value,
+  };
+  localStorage.setItem('uv_config', JSON.stringify(cfg));
+  toast('Configuração do laudo salva!');
 }
 
 function carregarLogo(input) {
