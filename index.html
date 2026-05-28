@@ -1172,61 +1172,68 @@ function buildLaudoHTML(l, orgRows) {
   const secConclusao = lc.secConclusao !== false;
   const secAssinatura = lc.secAssinatura !== false;
   const secFotos = lc.secFotos !== false;
+  const nome = getConfig().nome || 'Patrine Cagnini';
+  const esp  = getConfig().esp  || 'Médica Veterinária | Ultrassonografista';
+  const crmv = getConfig().crmv || 'CRMV-SC 09377';
   return '<div style="max-width:800px;overflow:hidden;font-family:Arial,sans-serif;background:#fff">'
-    /* CABEÇALHO */
-    + '<div style="display:flex;align-items:stretch;padding:18px 28px 14px;border-bottom:2px solid ' + cor + '">'
-      /* Esquerda: dados do paciente em grid */
-      + '<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;align-content:center">'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Paciente</span><div style="font-size:12px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></div>'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Sexo</span><div style="font-size:12px;color:#1a1a18">' + (l.sexo||'—') + '</div></div>'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Tutor</span><div style="font-size:12px;color:#1a1a18">' + (l.tutor||'—') + '</div></div>'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Idade</span><div style="font-size:12px;color:#1a1a18">' + (l.idade||'—') + '</div></div>'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Espécie</span><div style="font-size:12px;color:#1a1a18">' + (l.especie||'—') + '</div></div>'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Raça</span><div style="font-size:12px;color:#1a1a18">' + (l.raca||'—') + '</div></div>'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Veterinário</span><div style="font-size:12px;color:#1a1a18">' + (l.vet||'—') + '</div></div>'
-        + '<div><span style="font-size:10px;color:#9b9a95;text-transform:uppercase;letter-spacing:.06em">Data</span><div style="font-size:12px;color:#1a1a18">' + fmtDP(l.data) + '</div></div>'
-      + '</div>'
-      /* Separador vertical */
-      + '<div style="width:1px;background:#c5ddd0;margin:0 20px"></div>'
-      /* Direita: Logo */
-      + '<div style="display:flex;align-items:center;justify-content:center;min-width:160px">'
-        + '<img src="' + getLogo() + '" style="max-height:80px;max-width:160px;object-fit:contain" alt="Logo">'
-      + '</div>'
+    /* CABEÇALHO — faixa cinza centralizada estilo PDF */
+    + '<div style="background:#d4d0cb;padding:16px 28px 12px;text-align:center;border-bottom:1px solid #b8b4ae">'
+      + '<img src="' + getLogo() + '" style="max-height:72px;max-width:190px;object-fit:contain;display:block;margin:0 auto 8px" alt="Logo">'
+      + '<div style="font-size:14px;font-weight:700;letter-spacing:.22em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
+      + '<div style="font-size:9px;letter-spacing:.16em;color:#5a5854;margin-top:3px;text-transform:uppercase">' + esp + '</div>'
+      + '<div style="font-size:13px;color:#7a7670;margin-top:6px">🐾</div>'
+    + '</div>'
+    /* DADOS DO PACIENTE */
+    + '<div style="padding:10px 28px 8px;background:#f5f4f0;border-bottom:1px solid #e2e1dc">'
+      + '<table style="width:100%;border-collapse:collapse">'
+        + '<tr>'
+          + '<td style="padding:3px 10px 3px 0;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Paciente</span><div style="font-size:11px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></td>'
+          + '<td style="padding:3px 10px;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</span><div style="font-size:11px;color:#1a1a18">' + (l.especie||'—') + (l.raca?' · '+l.raca:'') + '</div></td>'
+          + '<td style="padding:3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Sexo</span><div style="font-size:11px;color:#1a1a18">' + (l.sexo||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Idade</span><div style="font-size:11px;color:#1a1a18">' + (l.idade||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px;width:20%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Data</span><div style="font-size:11px;color:#1a1a18">' + fmtDP(l.data) + '</div></td>'
+        + '</tr>'
+        + '<tr>'
+          + '<td style="padding:3px 10px 3px 0"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Tutor</span><div style="font-size:11px;color:#1a1a18">' + (l.tutor||'—') + '</div></td>'
+          + '<td style="padding:3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Veterinário solicitante</span><div style="font-size:11px;color:#1a1a18">' + (l.vet||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Clínica</span><div style="font-size:11px;color:#1a1a18">' + (l.clinica||'—') + '</div></td>'
+        + '</tr>'
+      + '</table>'
     + '</div>'
     /* TÍTULO */
-    + '<div style="text-align:center;padding:10px 28px 8px">'
-      + '<div style="font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#1e1e1c">' + titulo + '</div>'
-      + '<div style="font-size:10px;color:#9b9a95;margin-top:2px;letter-spacing:.08em;text-transform:uppercase">' + (l.tipo||'') + '</div>'
+    + '<div style="text-align:center;padding:8px 28px 4px">'
+      + '<div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#1e1e1c">' + titulo + '</div>'
+      + '<div style="font-size:9px;color:#9b9a95;margin-top:2px;letter-spacing:.1em;text-transform:uppercase">' + (l.tipo||'') + '</div>'
     + '</div>'
+    + '<div style="height:2px;background:' + cor + ';margin:6px 28px 0"></div>'
     /* ACHADOS */
-    + '<div style="padding:10px 28px 14px">'
-      + '<div style="font-size:10px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">' + labelAchados + '</div>'
+    + (secAchados ? '<div style="padding:10px 28px 14px">'
+      + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
       + '<table style="width:100%;border-collapse:collapse">' + orgRows + '</table>'
-    + '</div>'
+    + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef">'
-      + '<div style="font-size:10px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">' + labelConclusao + '</div>'
+      + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelConclusao + '</div>'
       + '<div style="font-size:12px;color:#1e1e1c;line-height:1.7;white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
       + (l.obs ? '<div style="margin-top:8px;font-size:11px;color:#6b6a65;font-style:italic;line-height:1.6">' + l.obs + '</div>' : '')
     + '</div>' : '')
     /* ASSINATURA */
-    + (secAssinatura ? '<div style="padding:14px 28px 20px;display:flex;justify-content:flex-end">'
+    + (secAssinatura ? '<div style="padding:10px 28px 18px;display:flex;justify-content:flex-end">'
       + '<div style="text-align:center">'
-        + '<div style="border:1.5px solid ' + cor + ';border-radius:5px;padding:10px 28px 8px;min-width:200px">'
-          + '<div style="font-size:13px;font-weight:700;color:#1e1e1c">' + (getConfig().nome||'Patrine Cagnini') + '</div>'
-          + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().esp||'Médica Veterinária') + '</div>'
-          + '<div style="font-size:11px;color:#6b6a65">' + (getConfig().crmv||'CRMV-SC 09377') + '</div>'
+        + '<div style="width:200px;border-top:1.5px solid ' + cor + ';padding-top:6px">'
+          + '<div style="font-size:11px;font-weight:700;color:#1e1e1c">' + nome + '</div>'
+          + '<div style="font-size:10px;color:#6b6a65">' + esp + '</div>'
+          + '<div style="font-size:10px;color:#6b6a65">' + crmv + '</div>'
         + '</div>'
-        + '<div style="font-size:10px;color:#9b9a95;margin-top:4px">Responsável técnico</div>'
       + '</div>'
     + '</div>' : '')
     /* FOTOS */
     + (secFotos && l.fotos && l.fotos.length ? (
         '<div style="padding:10px 28px 20px;border-top:1px solid #edf2ef">'
-          + '<div style="font-size:10px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #c5ddd0">Imagens do Exame</div>'
+          + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">Imagens do Exame</div>'
           + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">'
             + l.fotos.map(function(f) {
-                return '<div style="border:1px solid #d8e8de;border-radius:4px;overflow:hidden;background:#f8faf9;page-break-inside:avoid">'
+                return '<div style="border:1px solid #ddd;border-radius:4px;overflow:hidden;background:#f8f8f8;page-break-inside:avoid">'
                   + '<img src="' + f.src + '" style="width:100%;max-height:340px;object-fit:contain;display:block">'
                 + '</div>';
               }).join('')
