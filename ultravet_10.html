@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>UltraVet — Gestão de Laudos</title>
+<title>VetRoutine — Gestão de Laudos</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
 
@@ -198,9 +198,9 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-logo" onclick="goPage('dashboard')" style="cursor:pointer" title="Ir para o início">
-      <div class="logo-mark">🔬 UltraVet</div>
-      <div class="logo-sub">Gestão de Ultrassonografia</div>
+    <div class="sidebar-logo" onclick="goPage('dashboard')" style="cursor:pointer;text-align:center" title="Ir para o início">
+      <img id="sb-logo" style="width:130px;height:auto;display:block;margin:0 auto" alt="VetRoutine">
+      
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">Principal</div>
@@ -827,7 +827,7 @@
           <div class="card-header"><div class="card-title">⚙️ Sistema</div></div>
           <table class="data-table">
             <tbody>
-              <tr><td style="color:var(--text2);width:160px">Versão</td><td>UltraVet v1.10</td></tr>
+              <tr><td style="color:var(--text2);width:160px">Versão</td><td>VetRoutine v1.10</td></tr>
               <tr><td style="color:var(--text2)">Banco de dados</td><td>Supabase · <span id="painel-sync-status">—</span></td></tr>
               <tr><td style="color:var(--text2)">URL do sistema</td><td><a href="https://glittering-narwhal-2da210.netlify.app/ultravet_10.html" target="_blank" style="color:var(--teal)">glittering-narwhal-2da210.netlify.app</a></td></tr>
               <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
@@ -931,6 +931,7 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, financeiro:3};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
   if (name === 'laudos') renderLaudos();
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
@@ -1110,6 +1111,7 @@ function delLaudo(id) {
   if (!confirm('Excluir este laudo permanentemente?')) return;
   laudos = laudos.filter(l => l.id !== id);
   save(); renderLaudos(); updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
   cloudDelete('uv_laudos', id);
   toast('Laudo excluído.');
 }
@@ -1205,7 +1207,7 @@ function imprimirLaudo() {
   }).join('') : '';
   const body = buildLaudoHTML(l, orgRows);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'UltraVet') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{margin:12mm}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{margin:12mm}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -1498,6 +1500,7 @@ function addReceita() {
 function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
   toast('Marcado como pago!');
 }
 
@@ -1505,6 +1508,7 @@ function delRec(id) {
   receitas = receitas.filter(r => r.id!==id);
   cloudDelete('uv_receitas', id);
   save(); renderReceitas(); updateFinOverview(); updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
 }
 
 function renderReceitas() {
@@ -1700,7 +1704,7 @@ function exportarBackup() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'ultravet_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.download = 'vetroutine_backup_' + new Date().toISOString().slice(0, 10) + '.json';
   a.click();
   URL.revokeObjectURL(url);
   toast('Backup exportado com sucesso!');
@@ -1722,6 +1726,7 @@ function importarBackup(input) {
       save();
       populateClinicaSelects();
       updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
       toast('Backup importado! ' + laudos.length + ' laudos, ' + receitas.length + ' receitas.');
     } catch(err) {
       alert('Erro ao ler o arquivo: ' + err.message);
@@ -1855,6 +1860,7 @@ async function initCloud() {
     save();
     populateClinicaSelects();
     updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
 }
@@ -1868,6 +1874,7 @@ document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
 updateDashboard();
+document.getElementById('sb-logo').src = getLogo();
 initCloud();
 </script>
 </body>
