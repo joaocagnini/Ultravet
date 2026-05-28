@@ -618,7 +618,7 @@
           </div>
           <div class="grid-2">
             <div class="card"><div class="card-header"><div class="card-title">Fluxo de caixa — 6 meses</div></div><div id="f-fc"></div></div>
-            <div class="card"><div class="card-header"><div class="card-title">Receita por forma de pagamento</div></div><div id="f-forma"></div></div>
+            <div class="card"><div class="card-header"><div class="card-title">Receita por forma de pagamento</div></div><div id="f-forma-chart"></div></div>
           </div>
         </div>
 
@@ -849,6 +849,68 @@
             <div class="form-field">
               <label>Texto padrão (pré-preenchido em novos laudos)</label>
               <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame realizado com paciente em jejum de ___ horas..."></textarea>
+            </div>
+            <div class="form-section">Tipografia</div>
+            <div class="form-grid fg-3">
+              <div class="form-field">
+                <label>Fonte principal</label>
+                <select id="cfg-fonte">
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="'Calibri', 'Segoe UI', sans-serif">Calibri</option>
+                  <option value="'Cambria', Georgia, serif">Cambria</option>
+                  <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Garamond, serif">Garamond</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Tamanho do corpo (pt)</label>
+                <select id="cfg-fontsize">
+                  <option value="10">10 pt — Compacto</option>
+                  <option value="11">11 pt — Pequeno</option>
+                  <option value="12">12 pt — Padrão</option>
+                  <option value="13">13 pt — Confortável</option>
+                  <option value="14">14 pt — Grande</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Espaçamento entre linhas</label>
+                <select id="cfg-lineh">
+                  <option value="1.2">1,2 — Compacto</option>
+                  <option value="1.4">1,4 — Próximo</option>
+                  <option value="1.6">1,6 — Padrão Word</option>
+                  <option value="1.8">1,8 — Aberto</option>
+                  <option value="2.0">2,0 — Duplo</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-section">Página</div>
+            <div class="form-grid fg-3">
+              <div class="form-field">
+                <label>Margens de impressão</label>
+                <select id="cfg-margens">
+                  <option value="8mm">Estreitas (8 mm)</option>
+                  <option value="12mm">Normais (12 mm)</option>
+                  <option value="18mm">Largas (18 mm)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Formato do papel</label>
+                <select id="cfg-papel">
+                  <option value="A4">A4 (210 × 297 mm)</option>
+                  <option value="letter">Carta / Letter</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Estilo do cabeçalho</label>
+                <select id="cfg-header-style">
+                  <option value="gray">Cinza centralizado</option>
+                  <option value="white">Branco com borda colorida</option>
+                  <option value="minimal">Minimalista (logo + texto lado a lado)</option>
+                </select>
+              </div>
             </div>
             <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
               <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
@@ -1203,48 +1265,85 @@ function fmtDP(d) { if(!d) return '___'; const p = d.split('-'); return p.length
 
 const LOGO_B64 = 'logo.png';
 
-function buildLaudoHTML(l, orgRows) {
-  const lc = getConfig().laudo || {};
+function buildLaudoHTML(l) {
+  const lc  = getConfig().laudo || {};
   const cor = lc.cor || '#3d7a52';
-  const corLight = cor + '33'; // transparência para bordas
-  const titulo = lc.titulo || 'Relatório Ultrassonográfico';
-  const labelAchados = lc.labelAchados || 'Achados Ultrassonográficos';
+  const titulo         = lc.titulo         || 'Relatório Ultrassonográfico';
+  const labelAchados   = lc.labelAchados   || 'Achados Ultrassonográficos';
   const labelConclusao = lc.labelConclusao || 'Impressão Diagnóstica';
-  const secAchados = lc.secAchados !== false;
-  const secConclusao = lc.secConclusao !== false;
+  const secAchados    = lc.secAchados    !== false;
+  const secConclusao  = lc.secConclusao  !== false;
   const secAssinatura = lc.secAssinatura !== false;
-  const secFotos = lc.secFotos !== false;
+  const secFotos      = lc.secFotos      !== false;
   const nome = getConfig().nome || 'Patrine Cagnini';
   const esp  = getConfig().esp  || 'Médica Veterinária | Ultrassonografista';
   const crmv = getConfig().crmv || 'CRMV-SC 09377';
-  return '<div style="max-width:800px;overflow:hidden;font-family:Arial,sans-serif;background:#fff">'
-    /* CABEÇALHO — faixa cinza centralizada estilo PDF */
-    + '<div style="background:#d4d0cb;padding:16px 28px 12px;text-align:center;border-bottom:1px solid #b8b4ae">'
-      + '<img src="' + getLogo() + '" style="max-height:72px;max-width:190px;object-fit:contain;display:block;margin:0 auto 8px" alt="Logo">'
-      + '<div style="font-size:14px;font-weight:700;letter-spacing:.22em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
+  // tipografia
+  const fonte  = lc.fonte    || 'Arial, sans-serif';
+  const sz     = parseInt(lc.fontsize || '12');
+  const lh     = lc.lineh    || '1.6';
+  const hstyle = lc.headerStyle || 'gray';
+  const szSm   = Math.max(9,  sz - 1);
+  const szXs   = Math.max(8,  sz - 2);
+  const szLg   = Math.round(sz * 1.17);
+  // achados por órgão
+  const isGest = l.tipo === 'Gestacional';
+  const orgs   = isGest ? l.orgGest   : l.orgAbdom;
+  const nomes  = isGest ? orgNomesGest : orgNomesAbdom;
+  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
+    return '<tr style="border-bottom:1px solid #edf2ef">'
+      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + (nomes[k]||k) + '</td>'
+      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap">' + orgs[k].texto + '</td>'
+      + '</tr>';
+  }).join('') : '';
+  // cabeçalho (3 estilos)
+  const logoTag = '<img src="' + getLogo() + '" alt="Logo" style="max-height:72px;max-width:190px;object-fit:contain;display:block;margin:0 auto 8px">';
+  let headerHTML;
+  if (hstyle === 'white') {
+    headerHTML = '<div style="background:#fff;padding:14px 28px 10px;text-align:center;border-bottom:3px solid ' + cor + '">'
+      + logoTag
+      + '<div style="font-size:' + szLg + 'px;font-weight:700;letter-spacing:.22em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
+      + '<div style="font-size:9px;letter-spacing:.16em;color:#5a5854;margin-top:3px;text-transform:uppercase">' + esp + '</div>'
+      + '</div>';
+  } else if (hstyle === 'minimal') {
+    headerHTML = '<div style="background:#fff;padding:12px 28px;display:flex;align-items:center;gap:18px;border-bottom:2px solid ' + cor + '">'
+      + '<img src="' + getLogo() + '" alt="Logo" style="max-height:52px;max-width:90px;object-fit:contain">'
+      + '<div>'
+        + '<div style="font-size:' + szLg + 'px;font-weight:700;letter-spacing:.12em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
+        + '<div style="font-size:9px;letter-spacing:.1em;color:#5a5854;margin-top:2px;text-transform:uppercase">' + esp + '</div>'
+        + '<div style="font-size:9px;color:#7a7670;margin-top:2px">' + crmv + '</div>'
+      + '</div>'
+      + '</div>';
+  } else {
+    headerHTML = '<div style="background:#d4d0cb;padding:16px 28px 12px;text-align:center;border-bottom:1px solid #b8b4ae">'
+      + logoTag
+      + '<div style="font-size:' + szLg + 'px;font-weight:700;letter-spacing:.22em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
       + '<div style="font-size:9px;letter-spacing:.16em;color:#5a5854;margin-top:3px;text-transform:uppercase">' + esp + '</div>'
       + '<div style="font-size:13px;color:#7a7670;margin-top:6px">🐾</div>'
-    + '</div>'
+      + '</div>';
+  }
+  return '<div style="max-width:800px;overflow:hidden;font-family:' + fonte + ';background:#fff">'
+    + headerHTML
     /* DADOS DO PACIENTE */
     + '<div style="padding:10px 28px 8px;background:#f5f4f0;border-bottom:1px solid #e2e1dc">'
       + '<table style="width:100%;border-collapse:collapse">'
         + '<tr>'
-          + '<td style="padding:3px 10px 3px 0;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Paciente</span><div style="font-size:11px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></td>'
-          + '<td style="padding:3px 10px;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</span><div style="font-size:11px;color:#1a1a18">' + (l.especie||'—') + (l.raca?' · '+l.raca:'') + '</div></td>'
-          + '<td style="padding:3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Sexo</span><div style="font-size:11px;color:#1a1a18">' + (l.sexo||'—') + '</div></td>'
-          + '<td style="padding:3px 0 3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Idade</span><div style="font-size:11px;color:#1a1a18">' + (l.idade||'—') + '</div></td>'
-          + '<td style="padding:3px 0 3px 10px;width:20%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Data</span><div style="font-size:11px;color:#1a1a18">' + fmtDP(l.data) + '</div></td>'
+          + '<td style="padding:3px 10px 3px 0;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Paciente</span><div style="font-size:' + szSm + 'px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></td>'
+          + '<td style="padding:3px 10px;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.especie||'—') + (l.raca?' · '+l.raca:'') + '</div></td>'
+          + '<td style="padding:3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Sexo</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.sexo||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Idade</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.idade||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px;width:20%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Data</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + fmtDP(l.data) + '</div></td>'
         + '</tr>'
         + '<tr>'
-          + '<td style="padding:3px 10px 3px 0"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Tutor</span><div style="font-size:11px;color:#1a1a18">' + (l.tutor||'—') + '</div></td>'
-          + '<td style="padding:3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Veterinário solicitante</span><div style="font-size:11px;color:#1a1a18">' + (l.vet||'—') + '</div></td>'
-          + '<td style="padding:3px 0 3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Clínica</span><div style="font-size:11px;color:#1a1a18">' + (l.clinica||'—') + '</div></td>'
+          + '<td style="padding:3px 10px 3px 0"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Tutor</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.tutor||'—') + '</div></td>'
+          + '<td style="padding:3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Veterinário solicitante</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.vet||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Clínica</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.clinica||'—') + '</div></td>'
         + '</tr>'
       + '</table>'
     + '</div>'
     /* TÍTULO */
     + '<div style="text-align:center;padding:8px 28px 4px">'
-      + '<div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#1e1e1c">' + titulo + '</div>'
+      + '<div style="font-size:' + sz + 'px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#1e1e1c">' + titulo + '</div>'
       + '<div style="font-size:9px;color:#9b9a95;margin-top:2px;letter-spacing:.1em;text-transform:uppercase">' + (l.tipo||'') + '</div>'
     + '</div>'
     + '<div style="height:2px;background:' + cor + ';margin:6px 28px 0"></div>'
@@ -1256,16 +1355,16 @@ function buildLaudoHTML(l, orgRows) {
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelConclusao + '</div>'
-      + '<div style="font-size:12px;color:#1e1e1c;line-height:1.7;white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
-      + (l.obs ? '<div style="margin-top:8px;font-size:11px;color:#6b6a65;font-style:italic;line-height:1.6">' + l.obs + '</div>' : '')
+      + '<div style="font-size:' + sz + 'px;color:#1e1e1c;line-height:' + lh + ';white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
+      + (l.obs ? '<div style="margin-top:8px;font-size:' + szSm + 'px;color:#6b6a65;font-style:italic;line-height:' + lh + '">' + l.obs + '</div>' : '')
     + '</div>' : '')
     /* ASSINATURA */
     + (secAssinatura ? '<div style="padding:10px 28px 18px;display:flex;justify-content:flex-end">'
       + '<div style="text-align:center">'
         + '<div style="width:200px;border-top:1.5px solid ' + cor + ';padding-top:6px">'
-          + '<div style="font-size:11px;font-weight:700;color:#1e1e1c">' + nome + '</div>'
-          + '<div style="font-size:10px;color:#6b6a65">' + esp + '</div>'
-          + '<div style="font-size:10px;color:#6b6a65">' + crmv + '</div>'
+          + '<div style="font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c">' + nome + '</div>'
+          + '<div style="font-size:' + szXs + 'px;color:#6b6a65">' + esp + '</div>'
+          + '<div style="font-size:' + szXs + 'px;color:#6b6a65">' + crmv + '</div>'
         + '</div>'
       + '</div>'
     + '</div>' : '')
@@ -1286,27 +1385,18 @@ function buildLaudoHTML(l, orgRows) {
 }
 
 function renderPreview(l) {
-  const isGest = l.tipo === 'Gestacional';
-  const orgs = isGest ? l.orgGest : l.orgAbdom;
-  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
-  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
-  }).join('') : '';
-  document.getElementById('viz-area').innerHTML = '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l, orgRows) + '</div>';
+  document.getElementById('viz-area').innerHTML = '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l) + '</div>';
 }
 
 function imprimirLaudo() {
   const l = viewId ? laudos.find(function(x){ return x.id === viewId; }) : getLaudoData();
   if (!l) return;
-  const isGest = l.tipo === 'Gestacional';
-  const orgs = isGest ? l.orgGest : l.orgAbdom;
-  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
-  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
-  }).join('') : '';
-  const body = buildLaudoHTML(l, orgRows);
+  const lc = getConfig().laudo || {};
+  const margens = lc.margens || '12mm';
+  const papel   = lc.papel   || 'A4';
+  const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{margin:12mm}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{size:' + papel + ';margin:' + margens + '}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -1558,7 +1648,7 @@ function updateFinOverview() {
   sal.textContent = fmt(recMes - despMes);
   sal.className = 'metric-value ' + (recMes-despMes>=0?'green':'red');
   renderBarFC('f-fc', 6);
-  renderBarForma('f-forma');
+  renderBarForma('f-forma-chart');
 }
 
 function renderBarFC(elId, n) {
@@ -1856,6 +1946,12 @@ function renderPainel() {
   document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura  !== false;
   document.getElementById('cfg-sec-fotos').checked      = lc.secFotos       !== false;
   document.getElementById('cfg-modelo-conclusao').value = lc.modeloConclusao || '';
+  document.getElementById('cfg-fonte').value            = lc.fonte        || 'Arial, sans-serif';
+  document.getElementById('cfg-fontsize').value         = lc.fontsize     || '12';
+  document.getElementById('cfg-lineh').value            = lc.lineh        || '1.6';
+  document.getElementById('cfg-margens').value          = lc.margens      || '12mm';
+  document.getElementById('cfg-papel').value            = lc.papel        || 'A4';
+  document.getElementById('cfg-header-style').value     = lc.headerStyle  || 'gray';
   const lbl = document.getElementById('sync-label');
   const el = document.getElementById('painel-sync-status');
   if (el) el.textContent = lbl ? lbl.textContent : '—';
@@ -1865,34 +1961,25 @@ function renderPainel() {
 function renderPrevia() {
   const l = laudos.length > 0 ? laudos[laudos.length - 1] : {
     paciente: 'Rex', tutor: 'João Silva', especie: 'Canino', raca: 'Labrador',
-    sexo: 'Macho', idade: '5 anos', veterinario: 'Dra. Patrine Cagnini',
+    sexo: 'Macho', idade: '5 anos',
     data: new Date().toISOString().split('T')[0],
     tipo: 'Abdominal', resultado: 'Normal',
     orgAbdom: { bexiga: { texto: orgDefaults.bexiga }, figado: { texto: orgDefaults.figado }, rins: { texto: orgDefaults.rins } },
     conclusao: 'Exame dentro dos limites da normalidade. Aspectos sonográficos não revelam alterações significativas na janela avaliada.'
   };
-  const isGest = l.tipo === 'Gestacional';
-  const orgs = isGest ? l.orgGest : l.orgAbdom;
-  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
-  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
-  }).join('') : '';
   document.getElementById('previa-area').innerHTML =
-    '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l, orgRows) + '</div>';
+    '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l) + '</div>';
 }
 
 function imprimirPrevia() {
   const l = laudos.length > 0 ? laudos[laudos.length - 1] : null;
   if (!l) { toast('Nenhum laudo salvo para imprimir.'); return; }
-  const isGest = l.tipo === 'Gestacional';
-  const orgs = isGest ? l.orgGest : l.orgAbdom;
-  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
-  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
-  }).join('') : '';
-  const body = buildLaudoHTML(l, orgRows);
+  const lc = getConfig().laudo || {};
+  const margens = lc.margens || '12mm';
+  const papel   = lc.papel   || 'A4';
+  const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{margin:12mm}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{size:' + papel + ';margin:' + margens + '}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -1917,6 +2004,12 @@ function salvarConfigLaudo() {
     secAssinatura:  document.getElementById('cfg-sec-assinatura').checked,
     secFotos:       document.getElementById('cfg-sec-fotos').checked,
     modeloConclusao: document.getElementById('cfg-modelo-conclusao').value,
+    fonte:       document.getElementById('cfg-fonte').value,
+    fontsize:    document.getElementById('cfg-fontsize').value,
+    lineh:       document.getElementById('cfg-lineh').value,
+    margens:     document.getElementById('cfg-margens').value,
+    papel:       document.getElementById('cfg-papel').value,
+    headerStyle: document.getElementById('cfg-header-style').value,
   };
   localStorage.setItem('uv_config', JSON.stringify(cfg));
   toast('Configuração do laudo salva!');
