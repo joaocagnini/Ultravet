@@ -779,9 +779,9 @@
 
         <div class="subtabs">
           <div class="stab active" onclick="stpc('pc-layout')">📄 Layout do Laudo</div>
+          <div class="stab" onclick="stpc('pc-previa')">👁️ Prévia</div>
           <div class="stab" onclick="stpc('pc-dados')">💾 Dados</div>
           <div class="stab" onclick="stpc('pc-sistema')">⚙️ Sistema</div>
-          <div class="stab" onclick="stpc('pc-previa')">👁️ Prévia</div>
         </div>
 
         <!-- ABA: Layout do Laudo -->
@@ -1043,7 +1043,7 @@ function stpc(name) {
   page.querySelectorAll('.ssec').forEach(s => s.classList.remove('active'));
   page.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
   document.getElementById(name).classList.add('active');
-  const map = {'pc-layout':0,'pc-dados':1,'pc-sistema':2,'pc-previa':3};
+  const map = {'pc-layout':0,'pc-previa':1,'pc-dados':2,'pc-sistema':3};
   page.querySelectorAll('.stab')[map[name]].classList.add('active');
   if (name === 'pc-previa') renderPrevia();
 }
