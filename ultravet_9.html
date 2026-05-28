@@ -368,7 +368,7 @@
             <div class="form-field"><label>Tutor</label><input id="f-tutor" placeholder="Nome do tutor"></div>
             <div class="form-field"><label>Veterinário solicitante</label><input id="f-vet" placeholder="Dr(a)."></div>
             <div class="form-field"><label>Clínica parceira</label><select id="f-clinica"><option value="">— Selecione —</option></select></div>
-            <div class="form-field"><label>Valor do exame (R$)</label><input type="number" id="f-valor" placeholder="0,00" step="0.01" min="0"></div>
+            <div class="form-field"><label>Valor do exame (R$)</label><input type="text" inputmode="decimal" id="f-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
             <div class="form-field"><label>Forma de pagamento</label><select id="f-forma"><option>Pix</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option></select></div>
             <div class="form-field"><label>Status do pagamento</label><select id="f-fpago"><option>Pago</option><option>Pendente</option><option>Atrasado</option></select></div>
           </div>
@@ -631,7 +631,7 @@
               <div class="form-field"><label>Data</label><input type="date" id="r-data"></div>
               <div class="form-field"><label>Descrição</label><input id="r-desc" placeholder="Tipo de exame ou serviço"></div>
               <div class="form-field"><label>Clínica parceira</label><select id="r-clinica"><option value="">— Selecione —</option></select></div>
-              <div class="form-field"><label>Valor (R$)</label><input type="number" id="r-valor" placeholder="0,00" step="0.01" min="0"></div>
+              <div class="form-field"><label>Valor (R$)</label><input type="text" inputmode="decimal" id="r-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
               <div class="form-field"><label>Forma de pagamento</label><select id="r-forma"><option>Pix</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option></select></div>
               <div class="form-field"><label>Status</label><select id="r-status"><option>Pago</option><option>Pendente</option><option>Atrasado</option></select></div>
               <div class="form-field"><label>Veterinário</label><input id="r-vet" placeholder="Dr(a)."></div>
@@ -663,7 +663,7 @@
               <div class="form-field"><label>Categoria</label>
                 <select id="d-cat"><option>Combustível / deslocamento</option><option>Material / insumos</option><option>Equipamento</option><option>Software / assinatura</option><option>Impostos / taxas</option><option>Marketing</option><option>Outros</option></select>
               </div>
-              <div class="form-field"><label>Valor (R$)</label><input type="number" id="d-valor" placeholder="0,00" step="0.01" min="0"></div>
+              <div class="form-field"><label>Valor (R$)</label><input type="text" inputmode="decimal" id="d-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
               <div class="form-field"><label>Recorrente?</label><select id="d-rec"><option value="nao">Não</option><option value="sim">Sim (mensal)</option></select></div>
               <div class="form-field"><label>Observação</label><input id="d-obs" placeholder="Opcional"></div>
             </div>
@@ -808,6 +808,34 @@ function load() {
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
 const fmt = v => 'R$ ' + Number(v||0).toLocaleString('pt-BR', {minimumFractionDigits:2, maximumFractionDigits:2});
+
+// Máscara de moeda brasileira (digitação)
+function maskCurrency(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (!v) { el.value = ''; return; }
+  v = parseInt(v, 10).toString().padStart(3, '0');
+  const cents = v.slice(-2);
+  let reais = v.slice(0, -2).replace(/^0+/, '') || '0';
+  reais = reais.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = reais + ',' + cents;
+}
+
+// Lê valor numérico de um input de moeda
+function parseCurrency(id) {
+  const v = (document.getElementById(id).value || '').replace(/\./g, '').replace(',', '.');
+  return parseFloat(v) || 0;
+}
+
+// Define valor formatado em input de moeda
+function setCurrency(id, v) {
+  const el = document.getElementById(id);
+  if (!v) { el.value = ''; return; }
+  const cents = Math.round(Number(v) * 100).toString().padStart(3, '0');
+  const c = cents.slice(-2);
+  let r = cents.slice(0, -2).replace(/^0+/, '') || '0';
+  r = r.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  el.value = r + ',' + c;
+}
 const fmtD = d => { if(!d) return '—'; const p = d.split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : d; };
 const today = () => new Date().toISOString().split('T')[0];
 const isMes = d => { if(!d) return false; const n=new Date(), dt=new Date(d+'T12:00:00'); return dt.getMonth()===n.getMonth() && dt.getFullYear()===n.getFullYear(); };
@@ -944,7 +972,7 @@ function getLaudoData() {
     tutor: document.getElementById('f-tutor').value,
     vet: document.getElementById('f-vet').value,
     clinica: document.getElementById('f-clinica').value,
-    valor: parseFloat(document.getElementById('f-valor').value) || 0,
+    valor: parseCurrency('f-valor'),
     forma: document.getElementById('f-forma').value,
     fpago: document.getElementById('f-fpago').value,
     conclusao: document.getElementById('f-conclusao').value,
@@ -1000,7 +1028,7 @@ function editLaudo(id) {
   document.getElementById('f-tutor').value = l.tutor || '';
   document.getElementById('f-vet').value = l.vet || '';
   document.getElementById('f-clinica').value = l.clinica || '';
-  document.getElementById('f-valor').value = l.valor || '';
+  setCurrency('f-valor', l.valor || 0);
   document.getElementById('f-forma').value = l.forma || 'Pix';
   document.getElementById('f-fpago').value = l.fpago || 'Pago';
   document.getElementById('f-conclusao').value = l.conclusao || '';
@@ -1395,7 +1423,7 @@ function renderBarForma(elId) {
 
 // ─── RECEITAS ────────────────────────────────────────────────────────────────
 function addReceita() {
-  const v = parseFloat(document.getElementById('r-valor').value);
+  const v = parseCurrency('r-valor');
   if (!document.getElementById('r-desc').value || !v) { alert('Preencha descrição e valor.'); return; }
   receitas.push({id:Date.now(), data:document.getElementById('r-data').value, desc:document.getElementById('r-desc').value, clinica:document.getElementById('r-clinica').value, valor:v, forma:document.getElementById('r-forma').value, status:document.getElementById('r-status').value, vet:document.getElementById('r-vet').value, obs:document.getElementById('r-obs').value});
   ['r-desc','r-valor','r-vet','r-obs'].forEach(id => document.getElementById(id).value='');
@@ -1439,7 +1467,7 @@ function renderReceitas() {
 
 // ─── DESPESAS ────────────────────────────────────────────────────────────────
 function addDespesa() {
-  const v = parseFloat(document.getElementById('d-valor').value);
+  const v = parseCurrency('d-valor');
   if (!document.getElementById('d-desc').value || !v) { alert('Preencha descrição e valor.'); return; }
   despesas.push({id:Date.now(), data:document.getElementById('d-data').value, desc:document.getElementById('d-desc').value, cat:document.getElementById('d-cat').value, valor:v, rec:document.getElementById('d-rec').value, obs:document.getElementById('d-obs').value});
   ['d-desc','d-valor','d-obs'].forEach(id => document.getElementById(id).value='');
