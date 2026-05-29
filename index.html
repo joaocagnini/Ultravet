@@ -964,8 +964,13 @@
             </div>
             <div class="form-section">Modelo de conclusão</div>
             <div class="form-field">
-              <label>Texto padrão (pré-preenchido em novos laudos)</label>
-              <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame realizado com paciente em jejum de ___ horas..."></textarea>
+              <label>Texto padrão da Impressão Diagnóstica (pré-preenchido em novos laudos)</label>
+              <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame dentro dos padrões de normalidade..."></textarea>
+            </div>
+            <div class="form-section">Modelo de observações</div>
+            <div class="form-field">
+              <label>Texto padrão das Observações (pré-preenchido em novos laudos)</label>
+              <textarea id="cfg-modelo-obs" rows="4" style="font-size:13px" placeholder="Ex: A interposição de barreiras físicas pode interferir..."></textarea>
             </div>
             <div class="form-section">Tipografia</div>
             <div class="form-grid fg-3">
@@ -1823,7 +1828,7 @@ function clearLaudoForm() {
   document.getElementById('f-forma').value = 'Pix';
   document.getElementById('f-fpago').value = 'Pago';
   document.getElementById('f-conclusao').value = getConfig().laudo && getConfig().laudo.modeloConclusao ? getConfig().laudo.modeloConclusao : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
-  document.getElementById('f-obs').value = '';
+  document.getElementById('f-obs').value = getConfig().laudo && getConfig().laudo.modeloObs ? getConfig().laudo.modeloObs : '';
   Object.keys(orgDefaults).forEach(k => { const el = document.getElementById('o-'+k); if(el) el.value = orgDefaults[k]; });
   ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
   // reset all patologia selects to first option
@@ -2780,6 +2785,7 @@ function renderPainel() {
   document.getElementById('cfg-sec-fotos').checked      = lc.secFotos       !== false;
   document.getElementById('cfg-sec-footer').checked    = lc.secFooter      !== false;
   document.getElementById('cfg-modelo-conclusao').value = lc.modeloConclusao || '';
+  document.getElementById('cfg-modelo-obs').value       = lc.modeloObs       || '';
   document.getElementById('cfg-fonte').value            = lc.fonte        || 'Arial, sans-serif';
   document.getElementById('cfg-fontsize').value         = lc.fontsize     || '12';
   document.getElementById('cfg-lineh').value            = lc.lineh        || '1.6';
@@ -2907,6 +2913,7 @@ function salvarConfigLaudo() {
     secFotos:       document.getElementById('cfg-sec-fotos').checked,
     secFooter:      document.getElementById('cfg-sec-footer').checked,
     modeloConclusao: document.getElementById('cfg-modelo-conclusao').value,
+    modeloObs:       document.getElementById('cfg-modelo-obs').value,
     fonte:       document.getElementById('cfg-fonte').value,
     fontsize:    document.getElementById('cfg-fontsize').value,
     lineh:       document.getElementById('cfg-lineh').value,
