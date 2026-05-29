@@ -784,6 +784,7 @@
             <div class="card-header"><div class="card-title">Cadastrar clínica parceira</div></div>
             <div class="form-grid fg-3">
               <div class="form-field"><label>Nome da clínica</label><input id="cl-nome" placeholder="Nome da clínica"></div>
+              <div class="form-field"><label>Sigla / Abreviação</label><input id="cl-sigla" placeholder="Ex: H4P, HVS, Bruna" title="Usada no nome do arquivo ao imprimir o laudo"></div>
               <div class="form-field"><label>Responsável</label><input id="cl-responsavel" placeholder="Nome do responsável"></div>
               <div class="form-field"><label>Telefone</label><input id="cl-telefone" placeholder="(XX) XXXXX-XXXX"></div>
               <div class="form-field"><label>E-mail</label><input id="cl-email" placeholder="email@clinica.com.br" type="email"></div>
@@ -1655,6 +1656,28 @@ function renderPreview(l) {
   document.getElementById('viz-area').innerHTML = '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l) + '</div>';
 }
 
+// Gera nome de arquivo padrão: Sigla - Laudo Ultrassom - Paciente - Tutor Data
+function nomeArquivoLaudo(l) {
+  let sigla = 'Particular';
+  if (l.clinica) {
+    const cl = clinicas.find(c => c.nome === l.clinica);
+    if (cl && cl.sigla) {
+      sigla = cl.sigla;
+    } else {
+      // gera sigla automática pelas iniciais de cada palavra
+      sigla = l.clinica.split(/\s+/).filter(Boolean).map(w => w[0]).join('').toUpperCase() || l.clinica;
+    }
+  }
+  const clean = s => (s || '').replace(/[\/\\:*?"<>|]/g, '').trim();
+  const pac  = clean(l.paciente) || 'Paciente';
+  const tut  = clean(l.tutor);
+  const data = l.data ? l.data.split('-').reverse().join('-') : '';
+  let nome = clean(sigla) + ' - Laudo Ultrassom - ' + pac;
+  if (tut)  nome += ' - ' + tut;
+  if (data) nome += ' ' + data;
+  return nome;
+}
+
 function imprimirLaudo() {
   const l = viewId ? laudos.find(function(x){ return x.id === viewId; }) : getLaudoData();
   if (!l) return;
@@ -1664,7 +1687,7 @@ function imprimirLaudo() {
   const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + nomeArquivoLaudo(l) + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -2159,8 +2182,8 @@ function renderReceber() {
 // ─── CLÍNICAS ─────────────────────────────────────────────────────────────────
 function addClinica() {
   if (!document.getElementById('cl-nome').value) { alert('Informe o nome da clínica.'); return; }
-  clinicas.push({id:Date.now(), nome:document.getElementById('cl-nome').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, endereco:document.getElementById('cl-endereco').value, obs:document.getElementById('cl-obs').value});
-  ['cl-nome','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value='');
+  clinicas.push({id:Date.now(), nome:document.getElementById('cl-nome').value, sigla:document.getElementById('cl-sigla').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, endereco:document.getElementById('cl-endereco').value, obs:document.getElementById('cl-obs').value});
+  ['cl-nome','cl-sigla','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value='');
   save(); renderClinicas(); populateClinicaSelects(); toast('Clínica cadastrada!');
 }
 
@@ -2179,7 +2202,7 @@ function renderClinicas() {
       const tot = receitas.filter(r=>(r.clinica||'').toLowerCase()===c.nome.toLowerCase()).reduce((s,r)=>s+r.valor,0);
       const qtdLaudos = laudos.filter(l=>(l.clinica||'').toLowerCase()===c.nome.toLowerCase()).length;
       return `<tr>
-        <td><strong>${c.nome}</strong>${c.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${c.endereco} <a href="https://maps.google.com/?q=${encodeURIComponent(c.endereco)}" target="_blank" style="color:var(--teal);text-decoration:none;white-space:nowrap">🗺 Maps</a></div>`:''}${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
+        <td><strong>${c.nome}</strong>${c.sigla?` <span style="font-size:11px;background:var(--teal-bg);color:var(--teal-text);padding:1px 6px;border-radius:4px;vertical-align:middle">${c.sigla}</span>`:''}${c.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${c.endereco} <a href="https://maps.google.com/?q=${encodeURIComponent(c.endereco)}" target="_blank" style="color:var(--teal);text-decoration:none;white-space:nowrap">🗺 Maps</a></div>`:''}${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
         <td style="color:var(--text2)">${c.responsavel||c.contato||'—'}</td>
         <td style="color:var(--text2);white-space:nowrap">${c.telefone||'—'}</td>
         <td style="color:var(--text2)">${c.email||'—'}</td>
@@ -2389,7 +2412,7 @@ function abrirJanelaPDF(l, titulo) {
 function baixarLaudoPDF() {
   const l = viewId ? laudos.find(function(x){ return x.id === viewId; }) : getLaudoData();
   if (!l) return;
-  abrirJanelaPDF(l, 'Laudo — ' + (l.paciente || 'VetRoutine'));
+  abrirJanelaPDF(l, nomeArquivoLaudo(l));
 }
 
 function baixarPreviasPDF() {
