@@ -1294,8 +1294,8 @@ function buildLaudoHTML(l) {
   const nomes  = isGest ? orgNomesGest : orgNomesAbdom;
   const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
     return '<tr style="border-bottom:1px solid #edf2ef">'
-      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + (nomes[k]||k) + '</td>'
-      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap">' + orgs[k].texto + '</td>'
+      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</td>'
+      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</td>'
       + '</tr>';
   }).join('') : '';
   // cabeçalho (3 estilos)
@@ -1327,7 +1327,7 @@ function buildLaudoHTML(l) {
     + headerHTML
     /* DADOS DO PACIENTE */
     + '<div style="padding:10px 28px 8px;background:#f5f4f0;border-bottom:1px solid #e2e1dc">'
-      + '<table style="width:100%;border-collapse:collapse">'
+      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">'
         + '<tr>'
           + '<td style="padding:3px 10px 3px 0;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Paciente</span><div style="font-size:' + szSm + 'px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></td>'
           + '<td style="padding:3px 10px;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.especie||'—') + (l.raca?' · '+l.raca:'') + '</div></td>'
@@ -1351,7 +1351,7 @@ function buildLaudoHTML(l) {
     /* ACHADOS */
     + (secAchados ? '<div style="padding:10px 28px 14px">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
-      + '<table style="width:100%;border-collapse:collapse">' + orgRows + '</table>'
+      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">' + orgRows + '</table>'
     + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef">'
@@ -1406,9 +1406,10 @@ function imprimirLaudo() {
   const lc = getConfig().laudo || {};
   const margens = lc.margens || '12mm';
   const papel   = lc.papel   || 'A4';
+  const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{size:' + papel + ';margin:' + margens + '}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px;font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:' + margens + '}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -1990,9 +1991,10 @@ function imprimirPrevia() {
   const lc = getConfig().laudo || {};
   const margens = lc.margens || '12mm';
   const papel   = lc.papel   || 'A4';
+  const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{size:' + papel + ';margin:' + margens + '}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px;font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:' + margens + '}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
