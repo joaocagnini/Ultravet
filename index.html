@@ -1043,6 +1043,16 @@
                   <option value="minimal">Minimalista (logo + texto lado a lado)</option>
                 </select>
               </div>
+              <div class="form-field">
+                <label>Tamanho da logomarca</label>
+                <select id="cfg-logo-altura">
+                  <option value="50">Pequena (50 px)</option>
+                  <option value="70">Média (70 px) — padrão</option>
+                  <option value="100">Grande (100 px)</option>
+                  <option value="130">Maior (130 px)</option>
+                  <option value="170">Máxima (170 px)</option>
+                </select>
+              </div>
             </div>
             <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
               <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
@@ -1987,7 +1997,9 @@ function buildLaudoHTML(l) {
   }).join('') : '';
   // cabeçalho (3 estilos)
   const logoSrc = getLogo();
-  const logoTag = logoSrc ? '<img src="' + logoSrc + '" alt="Logo" style="max-height:70px;max-width:220px;object-fit:contain;display:block;margin:0 auto 4px">' : '';
+  const logoAltura = parseInt(lc.logoAltura || '70');
+  const logoLargura = Math.round(logoAltura * (220/70));
+  const logoTag = logoSrc ? '<img src="' + logoSrc + '" alt="Logo" style="max-height:' + logoAltura + 'px;max-width:' + logoLargura + 'px;object-fit:contain;display:block;margin:0 auto 4px">' : '';
   let headerHTML;
   if (hstyle === 'white') {
     headerHTML = '<div style="background:' + cor + '0a;padding:14px 28px 10px;text-align:center;border-bottom:3px solid ' + cor + '">'
@@ -2800,6 +2812,7 @@ function renderPainel() {
   document.getElementById('cfg-margens').value          = lc.margens      || '12mm';
   document.getElementById('cfg-papel').value            = lc.papel        || 'A4';
   document.getElementById('cfg-header-style').value     = lc.headerStyle  || 'gray';
+  document.getElementById('cfg-logo-altura').value      = lc.logoAltura   || '70';
   const lbl = document.getElementById('sync-label');
   const el = document.getElementById('painel-sync-status');
   if (el) el.textContent = lbl ? lbl.textContent : '—';
@@ -2947,6 +2960,7 @@ function salvarConfigLaudo() {
     margens:     document.getElementById('cfg-margens').value,
     papel:       document.getElementById('cfg-papel').value,
     headerStyle: document.getElementById('cfg-header-style').value,
+    logoAltura:  document.getElementById('cfg-logo-altura').value,
   };
   localStorage.setItem('uv_config', JSON.stringify(cfg));
   toast('Configuração do laudo salva!');
