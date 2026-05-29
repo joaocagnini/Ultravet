@@ -417,9 +417,12 @@
             <div class="form-field"><label>Tutor</label><input id="f-tutor" placeholder="Nome do tutor"></div>
             <div class="form-field"><label>Veterinário solicitante</label><input id="f-vet" placeholder="Dr(a)."></div>
             <div class="form-field"><label>Clínica parceira</label><select id="f-clinica"><option value="">— Selecione —</option></select></div>
-            <div class="form-field"><label>Valor do exame (R$)</label><input type="text" inputmode="decimal" id="f-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
-            <div class="form-field"><label>Forma de pagamento</label><select id="f-forma"><option>Pix</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option></select></div>
+            <div class="form-field"><label>Origem</label><select id="f-origem" onchange="atualizarTiposAtend()"><option value="">— Avulso —</option><option>Bruna</option><option>Hospital 4 Patas</option><option>Meus Clientes</option></select></div>
+            <div class="form-field"><label>Tipo de atendimento</label><select id="f-tipo-atend" onchange="atualizarValoresPorOrigem()"><option value="">— Selecione —</option></select></div>
             <div class="form-field"><label>Status do pagamento</label><select id="f-fpago"><option>Pago</option><option>Pendente</option><option>Atrasado</option></select></div>
+            <div class="form-field"><label>Valor cobrado (R$)</label><input type="text" inputmode="decimal" id="f-valor" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
+            <div class="form-field"><label>Valor recebido (R$)</label><input type="text" inputmode="decimal" id="f-valor-rec" placeholder="0,00" oninput="maskCurrency(this)" autocomplete="off"></div>
+            <div class="form-field"><label>Forma de pagamento</label><select id="f-forma"><option>Pix</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Dinheiro</option></select></div>
           </div>
         </div>
 
@@ -1335,9 +1338,57 @@ function novoLaudo() {
   goPage('novo-laudo');
 }
 
+// ─── TABELA DE REMUNERAÇÃO ────────────────────────────────────────────────────
+const tabelaRemuneracao = {
+  'Bruna': {
+    'Domiciliar':  { cobrado: 290, recebido: 203 },
+    'Padrão':      { cobrado: 210, recebido: 147 },
+    'Plantão':     { cobrado: 300, recebido: 210 },
+  },
+  'Hospital 4 Patas': {
+    'Hospital Padrão':  { cobrado: 247, recebido: 110 },
+    'Hospital Plantão': { cobrado: 370, recebido: 140 },
+  },
+  'Meus Clientes': {
+    'Padrão':           { cobrado: 210, recebido: 210 },
+    'Plantão':          { cobrado: 270, recebido: 270 },
+    'Plantão após 22h': { cobrado: 370, recebido: 370 },
+  }
+};
+
+// Atualiza opções de tipo de atendimento conforme a origem selecionada
+function atualizarTiposAtend() {
+  const origem = document.getElementById('f-origem').value;
+  const sel = document.getElementById('f-tipo-atend');
+  sel.innerHTML = '<option value="">— Selecione —</option>';
+  if (origem && tabelaRemuneracao[origem]) {
+    Object.keys(tabelaRemuneracao[origem]).forEach(tipo => {
+      const o = document.createElement('option');
+      o.value = tipo; o.textContent = tipo;
+      sel.appendChild(o);
+    });
+  }
+  // limpa valores ao trocar origem
+  document.getElementById('f-valor').value = '';
+  document.getElementById('f-valor-rec').value = '';
+}
+
+// Preenche automaticamente Valor cobrado e Valor recebido pela tabela
+function atualizarValoresPorOrigem() {
+  const origem = document.getElementById('f-origem').value;
+  const tipo   = document.getElementById('f-tipo-atend').value;
+  if (origem && tipo && tabelaRemuneracao[origem] && tabelaRemuneracao[origem][tipo]) {
+    const { cobrado, recebido } = tabelaRemuneracao[origem][tipo];
+    setCurrency('f-valor', cobrado);
+    setCurrency('f-valor-rec', recebido);
+  }
+}
+
 function clearLaudoForm() {
-  ['f-pac','f-raca','f-idade','f-tutor','f-vet','f-valor'].forEach(id => document.getElementById(id).value = '');
+  ['f-pac','f-raca','f-idade','f-tutor','f-vet','f-valor','f-valor-rec'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('f-clinica').selectedIndex = 0;
+  document.getElementById('f-origem').value = '';
+  document.getElementById('f-tipo-atend').innerHTML = '<option value="">— Selecione —</option>';
   document.getElementById('f-tipo').value = 'Abdominal total';
   document.getElementById('f-esp').value = 'Canino';
   document.getElementById('f-sexo').value = 'Macho';
@@ -1374,7 +1425,10 @@ function getLaudoData() {
     tutor: document.getElementById('f-tutor').value,
     vet: document.getElementById('f-vet').value,
     clinica: document.getElementById('f-clinica').value,
+    origem: document.getElementById('f-origem').value,
+    tipoAtend: document.getElementById('f-tipo-atend').value,
     valor: parseCurrency('f-valor'),
+    valorRec: parseCurrency('f-valor-rec'),
     forma: document.getElementById('f-forma').value,
     fpago: document.getElementById('f-fpago').value,
     conclusao: document.getElementById('f-conclusao').value,
@@ -1392,8 +1446,10 @@ function salvarLaudo() {
     toast('Laudo atualizado com sucesso!');
   } else {
     laudos.push({id: Date.now(), ...d});
-    if (d.valor > 0) {
-      receitas.push({id: Date.now()+1, data: d.data, desc: d.tipo + ' — ' + d.paciente, clinica: d.clinica, valor: d.valor, forma: d.forma, status: d.fpago, vet: d.vet, obs: ''});
+    const valorReceita = d.valorRec > 0 ? d.valorRec : d.valor;
+    if (valorReceita > 0) {
+      const descOrig = d.origem ? ' [' + d.origem + (d.tipoAtend ? ' · ' + d.tipoAtend : '') + ']' : '';
+      receitas.push({id: Date.now()+1, data: d.data, desc: d.tipo + ' — ' + d.paciente + descOrig, clinica: d.clinica, valor: valorReceita, valorCobrado: d.valor, forma: d.forma, status: d.fpago, vet: d.vet, obs: ''});
     }
     toast('Laudo salvo! Receita lançada automaticamente.');
   }
@@ -1430,7 +1486,11 @@ function editLaudo(id) {
   document.getElementById('f-tutor').value = l.tutor || '';
   document.getElementById('f-vet').value = l.vet || '';
   document.getElementById('f-clinica').value = l.clinica || '';
+  document.getElementById('f-origem').value = l.origem || '';
+  atualizarTiposAtend(); // repopula opções de tipo conforme origem
+  document.getElementById('f-tipo-atend').value = l.tipoAtend || '';
   setCurrency('f-valor', l.valor || 0);
+  setCurrency('f-valor-rec', l.valorRec || 0);
   document.getElementById('f-forma').value = l.forma || 'Pix';
   document.getElementById('f-fpago').value = l.fpago || 'Pago';
   document.getElementById('f-conclusao').value = l.conclusao || '';
@@ -2909,18 +2969,22 @@ function renderRpExtrato() {
   const rows = getExtratoRows();
 
   // totais
-  const total   = rows.reduce((s, l) => s + (l.valor || 0), 0);
-  const pagos   = rows.filter(l => l.fpago === 'Pago').reduce((s, l) => s + (l.valor || 0), 0);
-  const pendente = rows.filter(l => l.fpago !== 'Pago').reduce((s, l) => s + (l.valor || 0), 0);
+  const totalCobrado  = rows.reduce((s, l) => s + (l.valor || 0), 0);
+  const totalRecebido = rows.reduce((s, l) => s + (l.valorRec > 0 ? l.valorRec : (l.valor || 0)), 0);
+  const pagos    = rows.filter(l => l.fpago === 'Pago').reduce((s, l) => s + (l.valorRec > 0 ? l.valorRec : (l.valor || 0)), 0);
+  const pendente = rows.filter(l => l.fpago !== 'Pago').reduce((s, l) => s + (l.valorRec > 0 ? l.valorRec : (l.valor || 0)), 0);
   document.getElementById('ext-totais').innerHTML =
     '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
       + '<div class="metric-label">Exames filtrados</div>'
       + '<div class="metric-value" style="font-size:22px">' + rows.length + '</div></div>'
     + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
-      + '<div class="metric-label">Total período</div>'
-      + '<div class="metric-value green" style="font-size:22px">' + fmt(total) + '</div></div>'
+      + '<div class="metric-label">Total cobrado</div>'
+      + '<div class="metric-value green" style="font-size:22px">' + fmt(totalCobrado) + '</div></div>'
     + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
-      + '<div class="metric-label">Recebido</div>'
+      + '<div class="metric-label">Total recebido</div>'
+      + '<div class="metric-value green" style="font-size:22px">' + fmt(totalRecebido) + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Pago</div>'
       + '<div class="metric-value green" style="font-size:22px">' + fmt(pagos) + '</div></div>'
     + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
       + '<div class="metric-label">A receber</div>'
@@ -2939,27 +3003,33 @@ function renderRpExtrato() {
     '<table class="data-table">'
     + '<thead><tr>'
       + '<th>Data</th><th>Clínica</th><th>Paciente</th><th>Tutor</th>'
-      + '<th>Veterinário</th><th>Exame / Procedimento</th>'
-      + '<th style="text-align:right">Valor</th><th>Status</th>'
+      + '<th>Veterinário</th><th>Exame</th><th>Origem</th><th>Tipo atend.</th>'
+      + '<th style="text-align:right">Cobrado</th><th style="text-align:right">Recebido</th><th>Status</th>'
     + '</tr></thead>'
     + '<tbody>'
-    + rows.map(l =>
-        '<tr>'
-        + '<td style="white-space:nowrap">' + fmtD(l.data) + '</td>'
-        + '<td>' + (l.clinica || '—') + '</td>'
-        + '<td><strong>' + (l.paciente || '—') + '</strong>'
-          + (l.especie ? '<div style="font-size:11px;color:var(--text3)">' + l.especie + '</div>' : '')
-        + '</td>'
-        + '<td>' + (l.tutor || '—') + '</td>'
-        + '<td>' + (l.vet || '—') + '</td>'
-        + '<td>' + (l.tipo || '—') + '</td>'
-        + '<td style="text-align:right;font-weight:600">' + fmt(l.valor || 0) + '</td>'
-        + '<td>' + statusBadge(l.fpago) + '</td>'
-        + '</tr>'
-      ).join('')
+    + rows.map(l => {
+        const vRec = l.valorRec > 0 ? l.valorRec : l.valor || 0;
+        const origemTag = l.origem ? '<span style="font-size:11px;background:var(--teal-bg);color:var(--teal-text);padding:2px 6px;border-radius:4px">' + l.origem + '</span>' : '—';
+        return '<tr>'
+          + '<td style="white-space:nowrap">' + fmtD(l.data) + '</td>'
+          + '<td>' + (l.clinica || '—') + '</td>'
+          + '<td><strong>' + (l.paciente || '—') + '</strong>'
+            + (l.especie ? '<div style="font-size:11px;color:var(--text3)">' + l.especie + '</div>' : '')
+          + '</td>'
+          + '<td>' + (l.tutor || '—') + '</td>'
+          + '<td>' + (l.vet || '—') + '</td>'
+          + '<td>' + (l.tipo || '—') + '</td>'
+          + '<td>' + origemTag + '</td>'
+          + '<td style="font-size:12px;color:var(--text2)">' + (l.tipoAtend || '—') + '</td>'
+          + '<td style="text-align:right;font-weight:600">' + fmt(l.valor || 0) + '</td>'
+          + '<td style="text-align:right;font-weight:600;color:var(--teal)">' + fmt(vRec) + '</td>'
+          + '<td>' + statusBadge(l.fpago) + '</td>'
+          + '</tr>';
+      }).join('')
     + '<tr style="border-top:2px solid var(--border);font-weight:700">'
-      + '<td colspan="6" style="text-align:right;color:var(--text2)">Total</td>'
-      + '<td style="text-align:right;color:var(--teal)">' + fmt(total) + '</td>'
+      + '<td colspan="8" style="text-align:right;color:var(--text2)">Total</td>'
+      + '<td style="text-align:right">' + fmt(totalCobrado) + '</td>'
+      + '<td style="text-align:right;color:var(--teal)">' + fmt(totalRecebido) + '</td>'
       + '<td></td></tr>'
     + '</tbody></table>';
 }
@@ -2973,17 +3043,23 @@ function limparFiltrosExtrato() {
 function exportarCSVExtrato() {
   const rows = getExtratoRows();
   if (!rows.length) { toast('Nenhum dado para exportar.'); return; }
-  const headers = ['Data','Clínica','Paciente','Tutor','Veterinário','Exame/Procedimento','Valor (R$)','Status pagamento'];
-  const csvRows = [headers, ...rows.map(l => [
-    fmtD(l.data),
-    l.clinica || '',
-    l.paciente || '',
-    l.tutor || '',
-    l.vet || '',
-    l.tipo || '',
-    (l.valor || 0).toFixed(2).replace('.', ','),
-    l.fpago || ''
-  ])];
+  const headers = ['Data','Clínica','Paciente','Tutor','Veterinário','Exame/Procedimento','Origem','Tipo atendimento','Valor cobrado (R$)','Valor recebido (R$)','Status pagamento'];
+  const csvRows = [headers, ...rows.map(l => {
+    const vRec = l.valorRec > 0 ? l.valorRec : l.valor || 0;
+    return [
+      fmtD(l.data),
+      l.clinica || '',
+      l.paciente || '',
+      l.tutor || '',
+      l.vet || '',
+      l.tipo || '',
+      l.origem || '',
+      l.tipoAtend || '',
+      (l.valor || 0).toFixed(2).replace('.', ','),
+      vRec.toFixed(2).replace('.', ','),
+      l.fpago || ''
+    ];
+  })];
   const csv = '﻿' + csvRows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
   const a = document.createElement('a');
