@@ -435,7 +435,9 @@
               <div class="organ-name">Vesícula urinária</div>
               <select onchange="setOrganText('o-bexiga', this.value, 'bexiga')">
                 <option value="normal">Normal</option>
-                <option value="cistolitiase">Cistolitíase</option>
+                <option value="coagulo">Coágulo</option>
+                <option value="neoplasia">Neoplasia</option>
+                <option value="cistolitiase">Urolitíase</option>
                 <option value="cistite">Cistite</option>
                 <option value="espessamento">Espessamento de parede</option>
                 <option value="na">N/A</option>
@@ -1706,8 +1708,8 @@ function stpc(name) {
 // ─── LAUDO FORM ───────────────────────────────────────────────────────────────
 const orgDefaults = {
   bexiga: 'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.',
-  rins: 'Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.',
-  figado: 'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.',
+  rins: 'Formato mantido, localizados em topografia habitual, com dimensões simétricas (medindo o direito ___ cm e o esquerdo ___ cm em seus eixos longitudinais). Ambos apresentam arquitetura e relação córtico-medular preservadas.',
+  figado: 'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade. Vasos hepáticos com calibre e distribuição preservados.',
   vbiliar: 'Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.',
   baco: 'Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.',
   estomago: 'Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.',
@@ -1715,7 +1717,7 @@ const orgDefaults = {
   pancreas: 'Ecogenicidade e ecotextura preservadas.',
   adrenais: 'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
   linfo: 'Não foram observadas alterações ecográficas neste exame.',
-  prostata: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.',
+  prostata: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade para a espécie e porte, contornos definidos, ecogenicidade e ecotextura preservadas.',
   utero_f: 'Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.',
 };
 const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',utero_f:'Útero',prostata:'Próstata'};
@@ -1727,7 +1729,7 @@ function toggleGest() {
   document.getElementById('card-gestacional').style.display = t === 'Gestacional' ? 'block' : 'none';
   organSelecoes = {}; // reseta impressões ao trocar tipo de exame
   document.getElementById('f-conclusao').value = t === 'Gestacional'
-    ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
+    ? 'Prenhes positiva com fetos de idade entre ___ a ___ dias de gestação;\nFaltam entre ___ a ___ dias para o parto;'
     : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
 }
 
@@ -1985,7 +1987,7 @@ function buildLaudoHTML(l) {
   }).join('') : '';
   // cabeçalho (3 estilos)
   const logoSrc = getLogo();
-  const logoTag = logoSrc ? '<img src="' + logoSrc + '" alt="Logo" style="max-height:110px;max-width:260px;object-fit:contain;display:block;margin:0 auto 6px">' : '';
+  const logoTag = logoSrc ? '<img src="' + logoSrc + '" alt="Logo" style="max-height:70px;max-width:220px;object-fit:contain;display:block;margin:0 auto 4px">' : '';
   let headerHTML;
   if (hstyle === 'white') {
     headerHTML = '<div style="background:' + cor + '0a;padding:14px 28px 10px;text-align:center;border-bottom:3px solid ' + cor + '">'
@@ -2164,180 +2166,177 @@ function renderFotosGrid() {
 // ─── PATOLOGIAS ───────────────────────────────────────────────────────────────
 const organPatologias = {
   bexiga: {
-    normal: 'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.',
-    cistolitiase: 'Vesícula urinária com presença de estrutura hiperecogênica em lúmen, formadora de intenso sombreamento acústico posterior, medindo aproximadamente ___ cm.',
-    cistite: 'Vesícula urinária com paredes espessadas e hiperecogênicas, medindo aproximadamente ___ cm de espessura, associada a conteúdo ecogênico em suspensão.',
+    normal:       'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.',
+    coagulo:      'Moderada repleção, paredes finas e regulares, conteúdo anecogênico com estrutura hiperecogênica/hipoecogênica/ecogenicidade mista, com dimensões de ___ cm, aderida/não aderida na parede, sem vascularização evidente pela ferramenta Doppler.',
+    neoplasia:    'Estrutura ovalada/elíptica/amorfa/circunscrita (medindo em torno de ___ cm), heterogênea/homogênea, hipoecogênica/hiperecogênica/ecogenicidade mista, de bordos regulares/irregulares e contornos definidos/indefinidos, localização ___, aderida ou não à parede da vesícula urinária, com/sem vascularização evidente pela ferramenta Doppler.',
+    cistolitiase: 'Repleção líquida adequada, formato habitual, paredes espessas e ecogênicas, medindo ___ cm de espessura, associado a presença de estruturas hiperecogênicas depositadas ao fundo, formadoras de sombreamento acústico posterior, medindo aproximadamente ___ cm.',
+    cistite:      'Repleção líquida adequada, formato habitual, paredes espessas e ecogênicas, medindo ___ cm de espessura, margens internas irregulares e conteúdo anecogênico com pontos hiperecogênicos em suspensão (sedimento).',
     espessamento: 'Vesícula urinária com paredes espessadas, medindo aproximadamente ___ cm de espessura. Conteúdo luminal heterogêneo com material em suspensão.',
     na: ''
   },
   rins: {
-    normal: 'Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.',
-    nefropatia: 'Rins localizados em topografia habitual, apresentando redução/perda da definição córtico-medular, aumento difuso da ecogenicidade cortical, contornos irregulares e discreta redução dimensional.',
-    nefrolitiase: 'Rim direito/esquerdo apresentando estrutura hiperecogênica em pelve renal, formadora de sombreamento acústico posterior, medindo aproximadamente ___ cm. Sem sinais de dilatação pielocalicial evidente.',
-    hidronefrose: 'Rim direito/esquerdo apresentando dilatação do sistema pielocalicial, com pelve medindo aproximadamente ___ cm. Parênquima renal com espessura reduzida.',
-    cisto: 'Rim direito/esquerdo apresentando formação cavitária arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm, sem sinais de vascularização ao Doppler.'
+    normal:       'Formato mantido, localizados em topografia habitual, com dimensões simétricas (medindo o direito ___ cm e o esquerdo ___ cm em seus eixos longitudinais). Ambos apresentam arquitetura e relação córtico-medular preservadas.',
+    nefropatia:   'Formato mantido, localizados em topografia habitual, com dimensões diminuídas (medindo o direito ___ cm e o esquerdo ___ cm em seus eixos longitudinais). Ambos apresentam perda de arquitetura e perda de definição da relação córtico-medular.',
+    nefrolitiase: 'Identificado(s) foco(s) hiperecóico(s) com sombra acústica posterior na pelve renal / parênquima renal (adaptar localização), medindo aproximadamente ___. Pelve renal sem sinais de dilatação / com discreta dilatação (adaptar), medindo ___.',
+    hidronefrose: 'Dilatação da pelve renal evidenciada ao exame, com grau leve / moderado / acentuado (adaptar). Parênquima renal com espessura preservada / reduzida por compressão (adaptar). Ureter proximal visibilizado / não visibilizado (adaptar). Investigar causa obstrutiva.',
+    cisto:        'Identificada(s) estrutura(s) anecoica(s), de paredes finas e regulares, conteúdo homogêneo, sem vascularização ao Doppler, medindo ___.'
   },
   figado: {
-    normal: 'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.',
-    hepatopatia: 'Fígado apresentando aumento difuso da ecogenicidade do parênquima, ecotextura grosseira/heterogênea, margens arredondadas e discreto aumento das dimensões, podendo dificultar a caracterização dos vasos intra-hepáticos. Não foram observadas formações focais evidentes.',
-    cisto_hepatico: 'Fígado apresentando múltiplas formações cavitárias arredondadas, anecogênicas, de paredes finas, distribuídas pelo parênquima hepático.',
-    nodulo_hepatico: 'Fígado apresentando formação nodular hipo/hiperecogênica em ___ lobo hepático, medindo aproximadamente ___ cm, com contornos bem definidos. Não foram observadas outras formações focais evidentes.',
-    hepatomegalia: 'Fígado com dimensões aumentadas, ultrapassando o gradil costal, superfície lisa, ecogenicidade e ecotextura preservadas.'
+    normal:        'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade. Vasos hepáticos com calibre e distribuição preservados.',
+    hepatopatia:   'Fígado com ecogenicidade difusamente aumentada (hiperecóico), ecotextura grosseira e heterogênea, com atenuação do feixe sonoro em profundidade. Visualização dos vasos hepáticos prejudicada. Dimensões aumentadas / preservadas (adaptar).',
+    cisto_hepatico:'Identificadas estruturas anecoicas, de paredes finas e regulares, com reforço acústico posterior, distribuídas no parênquima hepático, compatíveis com cistos hepáticos. Maior lesão medindo aproximadamente ___ mm. Parênquima hepático adjacente sem alterações significativas.',
+    nodulo_hepatico:'Identificado(s) nódulo(s) no parênquima hepático, com ecogenicidade hipoecóica / hiperecóica / mista (adaptar), contornos regulares / irregulares, medindo aproximadamente ___ mm.',
+    hepatomegalia: 'Fígado com dimensões aumentadas, ultrapassando o gradil costal. Superfície lisa, margens preservadas / levemente arredondadas. Ecogenicidade e ecotextura preservadas / alteradas (adaptar). Investigar causas sistêmicas associadas.'
   },
   vbiliar: {
-    normal: 'Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.',
-    lama_biliar: 'Vesícula biliar com repleção adequada, paredes finas e regulares, contendo material ecogênico amorfo/dependente em lúmen, sem formação de sombreamento acústico posterior, ocupando aproximadamente __% do lúmen vesicular.',
-    colelitíase: 'Vesícula biliar com presença de estrutura(s) hiperecogênica(s) em lúmen, formadora(s) de sombreamento acústico posterior, medindo aproximadamente ___ cm.',
-    colecistite: 'Vesícula biliar com paredes espessadas medindo ___ cm, conteúdo heterogêneo com material em suspensão. Sinal de Murphy ultrassonográfico positivo.'
+    normal:        'Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.',
+    lama_biliar:   'Vesícula biliar com conteúdo ecogênico em suspensão, sem sombra acústica, com sedimentação dependente da gravidade, compatível com lama biliar (barro biliar). Paredes com espessura preservada.',
+    'colelitíase': 'Identificado(s) foco(s) hiperecóico(s) com sombra acústica posterior no interior da vesícula biliar, compatível(is) com cálculo(s) biliar(es). Paredes com espessura preservada. Ducto biliar comum sem evidência de dilatação.',
+    colecistite:   'Paredes da vesícula biliar com espessamento difuso (> ___ mm), ecogenicidade aumentada. Conteúdo com material ecogênico em suspensão. Achados compatíveis com processo colecistítico. Correlacionar clinicamente.'
   },
   baco: {
-    normal: 'Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.',
-    esplenomegalia: 'Baço com dimensões aumentadas, medindo aproximadamente ___ cm no maior eixo. Ecogenicidade e ecotextura preservadas, sem formações focais evidentes.',
-    nodulo_baco: 'Baço apresentando formação nodular hipo/hiperecogênica, medindo aproximadamente ___ cm, com contornos bem/mal definidos.',
-    hematoma_baco: 'Baço com formação heterogênea em região ___, apresentando área hipo/anecogênica irregular, sugestiva de hematoma/lesão traumática.'
+    normal:         'Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.',
+    esplenomegalia: 'Baço com dimensões aumentadas, superfície lisa / irregular (adaptar), margens arredondadas. Ecogenicidade preservada / difusamente alterada (adaptar). Investigar causas sistêmicas (processo infeccioso, imunomediado, infiltrativo ou neoplásico).',
+    nodulo_baco:    'Identificado(s) nódulo(s) no parênquima esplênico, medindo aproximadamente ___ mm, com ecogenicidade hipoecóica / hiperecóica / mista / anecoica (adaptar), contornos regulares / irregulares. Diferenciais incluem hiperplasia nodular benigna, hematoma e neoplasia. Recomenda-se acompanhamento ecográfico ou PAAF para caracterização.',
+    hematoma_baco:  'Área focal de ecogenicidade heterogênea / mista no parênquima esplênico, com conteúdo ecogênico e/ou anecogênico, compatível com hematoma. Contorno da cápsula esplênica preservado / com descontinuidade (adaptar). Avaliar presença de líquido livre abdominal.'
   },
   estomago: {
-    normal: 'Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.',
-    gastrite: 'Estômago com paredes discretamente espessadas, medindo aproximadamente ___ cm, preservando estratificação em camadas. Conteúdo luminal heterogêneo.',
-    corpo_estranho: 'Estômago com conteúdo luminal heterogêneo, evidenciando estrutura hiperecogênica com formação de sombreamento acústico/reverberação posterior, sugestiva de corpo estranho.',
-    espessamento_gastrico: 'Estômago com espessamento parietal focal/difuso, medindo aproximadamente ___ cm, com estratificação parietal preservada/alterada.'
+    normal:              'Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.',
+    gastrite:            'Paredes gástricas com espessamento focal/difuso, estratificação preservada / comprometida (adaptar). Mucosa com ecogenicidade aumentada. Conteúdo com material ecogênico em suspensão. Achados compatíveis com processo inflamatório gástrico. Correlacionar com sintomatologia clínica.',
+    corpo_estranho:      'Identificada estrutura hiperecóica / de ecogenicidade mista (adaptar) no interior gástrico, com sombra acústica posterior / artefato de reverberação (adaptar), sugestiva de corpo estranho. Paredes gástricas sem espessamento significativo. Avaliar sinais de obstrução ou perfuração.',
+    espessamento_gastrico:'Espessamento segmentar/difuso das paredes gástricas evidenciado, com perda parcial / total da estratificação em camadas (adaptar). Diferenciais incluem processo inflamatório, infiltrativo ou neoplásico. Recomenda-se endoscopia com biópsia para definição diagnóstica.'
   },
   intestino: {
-    normal: 'Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.',
-    enteropatia: 'Alças intestinais apresentando discreto/moderado espessamento difuso das paredes, preservando estratificação parietal, associado à hipomotilidade e conteúdo gasoso/líquido em lúmen.',
-    obstrucao: 'Alças intestinais dilatadas, com acúmulo de conteúdo líquido/gasoso em lúmen, hipomotilidade e ausência de peristaltismo em segmento avaliado.',
-    intussuscepcao: 'Evidencia-se imagem em alvo/rosca em corte transversal, com múltiplas camadas concêntricas, compatível com intussuscepção intestinal em região ___.',
-    corpo_estranho_int: 'Segmento intestinal com estrutura hiperecogênica em lúmen, formadora de sombreamento acústico/reverberação posterior, associada a dilatação a montante, sugestiva de corpo estranho.'
+    normal:             'Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.',
+    enteropatia:        'Paredes intestinais com espessamento difuso e perda da estratificação em camadas em segmentos avaliados. Mucosa hiperecóica / com arquitetura comprometida. Achados compatíveis com enteropatia de caráter inflamatório ou infiltrativo. Recomenda-se biópsia intestinal para diagnóstico definitivo.',
+    obstrucao:          'Alças intestinais proximais ao segmento suspeito com dilatação luminal e conteúdo fluido/gasoso aumentado. Peristaltismo reduzido / ausente (adaptar). Investigar causa obstrutiva mecânica. Avaliar com urgência.',
+    intussuscepcao:     'Identificada imagem em "alvo" ou "rosca" em corte transversal, com múltiplos anéis concêntricos, em segmento intestinal, compatível com intussuscepção. Localização aproximada: ___. Avaliar viabilidade do segmento e presença de líquido livre perilesional.',
+    corpo_estranho_int: 'Identificada estrutura hiperecóica com sombra acústica / artefato de reverberação no interior de segmento intestinal, compatível com corpo estranho. Parede intestinal no segmento comprometido com espessamento focal. Avaliar sinais de obstrução distal.'
   },
   pancreas: {
-    normal: 'Ecogenicidade e ecotextura preservadas.',
-    pancreatite: 'Pâncreas aumentado de dimensões, hipoecogênico/heterogêneo, associado à hiperecogenicidade da gordura adjacente.',
-    massa_pancreas: 'Pâncreas apresentando formação nodular hipo/heterogênea em ___, medindo aproximadamente ___ cm, com contornos irregulares.'
+    normal:        'Ecogenicidade e ecotextura preservadas.',
+    pancreatite:   'Pâncreas com aumento de volume, ecogenicidade reduzida (hipoecóica), ecotextura heterogênea. Tecido peripancreático com ecogenicidade aumentada (saponificação da gordura). Pode haver pequena quantidade de líquido livre perilesional. Achados compatíveis com processo inflamatório pancreático (pancreatite aguda / crônica). Correlacionar com lipase pancreática específica canina (cPL) / felina (fPL) e clínica do paciente.',
+    massa_pancreas: 'Identificada lesão expansiva no parênquima pancreático, medindo aproximadamente ___ x ___ mm, com ecogenicidade hipoecóica / mista / heterogênea (adaptar), contornos irregulares / regulares. Diferenciais incluem adenocarcinoma pancreático, insulinoma e pseudocisto. Recomenda-se estadiamento com avaliação de linfonodos regionais e PAAF guiada por ultrassom.'
   },
   adrenais: {
-    normal: 'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
-    hiperplasia_adrenal: 'Adrenais apresentando aumento bilateral das dimensões, mantendo formato habitual, associado à presença de nodulação em polo cranial.',
-    nodulo_adrenal: 'Adrenal direita/esquerda apresentando formação nodular medindo aproximadamente ___ cm, de ecogenicidade homogênea, com contornos regulares.',
-    massa_adrenal: 'Adrenal direita/esquerda apresentando formação expansiva medindo aproximadamente ___ cm, heterogênea, com contornos irregulares.'
+    normal:            'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
+    hiperplasia_adrenal:'Adrenais com dimensões aumentadas bilateralmente, formato preservado, ecogenicidade e ecotextura homogêneas. Achados compatíveis com hiperplasia adrenocortical bilateral. Correlacionar com dosagem de cortisol basal e teste de estimulação com ACTH (hiperadrenocorticismo hipofisário-dependente).',
+    nodulo_adrenal:    'Identificado nódulo na adrenal direita / esquerda / bilateral (adaptar), medindo aproximadamente ___ mm, com ecogenicidade hipoecóica / hiperecóica / mista (adaptar). Contornos regulares / irregulares. Diferenciais: adenoma, carcinoma adrenal, feocromocitoma. Avaliar invasão vascular (veia cava caudal). Correlacionar com exames endócrinos.',
+    massa_adrenal:     'Identificada massa expansiva em adrenal direita / esquerda (adaptar), medindo aproximadamente ___ x ___ mm, com ecogenicidade heterogênea, contornos irregulares. Avaliar invasão da veia cava caudal ao Doppler. Estadiamento oncológico indicado.'
   },
   linfo: {
-    normal: 'Não foram observadas alterações ecográficas neste exame.',
-    linfadenomegalia: 'Evidenciou-se aumento generalizado dos linfonodos abdominais, incluindo linfonodos do tronco celíaco, mesentéricos e ilíacos mediais.'
-  },
-  prostata: {
-    normal: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.',
-    hiperplasia_prostata: 'Próstata com aumento simétrico das dimensões, mantendo contornos regulares, ecogenicidade homogênea e ecotextura preservada. Medindo aproximadamente ___ cm.',
-    prostatite: 'Próstata com dimensões aumentadas, ecogenicidade heterogênea, contornos irregulares, associada a áreas hipoecogênicas sugestivas de processo inflamatório/abscedação.',
-    cisto_prostata: 'Próstata com presença de formação cística arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm.',
-    na: ''
+    normal:          'Não foram observadas alterações ecográficas neste exame.',
+    linfadenomegalia:'Linfonodos mesentéricos / ilíacos / portais (adaptar localização) com dimensões aumentadas, forma arredondada, relação L/S < 2, ecogenicidade reduzida (hipoecóicos). Achados compatíveis com linfadenomegalia. Diferenciais incluem processo inflamatório/infeccioso reativo e linfoma. Correlacionar com hemograma e, se indicado, PAAF de linfonodo.'
   },
   // Útero abdominal (fêmea não gestante)
   utero_f: {
-    normal: 'Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.',
-    piometra: 'Útero com cornos uterinos distendidos, preenchidos por conteúdo ecogênico/heterogêneo em lúmen, com paredes espessadas e irregulares.',
-    mucometra: 'Útero com cornos uterinos dilatados, preenchidos por conteúdo anecogênico homogêneo, com paredes finas e regulares.',
-    hiperplasia_endometrial: 'Útero com espessamento endometrial difuso e paredes irregulares, associado a conteúdo luminal heterogêneo, com presença de imagens císticas distribuídas pelo endométrio.',
-    cisto_ovariano: 'Ovário direito/esquerdo apresentando formação cística arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm.',
+    normal:                 'Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.',
+    piometra:               'Útero com marcada distensão luminal, conteúdo ecogênico e heterogêneo em seu interior, paredes espessadas. Cornos uterinos distendidos com diâmetro aumentado (aproximadamente ___ mm). Achados compatíveis com piometra. Emergência clínica — correlacionar com hemograma, bioquímica e estado geral do paciente.',
+    mucometra:              'Útero com distensão luminal por conteúdo anecogênico / levemente ecogênico (adaptar), paredes finas, compatível com mucometra/hidrometra. Cornos com diâmetro aumentado. Ausência de sinais sistêmicos graves na imagem — correlacionar clinicamente.',
+    hiperplasia_endometrial:'Útero com paredes espessadas, múltiplas estruturas císticas de pequenas dimensões no endométrio, conteúdo anecogênico, distribuídas de forma difusa, compatíveis com hiperplasia endometrial cística. Ausência de conteúdo luminal volumoso.',
+    cisto_ovariano:         'Identificada(s) estrutura(s) anecoica(s) de paredes finas em topografia ovariana direita / esquerda / bilateral (adaptar), medindo aproximadamente ___ mm, compatível(is) com cisto(s) ovariano(s). Correlacionar com sinais de distúrbio hormonal.',
     na: ''
   },
   // Gestacional
   utero: {
-    normal: 'Útero gravídico, com vesículas embrionárias identificadas, conteúdo anecogênico homogêneo.',
-    reabsorcao: 'Útero gravídico com vesícula(s) embrionária(s) sem embrião identificado e/ou ausência de batimentos cardíacos fetais.',
-    morte_fetal: 'Útero gravídico com feto(s) sem batimentos cardíacos identificáveis, apresentando colapso estrutural.'
+    normal:      'Presença de pelo menos ___ fetos (apesar da ultrassonografia não ser o exame mais específico para contagem) com dimensões e desenvolvimento semelhante, cuja viabilidade foi comprovada pelos batimentos cardíacos e seus movimentos;\nPlacenta e líquido amniótico de aspecto ecográfico normal para a fase gestacional;\nParâmetros de avaliação de idade gestacional dos fetos:\n-É possível visualização de cabeça e corpo;\n-Diferenciação entre fígado e pulmão; olhos; rins; alças intestinais com camadas evidentes;\n-Sistema ósseo-articular desenvolvido;\n-Motilidade intestinal segmentar;\n-Diâmetro biparietal: entre ___ cm a ___ cm;\n-Batimentos cardíacos em média ___ bpm;',
+    reabsorcao:  'Identificada(s) vesícula(s) embrionária(s) com conteúdo heterogêneo, perda da organização embrionária e ausência de batimentos cardíacos fetais.',
+    morte_fetal: 'Feto(s) sem batimentos cardíacos detectáveis ao modo B e Doppler. Ausência de movimentos fetais espontâneos. Achados compatíveis com óbito fetal. Correlacionar com tempo de gestação e estado geral da paciente.'
   },
   bcf: {
-    normal: 'Batimentos cardíacos fetais presentes e rítmicos.',
-    bcf_ausente: 'Batimentos cardíacos fetais não identificados neste exame.',
-    bcf_irregular: 'Batimentos cardíacos fetais presentes, porém com ritmo irregular. Recomenda-se acompanhamento.'
+    normal:        'Batimentos cardíacos fetais presentes e rítmicos em todos os fetos avaliados.',
+    bcf_ausente:   'Batimentos cardíacos fetais não identificados no(s) feto(s) avaliado(s).',
+    bcf_irregular: 'Batimentos cardíacos fetais presentes com frequência irregular / abaixo de 180 bpm (adaptar), sugestivos de sofrimento fetal. Avaliação obstétrica urgente recomendada.'
   },
   placenta: {
-    normal: 'Inserção placentária sem alterações, espessura preservada.',
-    placentite: 'Placenta com espessamento difuso e ecogenicidade heterogênea, sugestivos de processo inflamatório.',
-    descolamento: 'Evidencia-se área de separação entre placenta e parede uterina, sugestiva de descolamento placentário parcial. Recomenda-se avaliação clínica urgente.'
+    normal:      'Inserção placentária sem alterações, espessura preservada.',
+    placentite:  'Placenta com espessamento difuso e ecogenicidade heterogênea, sugestivos de processo inflamatório.',
+    descolamento:'Evidencia-se área de separação entre placenta e parede uterina, sugestiva de descolamento placentário parcial. Recomenda-se avaliação clínica urgente.'
   },
   amnio: {
-    normal: 'Volume de líquido amniótico dentro da normalidade.',
+    normal:       'Volume de líquido amniótico dentro da normalidade.',
     oligodramnio: 'Redução do volume de líquido amniótico evidenciada. Achado compatível com oligodrâmnio. Recomenda-se acompanhamento.',
-    polidramnio: 'Aumento do volume de líquido amniótico evidenciado. Achado compatível com polidrâmnio. Recomenda-se correlação clínica.'
+    polidramnio:  'Aumento do volume de líquido amniótico evidenciado. Achado compatível com polidrâmnio. Recomenda-se correlação clínica.'
   }
 };
 
 // ─── IMPRESSÕES DIAGNÓSTICAS POR PATOLOGIA ───────────────────────────────────
-// Baseado no Guia de Relatórios AquinoVet — impressão limpa para o campo conclusão
+// Impressões limpas para o campo conclusão
 const organImpressoes = {
   bexiga: {
-    cistolitiase:      'Cistolitíase vesical. Recomenda-se correlação com urinálise e avaliação da possibilidade de obstrução urinária.',
-    cistite:           'Alterações compatíveis com processo inflamatório vesical (cistite). Recomenda-se correlação com urinálise e cultura urinária.',
-    espessamento:      'Espessamento de parede vesical evidenciado. Recomenda-se correlação com urinálise e acompanhamento clínico.'
+    coagulo:      'Estrutura intraluminal avascular em vesícula urinária, sugestiva de coágulo sanguíneo. Recomenda-se correlação com exames complementares e quadro clínico.',
+    neoplasia:    'Imagem compatível com neoplasia vesical. Recomenda-se exames complementares para estadiamento.',
+    cistolitiase: 'Imagem indicativa de urolitíase em vesícula urinária.',
+    cistite:      'Imagem indicativa de processo inflamatório em vesícula urinária.',
+    espessamento: '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   rins: {
-    nefropatia:        'Imagem relacionada com nefropatia (aspecto de cronicidade). Recomenda-se correlação com função renal e urinálise.',
-    nefrolitiase:      'Imagem indicativa de litíase renal. Recomenda-se correlação com urinálise e avaliação do trato urinário.',
-    hidronefrose:      'Imagem compatível com hidronefrose. Recomenda-se avaliação do trato urinário e correlação clínica urgente.',
-    cisto:             'Imagem compatível com cisto renal. Recomenda-se acompanhamento ultrassonográfico.'
+    nefropatia:   'Nefropatia crônica. Correlacionar com exames laboratoriais (ureia, creatinina, UPC).',
+    nefrolitiase: '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    hidronefrose: 'Imagem indicativa de hidronefrose. Investigar causa obstrutiva associada.',
+    cisto:        'Imagem compatível com cisto(s) renal(is). Parênquima adjacente sem alterações.'
   },
   figado: {
-    hepatopatia:       'Alterações compatíveis com hepatopatia crônica e/ou infiltração gordurosa e/ou endocrinopatia. Recomenda-se correlação com exames laboratoriais hepáticos.',
-    cisto_hepatico:    'Alterações compatíveis com doença cística hepática/fibropolicistose. Recomenda-se correlação com exames complementares e acompanhamento clínico.',
-    nodulo_hepatico:   'Nódulo hepático evidenciado. Não se descarta processo infiltrativo/neoplásico. Recomenda-se avaliação citológica/histopatológica.',
-    hepatomegalia:     'Hepatomegalia evidenciada. Recomenda-se correlação clínica e laboratorial para elucidação da etiologia.'
+    hepatopatia:    'Achados sugestivos de hepatopatia crônica/degeneração gordurosa. Correlacionar com perfil hepático (ALT, FA, GGT, albumina).',
+    cisto_hepatico: '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    nodulo_hepatico:'Nódulo hepático evidenciado. Recomenda-se punção aspirativa por agulha fina (PAAF) ou biópsia guiada por ultrassom para caracterização histopatológica.',
+    hepatomegalia:  '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   vbiliar: {
-    lama_biliar:       'Lama biliar evidenciada. Achado pode estar relacionado à estase biliar, jejum prolongado ou alterações hepatobiliares.',
-    'colelitíase':     'Imagem indicativa de cálculo biliar (colelitíase). Recomenda-se acompanhamento clínico.',
-    colecistite:       'Alterações compatíveis com processo inflamatório / colecistite. Recomenda-se correlação clínica e laboratorial.'
+    lama_biliar:   '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    'colelitíase': '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    colecistite:   '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   baco: {
-    esplenomegalia:    'Esplenomegalia evidenciada. Recomenda-se correlação clínica e laboratorial para avaliação etiológica.',
-    nodulo_baco:       'Nódulo esplênico evidenciado. Não se descarta processo infiltrativo/neoplásico. Recomenda-se correlação clínica e exames complementares.',
-    hematoma_baco:     'Imagem sugestiva de hematoma/lesão traumática esplênica. Recomenda-se avaliação clínica imediata.'
+    esplenomegalia: '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    nodulo_baco:    '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    hematoma_baco:  '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   estomago: {
-    gastrite:              'Alterações compatíveis com processo inflamatório gástrico (gastrite). Recomenda-se correlação clínica.',
-    corpo_estranho:        'Imagem sugestiva de corpo estranho gástrico. Recomenda-se avaliação clínica.',
-    espessamento_gastrico: 'Espessamento parietal gástrico evidenciado. Não se descarta processo infiltrativo/neoplásico. A critério clínico, sugere-se acompanhamento.'
+    gastrite:             '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    corpo_estranho:       '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    espessamento_gastrico:'⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   intestino: {
-    enteropatia:           'Imagem relacionada a processo inflamatório difuso (enteropatia). Recomenda-se correlação clínica e exames complementares.',
-    obstrucao:             'Alterações sugestivas de obstrução intestinal. Recomenda-se avaliação clínica urgente.',
-    intussuscepcao:        'Imagem relacionada com intussuscepção intestinal. Recomenda-se avaliação clínica urgente.',
-    corpo_estranho_int:    'Imagem relacionada com corpo estranho intestinal. Recomenda-se avaliação clínica.'
+    enteropatia:        '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    obstrucao:          '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    intussuscepcao:     '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    corpo_estranho_int: '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   pancreas: {
-    pancreatite:           'Alterações ultrassonográficas sugestivas de pancreatite. Recomenda-se correlação com exames laboratoriais específicos (lipase/amilase).',
-    massa_pancreas:        'Massa pancreática evidenciada. Não se descarta processo neoplásico. Recomenda-se análise histopatológica.'
+    pancreatite:   '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    massa_pancreas:'⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   adrenais: {
-    hiperplasia_adrenal:   'Hiperplasia adrenal bilateral evidenciada. Possível endocrinopatia associada. Recomenda-se correlação com exames hormonais.',
-    nodulo_adrenal:        'Nódulo adrenal evidenciado. Recomenda-se acompanhamento e correlação clínica.',
-    massa_adrenal:         'Massa adrenal evidenciada. Não se descarta feocromocitoma ou carcinoma adrenocortical. Recomenda-se avaliação especializada.'
+    hiperplasia_adrenal:'⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    nodulo_adrenal:     '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    massa_adrenal:      '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   linfo: {
-    linfadenomegalia:      'Linfadenomegalia abdominal evidenciada. Alterações podem estar relacionadas a processo inflamatório, infeccioso ou infiltrativo/neoplásico. Caso o clínico julgue necessário, sugere-se avaliação citológica complementar.'
+    linfadenomegalia: '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   prostata: {
-    hiperplasia_prostata:  'Imagem compatível com processo hiperplásico prostático. Recomenda-se correlação clínica.',
-    prostatite:            'Imagem sugestiva de processo inflamatório prostático (prostatite). Recomenda-se correlação clínica e laboratorial.',
-    cisto_prostata:        'Cisto prostático evidenciado. Recomenda-se acompanhamento ultrassonográfico.'
+    hiperplasia_prostata:'⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    prostatite:          '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    cisto_prostata:      '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   utero_f: {
-    piometra:                  'Imagem compatível com piometra. Recomenda-se avaliação clínica e cirúrgica urgente.',
-    mucometra:                 'Imagem compatível com mucometra/hidrometra. Recomenda-se correlação clínica.',
-    hiperplasia_endometrial:   'Alterações compatíveis com hiperplasia endometrial cística (HEC). Recomenda-se correlação hormonal.',
-    cisto_ovariano:            'Cisto ovariano evidenciado. Recomenda-se acompanhamento ultrassonográfico.'
+    piometra:               'Imagem compatível com piometra. Emergência clínica — avaliar intervenção cirúrgica.',
+    mucometra:              '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    hiperplasia_endometrial:'⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    cisto_ovariano:         '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   utero: {
-    reabsorcao:            'Achados compatíveis com reabsorção fetal. Recomenda-se acompanhamento clínico.',
-    morte_fetal:           'Óbito fetal evidenciado. Recomenda-se correlação clínica imediata.'
+    reabsorcao:  'Imagem sugestiva de reabsorção fetal em curso. Demais fetos com vitalidade preservada / comprometida (adaptar).',
+    morte_fetal: 'Óbito fetal evidenciado. Recomenda-se correlação clínica imediata.'
   },
   placenta: {
-    placentite:            'Imagem sugestiva de processo inflamatório placentário (placentite). Recomenda-se acompanhamento.',
-    descolamento:          'Imagem sugestiva de descolamento placentário parcial. Recomenda-se avaliação clínica urgente.'
+    placentite:  '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    descolamento:'⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   },
   amnio: {
-    oligodramnio:          'Achado compatível com oligodrâmnio. Recomenda-se acompanhamento clínico.',
-    polidramnio:           'Achado compatível com polidrâmnio. Recomenda-se correlação clínica.'
+    oligodramnio: '⚠️ Impressão diagnóstica não definida — verificar e complementar.',
+    polidramnio:  '⚠️ Impressão diagnóstica não definida — verificar e complementar.'
   }
 };
 
@@ -2361,7 +2360,7 @@ function atualizarImpressao() {
     var isGest = document.getElementById('f-tipo') && document.getElementById('f-tipo').value === 'Gestacional';
     el.value = (cfg.laudo && cfg.laudo.modeloConclusao) ? cfg.laudo.modeloConclusao
       : isGest
-        ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
+        ? 'Prenhes positiva com fetos de idade entre ___ a ___ dias de gestação;\nFaltam entre ___ a ___ dias para o parto;'
         : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
   }
 }
