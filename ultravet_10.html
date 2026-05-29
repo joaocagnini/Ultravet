@@ -358,7 +358,7 @@
             <div class="form-field"><label>Paciente</label><input id="f-pac" placeholder="Nome do animal"></div>
             <div class="form-field"><label>Espécie</label><select id="f-esp"><option>Canino</option><option>Felino</option><option>Outro</option></select></div>
             <div class="form-field"><label>Raça</label><input id="f-raca" placeholder="Raça"></div>
-            <div class="form-field"><label>Sexo</label><select id="f-sexo"><option>Macho</option><option>Macho castrado</option><option>Fêmea</option><option>Fêmea castrada</option></select></div>
+            <div class="form-field"><label>Sexo</label><select id="f-sexo" onchange="filtrarOrgaosPorSexo()"><option>Macho</option><option>Macho castrado</option><option>Fêmea</option><option>Fêmea castrada</option></select></div>
             <div class="form-field"><label>Idade</label><input id="f-idade" placeholder="Ex: 5 anos"></div>
             <div class="form-field"><label>Data do exame</label><input type="date" id="f-data"></div>
           </div>
@@ -478,7 +478,19 @@
               </select>
               <textarea id="o-linfo" rows="2">Não foram observadas alterações ecográficas neste exame.</textarea>
             </div>
-            <div class="organ-row">
+            <div class="organ-row" id="row-utero-f" style="display:none">
+              <div class="organ-name">Útero</div>
+              <select onchange="setOrganText('o-utero-f', this.value, 'utero_f')">
+                <option value="normal">Normal</option>
+                <option value="piometra">Piometra</option>
+                <option value="mucometra">Mucometra / Hidrometra</option>
+                <option value="hiperplasia_endometrial">Hiperplasia endometrial cística</option>
+                <option value="cisto_ovariano">Cisto ovariano</option>
+                <option value="na">N/A</option>
+              </select>
+              <textarea id="o-utero-f" rows="2">Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.</textarea>
+            </div>
+            <div class="organ-row" id="row-prostata">
               <div class="organ-name">Próstata</div>
               <select onchange="setOrganText('o-prostata', this.value, 'prostata')">
                 <option value="normal">Normal</option>
@@ -1132,8 +1144,9 @@ const orgDefaults = {
   adrenais: 'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
   linfo: 'Não foram observadas alterações ecográficas neste exame.',
   prostata: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.',
+  utero_f: 'Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.',
 };
-const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',prostata:'Próstata'};
+const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',utero_f:'Útero',prostata:'Próstata'};
 const orgNomesGest = {utero:'Útero',fetos:'Número de fetos',bcf:'Batimentos (BCF)',placenta:'Placenta',amnio:'Líquido amniótico',ig:'Idade gestacional'};
 
 function toggleGest() {
@@ -1144,6 +1157,36 @@ function toggleGest() {
   document.getElementById('f-conclusao').value = t === 'Gestacional'
     ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
     : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+}
+
+function filtrarOrgaosPorSexo() {
+  const sexo = document.getElementById('f-sexo').value;
+  const isMacho = sexo === 'Macho' || sexo === 'Macho castrado';
+  const rowP = document.getElementById('row-prostata');
+  const rowU = document.getElementById('row-utero-f');
+  if (rowP) rowP.style.display = isMacho ? '' : 'none';
+  if (rowU) rowU.style.display = isMacho ? 'none' : '';
+  if (isMacho) {
+    // oculta útero feminino: zera valor para não aparecer no laudo
+    const eu = document.getElementById('o-utero-f');
+    if (eu) eu.value = '';
+    const su = document.querySelector('#row-utero-f select');
+    if (su) su.selectedIndex = 0;
+    delete organSelecoes.utero_f;
+    // restaura próstata com default se estava em branco
+    const ep = document.getElementById('o-prostata');
+    if (ep && !ep.value) ep.value = orgDefaults.prostata;
+  } else {
+    // oculta próstata: zera valor para não aparecer no laudo
+    const ep = document.getElementById('o-prostata');
+    if (ep) ep.value = '';
+    const sp = document.querySelector('#row-prostata select');
+    if (sp) sp.selectedIndex = 0;
+    delete organSelecoes.prostata;
+    // restaura útero feminino com default se estava em branco
+    const eu = document.getElementById('o-utero-f');
+    if (eu && !eu.value) eu.value = orgDefaults.utero_f;
+  }
 }
 
 function novoLaudo() {
@@ -1173,6 +1216,7 @@ function clearLaudoForm() {
   fotosTmp = [];
   renderFotosGrid();
   toggleGest();
+  filtrarOrgaosPorSexo();
 }
 
 function getLaudoData() {
@@ -1257,6 +1301,7 @@ function editLaudo(id) {
   populateClinicaSelects();
   if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgAbdom[k].texto||''; });
   if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgGest[k].texto||''; });
+  filtrarOrgaosPorSexo(); // após popular órgãos: zera o órgão do sexo oposto
   fotosTmp = (l.fotos || []).slice();
   renderFotosGrid();
   goPage('novo-laudo');
@@ -1535,6 +1580,15 @@ const organPatologias = {
     cisto_prostata: 'Próstata com presença de formação cística arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm.',
     na: ''
   },
+  // Útero abdominal (fêmea não gestante)
+  utero_f: {
+    normal: 'Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.',
+    piometra: 'Útero com cornos uterinos distendidos, preenchidos por conteúdo ecogênico/heterogêneo em lúmen, com paredes espessadas e irregulares.\n\nImpressão: Imagem compatível com piometra (aberta/fechada). Recomenda-se avaliação clínica e cirúrgica urgente, com correlação com hemograma.',
+    mucometra: 'Útero com cornos uterinos dilatados, preenchidos por conteúdo anecogênico homogêneo, com paredes finas e regulares.\n\nImpressão: Imagem compatível com mucometra/hidrometra. Recomenda-se correlação clínica.',
+    hiperplasia_endometrial: 'Útero com espessamento endometrial difuso e paredes irregulares, associado a conteúdo luminal heterogêneo, com presença de imagens císticas distribuídas pelo endométrio.\n\nImpressão: Alterações compatíveis com hiperplasia endometrial cística (HEC). Recomenda-se correlação clínica e hormonal.',
+    cisto_ovariano: 'Ovário direito/esquerdo apresentando formação cística arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm.\n\nImpressão: Cisto ovariano. Recomenda-se acompanhamento ultrassonográfico e correlação clínica.',
+    na: ''
+  },
   // Gestacional
   utero: {
     normal: 'Útero gravídico, com vesículas embrionárias identificadas, conteúdo anecogênico homogêneo.',
@@ -1615,6 +1669,12 @@ const organImpressoes = {
     hiperplasia_prostata:  'Imagem compatível com processo hiperplásico prostático. Recomenda-se correlação clínica.',
     prostatite:            'Imagem sugestiva de processo inflamatório prostático (prostatite). Recomenda-se correlação clínica e laboratorial.',
     cisto_prostata:        'Cisto prostático evidenciado. Recomenda-se acompanhamento ultrassonográfico.'
+  },
+  utero_f: {
+    piometra:                  'Imagem compatível com piometra. Recomenda-se avaliação clínica e cirúrgica urgente.',
+    mucometra:                 'Imagem compatível com mucometra/hidrometra. Recomenda-se correlação clínica.',
+    hiperplasia_endometrial:   'Alterações compatíveis com hiperplasia endometrial cística (HEC). Recomenda-se correlação hormonal.',
+    cisto_ovariano:            'Cisto ovariano evidenciado. Recomenda-se acompanhamento ultrassonográfico.'
   },
   utero: {
     reabsorcao:            'Achados compatíveis com reabsorção fetal. Recomenda-se acompanhamento clínico.',
