@@ -805,6 +805,7 @@
           <div class="stab" onclick="strp('rp-financeiro')">Financeiro</div>
           <div class="stab" onclick="strp('rp-clinicas')">Clínicas</div>
           <div class="stab" onclick="strp('rp-vets')">Veterinários</div>
+          <div class="stab" onclick="strp('rp-extrato')">📋 Extrato</div>
         </div>
 
         <!-- LAUDOS -->
@@ -859,6 +860,28 @@
           <div class="card">
             <div class="card-header"><div class="card-title">Veterinários solicitantes mais frequentes</div></div>
             <div id="rp-vets-rank"></div>
+          </div>
+        </div>
+
+        <!-- EXTRATO FINANCEIRO -->
+        <div class="ssec" id="rp-extrato">
+          <div class="card">
+            <div class="card-header">
+              <div><div class="card-title">Extrato financeiro</div><div class="card-sub">Exporta todos os exames com dados financeiros</div></div>
+              <button class="btn btn-primary" onclick="exportarCSVExtrato()">⬇ Exportar CSV</button>
+            </div>
+            <!-- Filtros -->
+            <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--border)">
+              <div class="form-field" style="margin:0;min-width:140px"><label>Data início</label><input type="date" id="ext-de" oninput="renderRpExtrato()"></div>
+              <div class="form-field" style="margin:0;min-width:140px"><label>Data fim</label><input type="date" id="ext-ate" oninput="renderRpExtrato()"></div>
+              <div class="form-field" style="margin:0;min-width:160px"><label>Clínica</label><select id="ext-clinica" onchange="renderRpExtrato()"><option value="">Todas</option></select></div>
+              <div class="form-field" style="margin:0;min-width:150px"><label>Status pagamento</label><select id="ext-status" onchange="renderRpExtrato()"><option value="">Todos</option><option>Pago</option><option>Pendente</option><option>Atrasado</option></select></div>
+              <div style="display:flex;align-items:flex-end"><button class="btn" onclick="limparFiltrosExtrato()">Limpar filtros</button></div>
+            </div>
+            <!-- Totais -->
+            <div id="ext-totais" style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px"></div>
+            <!-- Tabela -->
+            <div id="ext-tabela" class="table-wrap"></div>
           </div>
         </div>
       </div>
@@ -1212,12 +1235,13 @@ function strp(name) {
   page.querySelectorAll('.ssec').forEach(s => s.classList.remove('active'));
   page.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
   document.getElementById(name).classList.add('active');
-  const map = {'rp-laudos':0,'rp-financeiro':1,'rp-clinicas':2,'rp-vets':3};
+  const map = {'rp-laudos':0,'rp-financeiro':1,'rp-clinicas':2,'rp-vets':3,'rp-extrato':4};
   if (map[name] !== undefined) page.querySelectorAll('.stab')[map[name]].classList.add('active');
   if (name === 'rp-laudos') renderRpLaudos();
   if (name === 'rp-financeiro') renderRpFinanceiro();
   if (name === 'rp-clinicas') renderRpClinicas();
   if (name === 'rp-vets') renderRpVets();
+  if (name === 'rp-extrato') { populateExtratoClinicos(); renderRpExtrato(); }
 }
 
 function stf(name) {
@@ -2849,6 +2873,124 @@ function atualizarMapsBtn() {
 function saveAgenda() {
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
   try { sbUpsert('uv_agenda', agenda); } catch(e) {}
+}
+
+// ─── EXTRATO FINANCEIRO ───────────────────────────────────────────────────────
+function populateExtratoClinicos() {
+  const sel = document.getElementById('ext-clinica');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Todas</option>';
+  [...new Set(laudos.map(l => l.clinica).filter(Boolean))].sort().forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    if (c === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function getExtratoRows() {
+  const de  = document.getElementById('ext-de')  ? document.getElementById('ext-de').value  : '';
+  const ate = document.getElementById('ext-ate') ? document.getElementById('ext-ate').value : '';
+  const cl  = document.getElementById('ext-clinica') ? document.getElementById('ext-clinica').value : '';
+  const st  = document.getElementById('ext-status')  ? document.getElementById('ext-status').value  : '';
+  return laudos
+    .filter(l => {
+      if (de  && l.data < de)  return false;
+      if (ate && l.data > ate) return false;
+      if (cl  && (l.clinica || '') !== cl) return false;
+      if (st  && (l.fpago   || '') !== st) return false;
+      return true;
+    })
+    .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+}
+
+function renderRpExtrato() {
+  const rows = getExtratoRows();
+
+  // totais
+  const total   = rows.reduce((s, l) => s + (l.valor || 0), 0);
+  const pagos   = rows.filter(l => l.fpago === 'Pago').reduce((s, l) => s + (l.valor || 0), 0);
+  const pendente = rows.filter(l => l.fpago !== 'Pago').reduce((s, l) => s + (l.valor || 0), 0);
+  document.getElementById('ext-totais').innerHTML =
+    '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Exames filtrados</div>'
+      + '<div class="metric-value" style="font-size:22px">' + rows.length + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Total período</div>'
+      + '<div class="metric-value green" style="font-size:22px">' + fmt(total) + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Recebido</div>'
+      + '<div class="metric-value green" style="font-size:22px">' + fmt(pagos) + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">A receber</div>'
+      + '<div class="metric-value amber" style="font-size:22px">' + fmt(pendente) + '</div></div>';
+
+  // tabela
+  if (!rows.length) {
+    document.getElementById('ext-tabela').innerHTML = '<div class="empty-state"><p>Nenhum registro encontrado com os filtros aplicados.</p></div>';
+    return;
+  }
+  const statusBadge = st => {
+    const cls = st === 'Pago' ? 'teal' : st === 'Atrasado' ? 'red' : 'amber';
+    return '<span class="badge badge-' + cls + '">' + (st || '—') + '</span>';
+  };
+  document.getElementById('ext-tabela').innerHTML =
+    '<table class="data-table">'
+    + '<thead><tr>'
+      + '<th>Data</th><th>Clínica</th><th>Paciente</th><th>Tutor</th>'
+      + '<th>Veterinário</th><th>Exame / Procedimento</th>'
+      + '<th style="text-align:right">Valor</th><th>Status</th>'
+    + '</tr></thead>'
+    + '<tbody>'
+    + rows.map(l =>
+        '<tr>'
+        + '<td style="white-space:nowrap">' + fmtD(l.data) + '</td>'
+        + '<td>' + (l.clinica || '—') + '</td>'
+        + '<td><strong>' + (l.paciente || '—') + '</strong>'
+          + (l.especie ? '<div style="font-size:11px;color:var(--text3)">' + l.especie + '</div>' : '')
+        + '</td>'
+        + '<td>' + (l.tutor || '—') + '</td>'
+        + '<td>' + (l.vet || '—') + '</td>'
+        + '<td>' + (l.tipo || '—') + '</td>'
+        + '<td style="text-align:right;font-weight:600">' + fmt(l.valor || 0) + '</td>'
+        + '<td>' + statusBadge(l.fpago) + '</td>'
+        + '</tr>'
+      ).join('')
+    + '<tr style="border-top:2px solid var(--border);font-weight:700">'
+      + '<td colspan="6" style="text-align:right;color:var(--text2)">Total</td>'
+      + '<td style="text-align:right;color:var(--teal)">' + fmt(total) + '</td>'
+      + '<td></td></tr>'
+    + '</tbody></table>';
+}
+
+function limparFiltrosExtrato() {
+  ['ext-de','ext-ate'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  ['ext-clinica','ext-status'].forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex=0; });
+  renderRpExtrato();
+}
+
+function exportarCSVExtrato() {
+  const rows = getExtratoRows();
+  if (!rows.length) { toast('Nenhum dado para exportar.'); return; }
+  const headers = ['Data','Clínica','Paciente','Tutor','Veterinário','Exame/Procedimento','Valor (R$)','Status pagamento'];
+  const csvRows = [headers, ...rows.map(l => [
+    fmtD(l.data),
+    l.clinica || '',
+    l.paciente || '',
+    l.tutor || '',
+    l.vet || '',
+    l.tipo || '',
+    (l.valor || 0).toFixed(2).replace('.', ','),
+    l.fpago || ''
+  ])];
+  const csv = '﻿' + csvRows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'extrato_vetroutine_' + today() + '.csv';
+  a.click();
+  toast('CSV exportado com sucesso.');
 }
 
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
