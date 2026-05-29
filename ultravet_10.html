@@ -191,6 +191,36 @@
     .fg-4 { grid-template-columns: 1fr 1fr; }
     .fg-3 { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ─── AGENDA ───────────────────────────────────────────────── */
+  .agenda-toolbar { display:flex; flex-direction:row; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+  .month-label { font-size:18px; font-weight:700; color:var(--text); }
+  .view-toggle { display:flex; border:1px solid var(--border2); border-radius:var(--radius); overflow:hidden; }
+  .view-toggle button { padding:6px 14px; font-size:13px; font-weight:500; font-family:'Inter',sans-serif; border:none; background:var(--surface); color:var(--text2); cursor:pointer; transition:all .12s; }
+  .view-toggle button:not(:last-child) { border-right:1px solid var(--border2); }
+  .view-toggle button.active { background:var(--teal); color:#fff; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .cal-header { background:var(--surface2); text-align:center; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text2); padding:8px 4px; }
+  .cal-cell { background:var(--surface); min-height:90px; padding:6px; cursor:pointer; transition:background .1s; }
+  .cal-cell:hover { background:var(--teal-bg); }
+  .cal-cell.today .day-num { background:var(--teal); color:#fff; border-radius:50%; }
+  .cal-cell.other-month { background:var(--surface2); }
+  .cal-cell.other-month .day-num { color:var(--text3); }
+  .day-num { width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; margin-bottom:4px; }
+  .ev-pill { font-size:11px; padding:2px 6px; border-radius:3px; color:#fff; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; margin-bottom:2px; }
+  .ev-more { font-size:10px; color:var(--text2); cursor:pointer; padding:1px 2px; }
+  .week-grid { display:grid; grid-template-columns:52px repeat(7,1fr); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .day-grid { display:grid; grid-template-columns:52px 1fr; border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .wg-header { background:var(--surface2); text-align:center; padding:8px; font-size:12px; font-weight:600; border-bottom:1px solid var(--border); }
+  .wg-time { background:var(--surface2); font-size:11px; color:var(--text3); text-align:right; padding:4px 8px 0 4px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); }
+  .wg-slot { border-bottom:1px solid var(--border); min-height:44px; padding:2px 4px; cursor:pointer; transition:background .1s; }
+  .wg-slot:hover { background:var(--teal-bg); }
+  .wg-slot.today-col { background:#f0fdf8; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:1000; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:#fff; border-radius:12px; padding:24px; max-width:540px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.1); }
+  .modal-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:16px; }
+  .modal-footer { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; align-items:center; }
 </style>
 </head>
 <body>
@@ -217,6 +247,11 @@
       <a class="nav-item" onclick="novoLaudo()" href="#">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         Novo laudo
+      </a>
+      <div class="nav-section">Agenda</div>
+      <a class="nav-item" onclick="goPage('agenda')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda
       </a>
       <div class="nav-section">Financeiro</div>
       <a class="nav-item" onclick="goPage('financeiro')" href="#">
@@ -617,6 +652,25 @@
         <div id="viz-area"></div>
       </div>
 
+      <!-- AGENDA -->
+      <div class="page" id="page-agenda">
+        <div class="agenda-toolbar">
+          <button class="btn" onclick="agendaNav(-1)">&#8249;</button>
+          <button class="btn" onclick="agendaToday()">Hoje</button>
+          <button class="btn" onclick="agendaNav(1)">&#8250;</button>
+          <span id="ag-month-label" class="month-label"></span>
+          <div style="flex:1"></div>
+          <div class="view-toggle">
+            <button id="vt-mes" class="active" onclick="setAgendaMode('mes')">Mês</button>
+            <button id="vt-semana" onclick="setAgendaMode('semana')">Semana</button>
+            <button id="vt-dia" onclick="setAgendaMode('dia')">Dia</button>
+          </div>
+          <button class="btn" onclick="exportICSAll()" title="Exportar agenda (.ics para Google Calendar, Outlook, Apple Calendar)">📅 Exportar</button>
+          <button class="btn btn-primary" onclick="abrirNovaAgenda('')">+ Agendar</button>
+        </div>
+        <div id="ag-cal"></div>
+      </div>
+
       <!-- FINANCEIRO -->
       <div class="page" id="page-financeiro">
         <div class="subtabs">
@@ -995,6 +1049,34 @@
   </main>
 </div>
 
+<!-- MODAL AGENDA -->
+<div class="modal-overlay" id="modal-agenda" onclick="if(event.target===this)fecharAgenda()">
+  <div class="modal-box">
+    <div class="modal-title" id="ag-modal-title">Novo agendamento</div>
+    <div class="form-grid fg-2">
+      <div class="form-field"><label>Paciente</label><input id="ag-pac" placeholder="Nome do animal" oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Tutor</label><input id="ag-tutor" placeholder="Nome do tutor"></div>
+      <div class="form-field"><label>Espécie</label><select id="ag-esp"><option>Canino</option><option>Felino</option><option>Outro</option></select></div>
+      <div class="form-field"><label>Tipo de exame</label><select id="ag-tipo" onchange="atualizarGcalLink()"><option>Abdominal total</option><option>Gestacional</option><option>Outro</option></select></div>
+      <div class="form-field"><label>Data</label><input type="date" id="ag-data" oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Horário</label><input type="time" id="ag-hora" oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Veterinário solicitante</label><input id="ag-vet" placeholder="Dr(a)." oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Clínica</label><select id="ag-clinica-modal"><option value="">— Selecione —</option></select></div>
+      <div class="form-field" style="grid-column:span 2"><label>Observações</label><textarea id="ag-obs" rows="2" placeholder="Informações adicionais..."></textarea></div>
+      <div class="form-field"><label>Status</label><select id="ag-status"><option>Agendado</option><option>Confirmado</option><option>Realizado</option><option>Cancelado</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="salvarAgenda()">Salvar</button>
+      <button class="btn" onclick="fecharAgenda()">Cancelar</button>
+      <button class="btn" id="ag-del-btn" style="display:none;color:var(--red);border-color:var(--red)" onclick="excluirAgenda()">Excluir</button>
+      <div style="flex:1"></div>
+      <button class="btn" id="ag-ics-btn" style="display:none" onclick="exportICS()" title="Baixar arquivo .ics (importar em qualquer agenda)">⬇ .ics</button>
+      <button class="btn" id="ag-gcal-btn" style="display:none" title="Adicionar ao Google Calendar">📅 Google Cal</button>
+      <button class="btn btn-primary" id="ag-laudo-btn" style="display:none" onclick="gerarLaudoFromAgenda()">📋 Gerar laudo</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -1004,6 +1086,11 @@
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let laudos = [], receitas = [], despesas = [], clinicas = [];
+let agenda = [];
+let agendaViewDate = new Date();
+let agendaViewMode = 'mes';
+let agendaEditId = null;
+const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95' };
 let editId = null, viewId = null, curFSec = 'f-overview', curPSec = 'pc-layout';
 let fotosTmp = []; // fotos do laudo em edição (base64)
 
@@ -1013,6 +1100,7 @@ function save() {
   localStorage.setItem('uv_receitas', JSON.stringify(receitas));
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
+  localStorage.setItem('uv_agenda', JSON.stringify(agenda));
   syncCloud();
 }
 function load() {
@@ -1020,6 +1108,7 @@ function load() {
   try { receitas = JSON.parse(localStorage.getItem('uv_receitas') || '[]'); } catch(e){receitas=[];}
   try { despesas = JSON.parse(localStorage.getItem('uv_despesas') || '[]'); } catch(e){despesas=[];}
   try { clinicas = JSON.parse(localStorage.getItem('uv_clinicas') || '[]'); } catch(e){clinicas=[];}
+  try { agenda = JSON.parse(localStorage.getItem('uv_agenda') || '[]'); } catch(e){agenda=[];}
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -1068,6 +1157,7 @@ const pageTitles = {
   laudos: ['Laudos', 'Todos os exames registrados'],
   'novo-laudo': ['Novo laudo', 'Preencher relatório ultrassonográfico'],
   'viz-laudo': ['Visualizar laudo', 'Pré-visualização do relatório'],
+  agenda: ['Agenda', 'Agendamento de exames'],
   financeiro: ['Financeiro', 'Gestão financeira do negócio'],
   relatorios: ['Relatórios', 'Análise de desempenho e dados'],
   painel: ['Painel de controle', 'Configurações e parametrização do sistema'],
@@ -1082,11 +1172,12 @@ function goPage(name) {
   const [title, sub] = pageTitles[name] || [name, ''];
   document.getElementById('topbar-title').textContent = title;
   document.getElementById('topbar-sub').textContent = sub;
-  const map = {dashboard:0, laudos:1, financeiro:3};
+  const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') updateDashboard();
 document.getElementById('sb-logo').src = LOGO_B64;
   if (name === 'laudos') renderLaudos();
+  if (name === 'agenda') { renderAgenda(); }
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
   if (name === 'painel') renderPainel();
@@ -1733,7 +1824,7 @@ function setOrganText(fieldId, value, organ) {
 
 // ─── CLÍNICA SELECTS ─────────────────────────────────────────────────────────
 function populateClinicaSelects() {
-  const ids = ['f-clinica', 'r-clinica'];
+  const ids = ['f-clinica', 'r-clinica', 'ag-clinica-modal'];
   ids.forEach(function(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -2308,6 +2399,337 @@ function getConfig() {
   return JSON.parse(localStorage.getItem('uv_config') || '{}');
 }
 
+// ─── AGENDA ───────────────────────────────────────────────────────────────────
+function renderAgenda() {
+  if (agendaViewMode === 'mes') renderCalMes();
+  else if (agendaViewMode === 'semana') renderCalSemana();
+  else renderCalDia();
+  updateAgendaToolbar();
+}
+
+function updateAgendaToolbar() {
+  const lbl = document.getElementById('ag-month-label');
+  if (!lbl) return;
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if (agendaViewMode === 'mes') {
+    lbl.textContent = meses[agendaViewDate.getMonth()] + ' ' + agendaViewDate.getFullYear();
+  } else if (agendaViewMode === 'semana') {
+    const seg = getMonday(agendaViewDate);
+    const dom = new Date(seg); dom.setDate(dom.getDate() + 6);
+    lbl.textContent = fmtD(dateToStr(seg)) + ' – ' + fmtD(dateToStr(dom));
+  } else {
+    lbl.textContent = fmtD(dateToStr(agendaViewDate));
+  }
+}
+
+function getMonday(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = (day === 0) ? -6 : 1 - day;
+  dt.setDate(dt.getDate() + diff);
+  return dt;
+}
+
+function dateToStr(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function agendaNav(dir) {
+  if (agendaViewMode === 'mes') agendaViewDate.setMonth(agendaViewDate.getMonth() + dir);
+  else if (agendaViewMode === 'semana') agendaViewDate.setDate(agendaViewDate.getDate() + dir * 7);
+  else agendaViewDate.setDate(agendaViewDate.getDate() + dir);
+  renderAgenda();
+}
+
+function agendaToday() {
+  agendaViewDate = new Date();
+  renderAgenda();
+}
+
+function setAgendaMode(mode) {
+  agendaViewMode = mode;
+  document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('vt-' + mode);
+  if (btn) btn.classList.add('active');
+  renderAgenda();
+}
+
+function renderCalMes() {
+  const y = agendaViewDate.getFullYear();
+  const m = agendaViewDate.getMonth();
+  const todayStr = today();
+  const start = new Date(y, m, 1);
+  const startDow = start.getDay();
+  start.setDate(start.getDate() - (startDow === 0 ? 6 : startDow - 1));
+
+  const diasHdr = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  let html = '<div class="cal-grid">';
+  diasHdr.forEach(d => { html += '<div class="cal-header">' + d + '</div>'; });
+
+  const cur = new Date(start);
+  for (let week = 0; week < 6; week++) {
+    let allOther = true;
+    for (let i = 0; i < 7; i++) { if (new Date(cur.getTime() + i*86400000).getMonth() === m) { allOther = false; break; } }
+    if (allOther && week >= 4) break;
+    for (let dow = 0; dow < 7; dow++) {
+      const ds = dateToStr(cur);
+      const isToday = ds === todayStr;
+      const isOther = cur.getMonth() !== m;
+      const dayEvs = agenda.filter(a => a.data === ds).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+      html += '<div class="cal-cell' + (isToday ? ' today' : '') + (isOther ? ' other-month' : '') + '" onclick="abrirNovaAgenda(\'' + ds + '\')">';
+      html += '<div class="day-num">' + cur.getDate() + '</div>';
+      dayEvs.slice(0, 3).forEach(ev => {
+        const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')" title="' + (ev.hora||'') + ' · ' + (ev.paciente||'') + '">'
+          + (ev.hora ? ev.hora.slice(0,5) + ' ' : '') + (ev.paciente || 'Agendamento') + '</div>';
+      });
+      if (dayEvs.length > 3) html += '<div class="ev-more" onclick="event.stopPropagation();agendaViewDate=new Date(\'' + ds + 'T12:00:00\');setAgendaMode(\'dia\')">+' + (dayEvs.length - 3) + ' mais</div>';
+      html += '</div>';
+      cur.setDate(cur.getDate() + 1);
+    }
+  }
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function renderCalSemana() {
+  const seg = getMonday(agendaViewDate);
+  const todayStr = today();
+  const dias = [];
+  for (let i = 0; i < 7; i++) { const d = new Date(seg); d.setDate(d.getDate() + i); dias.push(d); }
+  const nomesDia = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const horas = [];
+  for (let h = 7; h <= 20; h++) horas.push(h.toString().padStart(2,'0') + ':00');
+
+  let html = '<div class="week-grid" style="overflow-x:auto">';
+  html += '<div class="wg-header" style="border-right:1px solid var(--border)"></div>';
+  dias.forEach((d, i) => {
+    const ds = dateToStr(d);
+    const isToday = ds === todayStr;
+    html += '<div class="wg-header' + (isToday ? '" style="color:var(--teal);border-bottom:2px solid var(--teal)' : '') + '">'
+      + nomesDia[i] + ' <strong>' + d.getDate() + '</strong></div>';
+  });
+  horas.forEach(hora => {
+    html += '<div class="wg-time">' + hora + '</div>';
+    dias.forEach(d => {
+      const ds = dateToStr(d);
+      const isToday = ds === todayStr;
+      const evs = agenda.filter(a => a.data === ds && (a.hora||'').startsWith(hora.slice(0,2)));
+      html += '<div class="wg-slot' + (isToday ? ' today-col' : '') + '" onclick="abrirNovaAgenda(\'' + ds + '\',\'' + hora.slice(0,5) + '\')">';
+      evs.forEach(ev => {
+        const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')">'
+          + (ev.paciente || 'Agendamento') + '</div>';
+      });
+      html += '</div>';
+    });
+  });
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function renderCalDia() {
+  const ds = dateToStr(agendaViewDate);
+  const todayStr = today();
+  const isToday = ds === todayStr;
+  const horas = [];
+  for (let h = 7; h <= 20; h++) horas.push(h.toString().padStart(2,'0') + ':00');
+
+  let html = '<div class="day-grid">';
+  html += '<div class="wg-header" style="border-right:1px solid var(--border)"></div>';
+  html += '<div class="wg-header' + (isToday ? '" style="color:var(--teal);border-bottom:2px solid var(--teal)' : '') + '">'
+    + fmtD(ds) + '</div>';
+  horas.forEach(hora => {
+    const evs = agenda.filter(a => a.data === ds && (a.hora||'').startsWith(hora.slice(0,2)));
+    html += '<div class="wg-time">' + hora + '</div>';
+    html += '<div class="wg-slot' + (isToday ? ' today-col' : '') + '" style="min-height:56px" onclick="abrirNovaAgenda(\'' + ds + '\',\'' + hora.slice(0,5) + '\')">';
+    evs.forEach(ev => {
+      const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+      html += '<div style="background:' + cor + ';color:#fff;border-radius:6px;padding:6px 10px;margin-bottom:4px;cursor:pointer" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')">'
+        + '<div style="font-weight:600;font-size:13px">' + (ev.hora||'') + ' · ' + (ev.paciente || 'Agendamento') + '</div>'
+        + '<div style="font-size:11px;opacity:.85">' + [ev.tipo, ev.vet].filter(Boolean).join(' · ') + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function abrirNovaAgenda(data, hora) {
+  agendaEditId = null;
+  document.getElementById('ag-pac').value = '';
+  document.getElementById('ag-tutor').value = '';
+  document.getElementById('ag-esp').value = 'Canino';
+  document.getElementById('ag-data').value = data || today();
+  document.getElementById('ag-hora').value = hora || '09:00';
+  document.getElementById('ag-tipo').value = 'Abdominal total';
+  document.getElementById('ag-clinica-modal').value = '';
+  document.getElementById('ag-vet').value = '';
+  document.getElementById('ag-obs').value = '';
+  document.getElementById('ag-status').value = 'Agendado';
+  document.getElementById('ag-del-btn').style.display = 'none';
+  document.getElementById('ag-gcal-btn').style.display = 'none';
+  document.getElementById('ag-ics-btn').style.display = 'none';
+  document.getElementById('ag-laudo-btn').style.display = 'none';
+  document.getElementById('ag-modal-title').textContent = 'Novo agendamento';
+  document.getElementById('modal-agenda').classList.add('open');
+}
+
+function abrirEditAgenda(id) {
+  const ev = agenda.find(a => a.id === id);
+  if (!ev) return;
+  agendaEditId = id;
+  document.getElementById('ag-pac').value = ev.paciente || '';
+  document.getElementById('ag-tutor').value = ev.tutor || '';
+  document.getElementById('ag-esp').value = ev.especie || 'Canino';
+  document.getElementById('ag-data').value = ev.data || today();
+  document.getElementById('ag-hora').value = ev.hora || '09:00';
+  document.getElementById('ag-tipo').value = ev.tipo || 'Abdominal total';
+  document.getElementById('ag-clinica-modal').value = ev.clinica || '';
+  document.getElementById('ag-vet').value = ev.vet || '';
+  document.getElementById('ag-obs').value = ev.obs || '';
+  document.getElementById('ag-status').value = ev.status || 'Agendado';
+  document.getElementById('ag-del-btn').style.display = '';
+  document.getElementById('ag-gcal-btn').style.display = '';
+  document.getElementById('ag-ics-btn').style.display = '';
+  document.getElementById('ag-laudo-btn').style.display = '';
+  atualizarGcalLink();
+  document.getElementById('ag-modal-title').textContent = 'Editar agendamento';
+  document.getElementById('modal-agenda').classList.add('open');
+}
+
+function fecharAgenda() {
+  document.getElementById('modal-agenda').classList.remove('open');
+  agendaEditId = null;
+}
+
+function salvarAgenda() {
+  const ev = {
+    id: agendaEditId || Date.now(),
+    paciente: document.getElementById('ag-pac').value,
+    tutor: document.getElementById('ag-tutor').value,
+    especie: document.getElementById('ag-esp').value,
+    data: document.getElementById('ag-data').value,
+    hora: document.getElementById('ag-hora').value,
+    tipo: document.getElementById('ag-tipo').value,
+    clinica: document.getElementById('ag-clinica-modal').value,
+    vet: document.getElementById('ag-vet').value,
+    obs: document.getElementById('ag-obs').value,
+    status: document.getElementById('ag-status').value,
+  };
+  if (!ev.data) { toast('Informe a data do agendamento.'); return; }
+  if (agendaEditId) {
+    const idx = agenda.findIndex(a => a.id === agendaEditId);
+    if (idx >= 0) agenda[idx] = ev; else agenda.push(ev);
+  } else {
+    agenda.push(ev);
+  }
+  saveAgenda();
+  fecharAgenda();
+  renderAgenda();
+  toast('Agendamento salvo.');
+}
+
+function excluirAgenda() {
+  if (!agendaEditId) return;
+  if (!confirm('Excluir este agendamento?')) return;
+  const id = agendaEditId;
+  agenda = agenda.filter(a => a.id !== id);
+  saveAgenda();
+  cloudDelete('uv_agenda', id);
+  fecharAgenda();
+  renderAgenda();
+  toast('Agendamento excluído.');
+}
+
+function gerarLaudoFromAgenda() {
+  const ev = agenda.find(a => a.id === agendaEditId);
+  if (!ev) return;
+  fecharAgenda();
+  editId = null;
+  clearLaudoForm();
+  document.getElementById('f-pac').value = ev.paciente || '';
+  document.getElementById('f-tutor').value = ev.tutor || '';
+  document.getElementById('f-esp').value = ev.especie || 'Canino';
+  document.getElementById('f-data').value = ev.data || today();
+  document.getElementById('f-vet').value = ev.vet || '';
+  if (ev.clinica) document.getElementById('f-clinica').value = ev.clinica;
+  if (ev.tipo && ev.tipo !== 'Outro') document.getElementById('f-tipo').value = ev.tipo;
+  toggleGest();
+  filtrarOrgaosPorSexo();
+  populateClinicaSelects();
+  goPage('novo-laudo');
+  toast('Dados do agendamento carregados no formulário.');
+}
+
+function atualizarGcalLink() {
+  const pac = (document.getElementById('ag-pac')||{}).value || '';
+  const tipo = (document.getElementById('ag-tipo')||{}).value || '';
+  const data = (document.getElementById('ag-data')||{}).value || '';
+  const hora = (document.getElementById('ag-hora')||{}).value || '';
+  const vet = (document.getElementById('ag-vet')||{}).value || '';
+  const obs = (document.getElementById('ag-obs')||{}).value || '';
+  const btn = document.getElementById('ag-gcal-btn');
+  if (!btn || !data || !hora) return;
+  const ds = data.replace(/-/g,'');
+  const hs = hora.replace(':','') + '00';
+  const [hh, mm] = hora.split(':').map(Number);
+  const endMin = hh * 60 + mm + 45;
+  const endHs = Math.floor(endMin/60).toString().padStart(2,'0') + (endMin%60).toString().padStart(2,'0') + '00';
+  const title = encodeURIComponent((pac||'Exame') + ' – ' + (tipo||'Ultrassom Veterinário'));
+  const details = encodeURIComponent('Veterinário: ' + (vet||'—') + (obs ? '\n' + obs : ''));
+  const url = 'https://calendar.google.com/calendar/event?action=TEMPLATE&text=' + title
+    + '&dates=' + ds + 'T' + hs + '/' + ds + 'T' + endHs
+    + '&details=' + details + '&sf=true&output=xml';
+  btn.onclick = function(e) { e.preventDefault(); window.open(url, '_blank'); };
+}
+
+function exportICS() {
+  const ev = agenda.find(a => a.id === agendaEditId);
+  if (!ev) return;
+  const blob = gerarICSBlob([ev]);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (ev.paciente || 'agendamento').replace(/\s+/g,'_') + '.ics';
+  a.click();
+}
+
+function exportICSAll() {
+  if (!agenda.length) { toast('Nenhum agendamento para exportar.'); return; }
+  const blob = gerarICSBlob(agenda);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'agenda_vetroutine.ics';
+  a.click();
+}
+
+function gerarICSBlob(evs) {
+  let events = '';
+  evs.forEach(ev => {
+    const ds = (ev.data || today()).replace(/-/g,'');
+    const hs = (ev.hora || '09:00').replace(':','') + '00';
+    const [hh, mm] = (ev.hora || '09:00').split(':').map(Number);
+    const endMin = hh * 60 + mm + 45;
+    const endHs = Math.floor(endMin/60).toString().padStart(2,'0') + (endMin%60).toString().padStart(2,'0') + '00';
+    events += 'BEGIN:VEVENT\r\n'
+      + 'UID:' + ev.id + '@vetroutine\r\n'
+      + 'DTSTART:' + ds + 'T' + hs + '\r\n'
+      + 'DTEND:' + ds + 'T' + endHs + '\r\n'
+      + 'SUMMARY:' + (ev.paciente||'Exame') + ' – ' + (ev.tipo||'Ultrassom') + '\r\n'
+      + 'DESCRIPTION:Tutor: ' + (ev.tutor||'—') + '\\nVet: ' + (ev.vet||'—') + (ev.obs ? '\\nObs: ' + ev.obs : '') + '\r\n'
+      + 'STATUS:' + (ev.status === 'Cancelado' ? 'CANCELLED' : 'CONFIRMED') + '\r\n'
+      + 'END:VEVENT\r\n';
+  });
+  const ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//VetRoutine//PT\r\nCALSCALE:GREGORIAN\r\n' + events + 'END:VCALENDAR';
+  return new Blob([ics], {type:'text/calendar;charset=utf-8'});
+}
+
+function saveAgenda() {
+  localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  try { sbUpsert('uv_agenda', agenda); } catch(e) {}
+}
+
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
 const SB_URL = 'https://iisxmfepvqpswdnurtuo.supabase.co';
 const SB_KEY = 'sb_publishable_4yj6xy0vvxLypajgqtEMCQ_fR6nE2DY';
@@ -2354,6 +2776,7 @@ async function syncCloud() {
       sbUpsert('uv_receitas', receitas),
       sbUpsert('uv_despesas', despesas),
       sbUpsert('uv_clinicas', clinicas),
+      sbUpsert('uv_agenda',   agenda),
     ]);
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
@@ -2378,6 +2801,12 @@ async function initCloud() {
 document.getElementById('sb-logo').src = LOGO_B64;
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
+  // agenda em bloco separado pois a tabela pode ainda não existir
+  try {
+    const ra = await sbFetch('uv_agenda');
+    agenda = ra;
+    localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  } catch(e) {}
 }
 
 window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
