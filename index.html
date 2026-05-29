@@ -2349,7 +2349,17 @@ function atualizarImpressao() {
     var val = organSelecoes[organ];
     if (!val || val === 'normal' || val === 'na' || val === 'custom') return;
     var imp = organImpressoes[organ] && organImpressoes[organ][val];
-    if (imp) linhas.push('- ' + imp);
+    if (imp) {
+      // prefixo: Nome do órgão - Nome da doença
+      var orgNome = orgNomesAbdom[organ] || orgNomesGest[organ] || organ;
+      var doencaNome = val;
+      var sel = document.querySelector('select[onchange*="\'' + organ + '\')"]');
+      if (sel) {
+        var opt = Array.from(sel.options).find(function(o){ return o.value === val; });
+        if (opt) doencaNome = opt.textContent.trim();
+      }
+      linhas.push(orgNome + ' - ' + doencaNome + ' - ' + imp);
+    }
   });
   var el = document.getElementById('f-conclusao');
   if (!el) return;
