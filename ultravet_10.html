@@ -1140,6 +1140,7 @@ function toggleGest() {
   const t = document.getElementById('f-tipo').value;
   document.getElementById('card-abdominal').style.display = t === 'Gestacional' ? 'none' : 'block';
   document.getElementById('card-gestacional').style.display = t === 'Gestacional' ? 'block' : 'none';
+  organSelecoes = {}; // reseta impressões ao trocar tipo de exame
   document.getElementById('f-conclusao').value = t === 'Gestacional'
     ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
     : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
@@ -1168,6 +1169,7 @@ function clearLaudoForm() {
   ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
   // reset all patologia selects to first option
   document.querySelectorAll('#card-abdominal select, #card-gestacional select').forEach(s => s.selectedIndex = 0);
+  organSelecoes = {};
   fotosTmp = [];
   renderFotosGrid();
   toggleGest();
@@ -1419,7 +1421,7 @@ function imprimirLaudo() {
   const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -1556,6 +1558,103 @@ const organPatologias = {
   }
 };
 
+// ─── IMPRESSÕES DIAGNÓSTICAS POR PATOLOGIA ───────────────────────────────────
+// Baseado no Guia de Relatórios AquinoVet — impressão limpa para o campo conclusão
+const organImpressoes = {
+  bexiga: {
+    cistolitiase:      'Cistolitíase vesical. Recomenda-se correlação com urinálise e avaliação da possibilidade de obstrução urinária.',
+    cistite:           'Alterações compatíveis com processo inflamatório vesical (cistite). Recomenda-se correlação com urinálise e cultura urinária.',
+    espessamento:      'Espessamento de parede vesical evidenciado. Recomenda-se correlação com urinálise e acompanhamento clínico.'
+  },
+  rins: {
+    nefropatia:        'Imagem relacionada com nefropatia (aspecto de cronicidade). Recomenda-se correlação com função renal e urinálise.',
+    nefrolitiase:      'Imagem indicativa de litíase renal. Recomenda-se correlação com urinálise e avaliação do trato urinário.',
+    hidronefrose:      'Imagem compatível com hidronefrose. Recomenda-se avaliação do trato urinário e correlação clínica urgente.',
+    cisto:             'Imagem compatível com cisto renal. Recomenda-se acompanhamento ultrassonográfico.'
+  },
+  figado: {
+    hepatopatia:       'Alterações compatíveis com hepatopatia crônica e/ou infiltração gordurosa e/ou endocrinopatia. Recomenda-se correlação com exames laboratoriais hepáticos.',
+    cisto_hepatico:    'Alterações compatíveis com doença cística hepática/fibropolicistose. Recomenda-se correlação com exames complementares e acompanhamento clínico.',
+    nodulo_hepatico:   'Nódulo hepático evidenciado. Não se descarta processo infiltrativo/neoplásico. Recomenda-se avaliação citológica/histopatológica.',
+    hepatomegalia:     'Hepatomegalia evidenciada. Recomenda-se correlação clínica e laboratorial para elucidação da etiologia.'
+  },
+  vbiliar: {
+    lama_biliar:       'Lama biliar evidenciada. Achado pode estar relacionado à estase biliar, jejum prolongado ou alterações hepatobiliares.',
+    'colelitíase':     'Imagem indicativa de cálculo biliar (colelitíase). Recomenda-se acompanhamento clínico.',
+    colecistite:       'Alterações compatíveis com processo inflamatório / colecistite. Recomenda-se correlação clínica e laboratorial.'
+  },
+  baco: {
+    esplenomegalia:    'Esplenomegalia evidenciada. Recomenda-se correlação clínica e laboratorial para avaliação etiológica.',
+    nodulo_baco:       'Nódulo esplênico evidenciado. Não se descarta processo infiltrativo/neoplásico. Recomenda-se correlação clínica e exames complementares.',
+    hematoma_baco:     'Imagem sugestiva de hematoma/lesão traumática esplênica. Recomenda-se avaliação clínica imediata.'
+  },
+  estomago: {
+    gastrite:              'Alterações compatíveis com processo inflamatório gástrico (gastrite). Recomenda-se correlação clínica.',
+    corpo_estranho:        'Imagem sugestiva de corpo estranho gástrico. Recomenda-se avaliação clínica.',
+    espessamento_gastrico: 'Espessamento parietal gástrico evidenciado. Não se descarta processo infiltrativo/neoplásico. A critério clínico, sugere-se acompanhamento.'
+  },
+  intestino: {
+    enteropatia:           'Imagem relacionada a processo inflamatório difuso (enteropatia). Recomenda-se correlação clínica e exames complementares.',
+    obstrucao:             'Alterações sugestivas de obstrução intestinal. Recomenda-se avaliação clínica urgente.',
+    intussuscepcao:        'Imagem relacionada com intussuscepção intestinal. Recomenda-se avaliação clínica urgente.',
+    corpo_estranho_int:    'Imagem relacionada com corpo estranho intestinal. Recomenda-se avaliação clínica.'
+  },
+  pancreas: {
+    pancreatite:           'Alterações ultrassonográficas sugestivas de pancreatite. Recomenda-se correlação com exames laboratoriais específicos (lipase/amilase).',
+    massa_pancreas:        'Massa pancreática evidenciada. Não se descarta processo neoplásico. Recomenda-se análise histopatológica.'
+  },
+  adrenais: {
+    hiperplasia_adrenal:   'Hiperplasia adrenal bilateral evidenciada. Possível endocrinopatia associada. Recomenda-se correlação com exames hormonais.',
+    nodulo_adrenal:        'Nódulo adrenal evidenciado. Recomenda-se acompanhamento e correlação clínica.',
+    massa_adrenal:         'Massa adrenal evidenciada. Não se descarta feocromocitoma ou carcinoma adrenocortical. Recomenda-se avaliação especializada.'
+  },
+  linfo: {
+    linfadenomegalia:      'Linfadenomegalia abdominal evidenciada. Alterações podem estar relacionadas a processo inflamatório, infeccioso ou infiltrativo/neoplásico. Caso o clínico julgue necessário, sugere-se avaliação citológica complementar.'
+  },
+  prostata: {
+    hiperplasia_prostata:  'Imagem compatível com processo hiperplásico prostático. Recomenda-se correlação clínica.',
+    prostatite:            'Imagem sugestiva de processo inflamatório prostático (prostatite). Recomenda-se correlação clínica e laboratorial.',
+    cisto_prostata:        'Cisto prostático evidenciado. Recomenda-se acompanhamento ultrassonográfico.'
+  },
+  utero: {
+    reabsorcao:            'Achados compatíveis com reabsorção fetal. Recomenda-se acompanhamento clínico.',
+    morte_fetal:           'Óbito fetal evidenciado. Recomenda-se correlação clínica imediata.'
+  },
+  placenta: {
+    placentite:            'Imagem sugestiva de processo inflamatório placentário (placentite). Recomenda-se acompanhamento.',
+    descolamento:          'Imagem sugestiva de descolamento placentário parcial. Recomenda-se avaliação clínica urgente.'
+  },
+  amnio: {
+    oligodramnio:          'Achado compatível com oligodrâmnio. Recomenda-se acompanhamento clínico.',
+    polidramnio:           'Achado compatível com polidrâmnio. Recomenda-se correlação clínica.'
+  }
+};
+
+// Mapa de seleções atuais por órgão — resetado a cada novo laudo
+let organSelecoes = {};
+
+function atualizarImpressao() {
+  const linhas = [];
+  Object.keys(organSelecoes).forEach(function(organ) {
+    var val = organSelecoes[organ];
+    if (!val || val === 'normal' || val === 'na' || val === 'custom') return;
+    var imp = organImpressoes[organ] && organImpressoes[organ][val];
+    if (imp) linhas.push('- ' + imp);
+  });
+  var el = document.getElementById('f-conclusao');
+  if (!el) return;
+  if (linhas.length > 0) {
+    el.value = linhas.join('\n');
+  } else {
+    var cfg = getConfig();
+    var isGest = document.getElementById('f-tipo') && document.getElementById('f-tipo').value === 'Gestacional';
+    el.value = (cfg.laudo && cfg.laudo.modeloConclusao) ? cfg.laudo.modeloConclusao
+      : isGest
+        ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
+        : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  }
+}
+
 function setOrganText(fieldId, value, organ) {
   if (value === 'custom') return; // campos manuais
   const el = document.getElementById(fieldId);
@@ -1567,6 +1666,9 @@ function setOrganText(fieldId, value, organ) {
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
   }
+  // Registra seleção e atualiza impressão diagnóstica automaticamente
+  organSelecoes[organ] = value;
+  atualizarImpressao();
 }
 
 // ─── CLÍNICA SELECTS ─────────────────────────────────────────────────────────
@@ -2005,7 +2107,7 @@ function abrirJanelaPDF(l, titulo) {
   win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
     + '<title>' + titulo + '</title>'
     + '<style>'
-    + '*{box-sizing:border-box;margin:0;padding:0}'
+    + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
     + 'body{background:#fff;font-family:' + fonte + '}'
     + 'table,td,th,span,div{font-family:inherit}'
     + '@page{size:' + papel + ';margin:0}'
@@ -2046,7 +2148,7 @@ function imprimirPrevia() {
   const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
