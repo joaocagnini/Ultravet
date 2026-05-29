@@ -191,6 +191,36 @@
     .fg-4 { grid-template-columns: 1fr 1fr; }
     .fg-3 { grid-template-columns: 1fr 1fr; }
   }
+
+  /* ─── AGENDA ───────────────────────────────────────────────── */
+  .agenda-toolbar { display:flex; flex-direction:row; gap:10px; flex-wrap:wrap; margin-bottom:16px; align-items:center; }
+  .month-label { font-size:18px; font-weight:700; color:var(--text); }
+  .view-toggle { display:flex; border:1px solid var(--border2); border-radius:var(--radius); overflow:hidden; }
+  .view-toggle button { padding:6px 14px; font-size:13px; font-weight:500; font-family:'Inter',sans-serif; border:none; background:var(--surface); color:var(--text2); cursor:pointer; transition:all .12s; }
+  .view-toggle button:not(:last-child) { border-right:1px solid var(--border2); }
+  .view-toggle button.active { background:var(--teal); color:#fff; }
+  .cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:1px; background:var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .cal-header { background:var(--surface2); text-align:center; font-size:12px; font-weight:600; text-transform:uppercase; letter-spacing:.05em; color:var(--text2); padding:8px 4px; }
+  .cal-cell { background:var(--surface); min-height:90px; padding:6px; cursor:pointer; transition:background .1s; }
+  .cal-cell:hover { background:var(--teal-bg); }
+  .cal-cell.today .day-num { background:var(--teal); color:#fff; border-radius:50%; }
+  .cal-cell.other-month { background:var(--surface2); }
+  .cal-cell.other-month .day-num { color:var(--text3); }
+  .day-num { width:22px; height:22px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:600; margin-bottom:4px; }
+  .ev-pill { font-size:11px; padding:2px 6px; border-radius:3px; color:#fff; cursor:pointer; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; display:block; margin-bottom:2px; }
+  .ev-more { font-size:10px; color:var(--text2); cursor:pointer; padding:1px 2px; }
+  .week-grid { display:grid; grid-template-columns:52px repeat(7,1fr); border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .day-grid { display:grid; grid-template-columns:52px 1fr; border:1px solid var(--border); border-radius:var(--radius-lg); overflow:hidden; }
+  .wg-header { background:var(--surface2); text-align:center; padding:8px; font-size:12px; font-weight:600; border-bottom:1px solid var(--border); }
+  .wg-time { background:var(--surface2); font-size:11px; color:var(--text3); text-align:right; padding:4px 8px 0 4px; border-bottom:1px solid var(--border); border-right:1px solid var(--border); }
+  .wg-slot { border-bottom:1px solid var(--border); min-height:44px; padding:2px 4px; cursor:pointer; transition:background .1s; }
+  .wg-slot:hover { background:var(--teal-bg); }
+  .wg-slot.today-col { background:#f0fdf8; }
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.35); z-index:1000; display:none; align-items:center; justify-content:center; }
+  .modal-overlay.open { display:flex; }
+  .modal-box { background:#fff; border-radius:12px; padding:24px; max-width:540px; width:100%; max-height:90vh; overflow-y:auto; box-shadow:0 8px 32px rgba(0,0,0,.18), 0 2px 8px rgba(0,0,0,.1); }
+  .modal-title { font-size:16px; font-weight:700; color:var(--text); margin-bottom:16px; }
+  .modal-footer { display:flex; gap:8px; margin-top:18px; flex-wrap:wrap; align-items:center; }
 </style>
 </head>
 <body>
@@ -217,6 +247,11 @@
       <a class="nav-item" onclick="novoLaudo()" href="#">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
         Novo laudo
+      </a>
+      <div class="nav-section">Agenda</div>
+      <a class="nav-item" onclick="goPage('agenda')" href="#">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Agenda
       </a>
       <div class="nav-section">Financeiro</div>
       <a class="nav-item" onclick="goPage('financeiro')" href="#">
@@ -283,6 +318,21 @@
             <div class="metric-value" id="m-saldo">R$ 0,00</div>
           </div>
         </div>
+        <!-- Agenda do dia -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Agenda do dia</div>
+              <div class="card-sub" id="d-agenda-data"></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span id="d-agenda-badge" style="display:none;background:var(--teal);color:#fff;font-size:12px;font-weight:600;padding:2px 10px;border-radius:12px"></span>
+              <button class="btn btn-sm" onclick="goPage('agenda')">Ver agenda →</button>
+            </div>
+          </div>
+          <div id="d-agenda-list"></div>
+        </div>
+
         <div class="grid-2">
           <div class="card">
             <div class="card-header">
@@ -358,7 +408,7 @@
             <div class="form-field"><label>Paciente</label><input id="f-pac" placeholder="Nome do animal"></div>
             <div class="form-field"><label>Espécie</label><select id="f-esp"><option>Canino</option><option>Felino</option><option>Outro</option></select></div>
             <div class="form-field"><label>Raça</label><input id="f-raca" placeholder="Raça"></div>
-            <div class="form-field"><label>Sexo</label><select id="f-sexo"><option>Macho</option><option>Macho castrado</option><option>Fêmea</option><option>Fêmea castrada</option></select></div>
+            <div class="form-field"><label>Sexo</label><select id="f-sexo" onchange="filtrarOrgaosPorSexo()"><option>Macho</option><option>Macho castrado</option><option>Fêmea</option><option>Fêmea castrada</option></select></div>
             <div class="form-field"><label>Idade</label><input id="f-idade" placeholder="Ex: 5 anos"></div>
             <div class="form-field"><label>Data do exame</label><input type="date" id="f-data"></div>
           </div>
@@ -478,7 +528,19 @@
               </select>
               <textarea id="o-linfo" rows="2">Não foram observadas alterações ecográficas neste exame.</textarea>
             </div>
-            <div class="organ-row">
+            <div class="organ-row" id="row-utero-f" style="display:none">
+              <div class="organ-name">Útero</div>
+              <select onchange="setOrganText('o-utero-f', this.value, 'utero_f')">
+                <option value="normal">Normal</option>
+                <option value="piometra">Piometra</option>
+                <option value="mucometra">Mucometra / Hidrometra</option>
+                <option value="hiperplasia_endometrial">Hiperplasia endometrial cística</option>
+                <option value="cisto_ovariano">Cisto ovariano</option>
+                <option value="na">N/A</option>
+              </select>
+              <textarea id="o-utero-f" rows="2">Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.</textarea>
+            </div>
+            <div class="organ-row" id="row-prostata">
               <div class="organ-name">Próstata</div>
               <select onchange="setOrganText('o-prostata', this.value, 'prostata')">
                 <option value="normal">Normal</option>
@@ -591,11 +653,37 @@
 
       <!-- VISUALIZAR LAUDO -->
       <div class="page" id="page-viz-laudo">
-        <div id="viz-area"></div>
-        <div class="actions-bar" style="border-top:none; padding-top:0">
-          <button class="btn" onclick="goPage('laudos')">← Voltar</button>
-          <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir laudo</button>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+          <div>
+            <div style="font-size:18px;font-weight:700;color:var(--text)">Visualizar laudo</div>
+            <div style="font-size:12px;color:var(--text3);margin-top:2px">Pré-visualização do relatório</div>
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn" onclick="goPage('laudos')">← Voltar</button>
+            <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir</button>
+            <button class="btn btn-primary" onclick="baixarLaudoPDF()">📥 Baixar PDF</button>
+          </div>
         </div>
+        <div id="viz-area"></div>
+      </div>
+
+      <!-- AGENDA -->
+      <div class="page" id="page-agenda">
+        <div class="agenda-toolbar">
+          <button class="btn" onclick="agendaNav(-1)">&#8249;</button>
+          <button class="btn" onclick="agendaToday()">Hoje</button>
+          <button class="btn" onclick="agendaNav(1)">&#8250;</button>
+          <span id="ag-month-label" class="month-label"></span>
+          <div style="flex:1"></div>
+          <div class="view-toggle">
+            <button id="vt-mes" class="active" onclick="setAgendaMode('mes')">Mês</button>
+            <button id="vt-semana" onclick="setAgendaMode('semana')">Semana</button>
+            <button id="vt-dia" onclick="setAgendaMode('dia')">Dia</button>
+          </div>
+          <button class="btn" onclick="exportICSAll()" title="Exportar agenda (.ics para Google Calendar, Outlook, Apple Calendar)">📅 Exportar</button>
+          <button class="btn btn-primary" onclick="abrirNovaAgenda('')">+ Agendar</button>
+        </div>
+        <div id="ag-cal"></div>
       </div>
 
       <!-- FINANCEIRO -->
@@ -618,7 +706,7 @@
           </div>
           <div class="grid-2">
             <div class="card"><div class="card-header"><div class="card-title">Fluxo de caixa — 6 meses</div></div><div id="f-fc"></div></div>
-            <div class="card"><div class="card-header"><div class="card-title">Receita por forma de pagamento</div></div><div id="f-forma"></div></div>
+            <div class="card"><div class="card-header"><div class="card-title">Receita por forma de pagamento</div></div><div id="f-forma-chart"></div></div>
           </div>
         </div>
 
@@ -698,6 +786,7 @@
               <div class="form-field"><label>E-mail</label><input id="cl-email" placeholder="email@clinica.com.br" type="email"></div>
               <div class="form-field"><label>Condição de pagamento</label><select id="cl-cond"><option>À vista</option><option>7 dias</option><option>15 dias</option><option>30 dias</option><option>Personalizado</option></select></div>
               <div class="form-field"><label>Desconto (%)</label><input type="number" id="cl-desc" placeholder="0" min="0" max="100"></div>
+              <div class="form-field" style="grid-column:span 2"><label>Endereço</label><input id="cl-endereco" placeholder="Rua, número — Bairro, Cidade — Estado"></div>
               <div class="form-field"><label>Observação</label><input id="cl-obs" placeholder="Opcional"></div>
             </div>
             <div class="actions-bar"><button class="btn btn-primary" onclick="addClinica()">+ Cadastrar clínica</button></div>
@@ -777,108 +866,238 @@
       <!-- PAINEL DE CONTROLE -->
       <div class="page" id="page-painel">
 
-        <!-- Identidade visual -->
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">🎨 Identidade visual</div><div class="card-sub">Logo e nome exibidos no cabeçalho dos laudos impressos</div></div></div>
-          <div class="form-grid fg-2" style="align-items:start">
-            <div class="form-field">
-              <label>Nome da veterinária</label>
-              <input id="cfg-nome" placeholder="Ex: Patrine Cagnini">
-              <label style="margin-top:8px">Especialidade</label>
-              <input id="cfg-esp" placeholder="Ex: Médica Veterinária | Ultrassonografista">
-              <label style="margin-top:8px">CRMV</label>
-              <input id="cfg-crmv" placeholder="Ex: CRMV-SC 09377">
-              <div class="actions-bar" style="justify-content:flex-start;padding-top:12px;margin-top:4px">
-                <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+        <div class="subtabs">
+          <div class="stab active" onclick="stpc('pc-layout')">📄 Layout do Laudo</div>
+          <div class="stab" onclick="stpc('pc-previa')">👁️ Prévia</div>
+          <div class="stab" onclick="stpc('pc-dados')">💾 Dados</div>
+          <div class="stab" onclick="stpc('pc-sistema')">⚙️ Sistema</div>
+        </div>
+
+        <!-- ABA: Layout do Laudo -->
+        <div class="ssec active" id="pc-layout">
+
+          <!-- Identidade visual -->
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">🎨 Identidade visual</div><div class="card-sub">Logo e nome exibidos no cabeçalho dos laudos impressos</div></div></div>
+            <div class="form-grid fg-2" style="align-items:start">
+              <div class="form-field">
+                <label>Nome da veterinária</label>
+                <input id="cfg-nome" placeholder="Ex: Patrine Cagnini">
+                <label style="margin-top:8px">Especialidade</label>
+                <input id="cfg-esp" placeholder="Ex: Médica Veterinária | Ultrassonografista">
+                <label style="margin-top:8px">CRMV</label>
+                <input id="cfg-crmv" placeholder="Ex: CRMV-SC 09377">
+                <div class="actions-bar" style="justify-content:flex-start;padding-top:12px;margin-top:4px">
+                  <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+                </div>
+              </div>
+              <div class="form-field">
+                <label>Logo do laudo impresso</label>
+                <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+                  <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
+                </div>
+                <label class="btn" style="cursor:pointer;justify-content:center">
+                  📁 Carregar logo
+                  <input type="file" accept="image/*" style="display:none" onchange="carregarLogo(this)">
+                </label>
+                <button class="btn btn-danger btn-sm" onclick="removerLogo()" style="margin-top:6px">Remover logo</button>
               </div>
             </div>
-            <div class="form-field">
-              <label>Logo do laudo impresso</label>
-              <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
-                <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
+          </div>
+
+          <!-- Configuração do Laudo -->
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">📄 Configuração do Laudo</div><div class="card-sub">Personaliza estrutura e textos do laudo impresso</div></div></div>
+            <div class="form-section" style="margin-top:0">Estrutura</div>
+            <div class="form-grid fg-2">
+              <div class="form-field">
+                <label>Título do documento</label>
+                <input id="cfg-titulo" placeholder="Relatório Ultrassonográfico">
               </div>
-              <label class="btn" style="cursor:pointer;justify-content:center">
-                📁 Carregar logo
-                <input type="file" accept="image/*" style="display:none" onchange="carregarLogo(this)">
+              <div class="form-field">
+                <label>Cor principal do laudo</label>
+                <input type="color" id="cfg-cor" value="#3d7a52" style="height:36px;padding:3px 6px;width:100%">
+              </div>
+              <div class="form-field">
+                <label>Label — seção de achados</label>
+                <input id="cfg-label-achados" placeholder="Achados Ultrassonográficos">
+              </div>
+              <div class="form-field">
+                <label>Label — seção de conclusão</label>
+                <input id="cfg-label-conclusao" placeholder="Impressão Diagnóstica">
+              </div>
+            </div>
+            <div class="form-section">Seções visíveis no laudo</div>
+            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-achados"> Achados</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-conclusao"> Conclusão</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-assinatura"> Assinatura</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-fotos"> Fotos</label>
+              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-footer"> Rodapé</label>
+            </div>
+            <div class="form-section">Modelo de conclusão</div>
+            <div class="form-field">
+              <label>Texto padrão (pré-preenchido em novos laudos)</label>
+              <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame realizado com paciente em jejum de ___ horas..."></textarea>
+            </div>
+            <div class="form-section">Tipografia</div>
+            <div class="form-grid fg-3">
+              <div class="form-field">
+                <label>Fonte principal</label>
+                <select id="cfg-fonte">
+                  <option value="Arial, sans-serif">Arial</option>
+                  <option value="'Calibri', 'Segoe UI', sans-serif">Calibri</option>
+                  <option value="'Cambria', Georgia, serif">Cambria</option>
+                  <option value="'Times New Roman', Times, serif">Times New Roman</option>
+                  <option value="Georgia, serif">Georgia</option>
+                  <option value="Verdana, sans-serif">Verdana</option>
+                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                  <option value="Garamond, serif">Garamond</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Tamanho do corpo (pt)</label>
+                <select id="cfg-fontsize">
+                  <option value="10">10 pt — Compacto</option>
+                  <option value="11">11 pt — Pequeno</option>
+                  <option value="12">12 pt — Padrão</option>
+                  <option value="13">13 pt — Confortável</option>
+                  <option value="14">14 pt — Grande</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Espaçamento entre linhas</label>
+                <select id="cfg-lineh">
+                  <option value="1.2">1,2 — Compacto</option>
+                  <option value="1.4">1,4 — Próximo</option>
+                  <option value="1.6">1,6 — Padrão Word</option>
+                  <option value="1.8">1,8 — Aberto</option>
+                  <option value="2.0">2,0 — Duplo</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-section">Página</div>
+            <div class="form-grid fg-3">
+              <div class="form-field">
+                <label>Margens de impressão</label>
+                <select id="cfg-margens">
+                  <option value="8mm">Estreitas (8 mm)</option>
+                  <option value="12mm">Normais (12 mm)</option>
+                  <option value="18mm">Largas (18 mm)</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Formato do papel</label>
+                <select id="cfg-papel">
+                  <option value="A4">A4 (210 × 297 mm)</option>
+                  <option value="letter">Carta / Letter</option>
+                </select>
+              </div>
+              <div class="form-field">
+                <label>Estilo do cabeçalho</label>
+                <select id="cfg-header-style">
+                  <option value="gray">Tint da cor principal (centralizado)</option>
+                  <option value="white">Branco com borda colorida</option>
+                  <option value="minimal">Minimalista (logo + texto lado a lado)</option>
+                </select>
+              </div>
+            </div>
+            <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
+              <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
+            </div>
+          </div>
+
+        </div><!-- /pc-layout -->
+
+        <!-- ABA: Dados -->
+        <div class="ssec" id="pc-dados">
+          <div class="card">
+            <div class="card-header"><div><div class="card-title">💾 Dados</div><div class="card-sub">Backup e restauração dos dados do sistema</div></div></div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="exportarBackup()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Exportar backup
+              </button>
+              <label class="btn" style="cursor:pointer">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Importar backup
+                <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
               </label>
-              <button class="btn btn-danger btn-sm" onclick="removerLogo()" style="margin-top:6px">Remover logo</button>
             </div>
+            <div class="tip" style="margin-top:14px;margin-bottom:0">Os dados já ficam salvos automaticamente no Supabase. Use o backup para exportar para Excel ou como segurança extra.</div>
           </div>
-        </div>
+        </div><!-- /pc-dados -->
 
-        <!-- Configuração do Laudo -->
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">📄 Configuração do Laudo</div><div class="card-sub">Personaliza estrutura e textos do laudo impresso</div></div></div>
-          <div class="form-section" style="margin-top:0">Estrutura</div>
-          <div class="form-grid fg-2">
-            <div class="form-field">
-              <label>Título do documento</label>
-              <input id="cfg-titulo" placeholder="Relatório Ultrassonográfico">
-            </div>
-            <div class="form-field">
-              <label>Cor principal do laudo</label>
-              <input type="color" id="cfg-cor" value="#3d7a52" style="height:36px;padding:3px 6px;width:100%">
-            </div>
-            <div class="form-field">
-              <label>Label — seção de achados</label>
-              <input id="cfg-label-achados" placeholder="Achados Ultrassonográficos">
-            </div>
-            <div class="form-field">
-              <label>Label — seção de conclusão</label>
-              <input id="cfg-label-conclusao" placeholder="Impressão Diagnóstica">
-            </div>
+        <!-- ABA: Sistema -->
+        <div class="ssec" id="pc-sistema">
+          <div class="card">
+            <div class="card-header"><div class="card-title">⚙️ Sistema</div></div>
+            <table class="data-table">
+              <tbody>
+                <tr><td style="color:var(--text2);width:160px">Versão</td><td>VetRoutine v1.10</td></tr>
+                <tr><td style="color:var(--text2)">Banco de dados</td><td>Supabase · <span id="painel-sync-status">—</span></td></tr>
+                <tr><td style="color:var(--text2)">URL do sistema</td><td><a href="https://vetroutine.netlify.app/" target="_blank" style="color:var(--teal)">vetroutine.netlify.app</a></td></tr>
+                <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="form-section">Seções visíveis no laudo</div>
-          <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-achados"> Achados</label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-conclusao"> Conclusão</label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-assinatura"> Assinatura</label>
-            <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-fotos"> Fotos</label>
-          </div>
-          <div class="form-section">Modelo de conclusão</div>
-          <div class="form-field">
-            <label>Texto padrão (pré-preenchido em novos laudos)</label>
-            <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame realizado com paciente em jejum de ___ horas..."></textarea>
-          </div>
-          <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
-            <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
-          </div>
-        </div>
+        </div><!-- /pc-sistema -->
 
-        <!-- Dados -->
-        <div class="card">
-          <div class="card-header"><div><div class="card-title">💾 Dados</div><div class="card-sub">Backup e restauração dos dados do sistema</div></div></div>
-          <div style="display:flex;gap:10px;flex-wrap:wrap">
-            <button class="btn btn-primary" onclick="exportarBackup()">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-              Exportar backup
+        <!-- ABA: Prévia -->
+        <div class="ssec" id="pc-previa">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--text)">Prévia do laudo impresso</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:2px">Renderizado com o último laudo salvo e as configurações atuais</div>
+            </div>
+            <button class="btn btn-primary" onclick="imprimirPrevia()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir
             </button>
-            <label class="btn" style="cursor:pointer">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Importar backup
-              <input type="file" accept=".json" style="display:none" onchange="importarBackup(this)">
-            </label>
+            <button class="btn btn-primary" onclick="baixarPreviasPDF()">📥 Baixar PDF</button>
           </div>
-          <div class="tip" style="margin-top:14px;margin-bottom:0">Os dados já ficam salvos automaticamente no Supabase. Use o backup para exportar para Excel ou como segurança extra.</div>
-        </div>
-
-        <!-- Sistema -->
-        <div class="card">
-          <div class="card-header"><div class="card-title">⚙️ Sistema</div></div>
-          <table class="data-table">
-            <tbody>
-              <tr><td style="color:var(--text2);width:160px">Versão</td><td>VetRoutine v1.10</td></tr>
-              <tr><td style="color:var(--text2)">Banco de dados</td><td>Supabase · <span id="painel-sync-status">—</span></td></tr>
-              <tr><td style="color:var(--text2)">URL do sistema</td><td><a href="https://vetroutine.netlify.app/" target="_blank" style="color:var(--teal)">vetroutine.netlify.app</a></td></tr>
-              <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
-            </tbody>
-          </table>
-        </div>
+          <div id="previa-area"></div>
+        </div><!-- /pc-previa -->
 
       </div>
 
     </div><!-- /content -->
   </main>
+</div>
+
+<!-- MODAL AGENDA -->
+<div class="modal-overlay" id="modal-agenda" onclick="if(event.target===this)fecharAgenda()">
+  <div class="modal-box">
+    <div class="modal-title" id="ag-modal-title">Novo agendamento</div>
+    <div class="form-grid fg-2">
+      <div class="form-field"><label>Paciente</label><input id="ag-pac" placeholder="Nome do animal" oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Tutor</label><input id="ag-tutor" placeholder="Nome do tutor"></div>
+      <div class="form-field"><label>Espécie</label><select id="ag-esp"><option>Canino</option><option>Felino</option><option>Outro</option></select></div>
+      <div class="form-field"><label>Tipo de exame</label><select id="ag-tipo" onchange="atualizarGcalLink()"><option>Abdominal total</option><option>Gestacional</option><option>Outro</option></select></div>
+      <div class="form-field"><label>Data</label><input type="date" id="ag-data" oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Horário</label><input type="time" id="ag-hora" oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Veterinário solicitante</label><input id="ag-vet" placeholder="Dr(a)." oninput="atualizarGcalLink()"></div>
+      <div class="form-field"><label>Clínica</label><select id="ag-clinica-modal" onchange="autoFillLocalFromClinica()"><option value="">— Selecione —</option></select></div>
+      <div class="form-field" style="grid-column:span 2">
+        <label>Local / Endereço</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="ag-local" placeholder="Endereço do atendimento" style="flex:1" oninput="atualizarGcalLink();atualizarMapsBtn()">
+          <a id="ag-maps-btn" href="#" target="_blank" title="Ver no Google Maps" style="display:none;color:var(--teal);font-size:20px;text-decoration:none;line-height:1;padding:4px">🗺</a>
+        </div>
+      </div>
+      <div class="form-field" style="grid-column:span 2"><label>Observações</label><textarea id="ag-obs" rows="2" placeholder="Informações adicionais..."></textarea></div>
+      <div class="form-field"><label>Status</label><select id="ag-status"><option>Agendado</option><option>Confirmado</option><option>Realizado</option><option>Cancelado</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-primary" onclick="salvarAgenda()">Salvar</button>
+      <button class="btn" onclick="fecharAgenda()">Cancelar</button>
+      <button class="btn" id="ag-del-btn" style="display:none;color:var(--red);border-color:var(--red)" onclick="excluirAgenda()">Excluir</button>
+      <div style="flex:1"></div>
+      <button class="btn" id="ag-ics-btn" style="display:none" onclick="exportICS()" title="Baixar arquivo .ics (importar em qualquer agenda)">⬇ .ics</button>
+      <button class="btn" id="ag-gcal-btn" style="display:none" title="Adicionar ao Google Calendar">📅 Google Cal</button>
+      <button class="btn btn-primary" id="ag-laudo-btn" style="display:none" onclick="gerarLaudoFromAgenda()">📋 Gerar laudo</button>
+    </div>
+  </div>
 </div>
 
 <!-- TOAST -->
@@ -890,7 +1109,12 @@
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let laudos = [], receitas = [], despesas = [], clinicas = [];
-let editId = null, viewId = null, curFSec = 'f-overview';
+let agenda = [];
+let agendaViewDate = new Date();
+let agendaViewMode = 'mes';
+let agendaEditId = null;
+const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95' };
+let editId = null, viewId = null, curFSec = 'f-overview', curPSec = 'pc-layout';
 let fotosTmp = []; // fotos do laudo em edição (base64)
 
 // ─── PERSISTENCE ─────────────────────────────────────────────────────────────
@@ -899,6 +1123,7 @@ function save() {
   localStorage.setItem('uv_receitas', JSON.stringify(receitas));
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
+  localStorage.setItem('uv_agenda', JSON.stringify(agenda));
   syncCloud();
 }
 function load() {
@@ -906,6 +1131,7 @@ function load() {
   try { receitas = JSON.parse(localStorage.getItem('uv_receitas') || '[]'); } catch(e){receitas=[];}
   try { despesas = JSON.parse(localStorage.getItem('uv_despesas') || '[]'); } catch(e){despesas=[];}
   try { clinicas = JSON.parse(localStorage.getItem('uv_clinicas') || '[]'); } catch(e){clinicas=[];}
+  try { agenda = JSON.parse(localStorage.getItem('uv_agenda') || '[]'); } catch(e){agenda=[];}
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -954,6 +1180,7 @@ const pageTitles = {
   laudos: ['Laudos', 'Todos os exames registrados'],
   'novo-laudo': ['Novo laudo', 'Preencher relatório ultrassonográfico'],
   'viz-laudo': ['Visualizar laudo', 'Pré-visualização do relatório'],
+  agenda: ['Agenda', 'Agendamento de exames'],
   financeiro: ['Financeiro', 'Gestão financeira do negócio'],
   relatorios: ['Relatórios', 'Análise de desempenho e dados'],
   painel: ['Painel de controle', 'Configurações e parametrização do sistema'],
@@ -968,11 +1195,12 @@ function goPage(name) {
   const [title, sub] = pageTitles[name] || [name, ''];
   document.getElementById('topbar-title').textContent = title;
   document.getElementById('topbar-sub').textContent = sub;
-  const map = {dashboard:0, laudos:1, financeiro:3};
+  const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') updateDashboard();
 document.getElementById('sb-logo').src = LOGO_B64;
   if (name === 'laudos') renderLaudos();
+  if (name === 'agenda') { renderAgenda(); }
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
   if (name === 'painel') renderPainel();
@@ -1006,6 +1234,17 @@ function stf(name) {
   if (name === 'f-clinicas') renderClinicas();
 }
 
+function stpc(name) {
+  curPSec = name;
+  const page = document.getElementById('page-painel');
+  page.querySelectorAll('.ssec').forEach(s => s.classList.remove('active'));
+  page.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  document.getElementById(name).classList.add('active');
+  const map = {'pc-layout':0,'pc-previa':1,'pc-dados':2,'pc-sistema':3};
+  page.querySelectorAll('.stab')[map[name]].classList.add('active');
+  if (name === 'pc-previa') renderPrevia();
+}
+
 // ─── LAUDO FORM ───────────────────────────────────────────────────────────────
 const orgDefaults = {
   bexiga: 'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.',
@@ -1019,17 +1258,49 @@ const orgDefaults = {
   adrenais: 'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
   linfo: 'Não foram observadas alterações ecográficas neste exame.',
   prostata: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.',
+  utero_f: 'Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.',
 };
-const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',prostata:'Próstata'};
+const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',utero_f:'Útero',prostata:'Próstata'};
 const orgNomesGest = {utero:'Útero',fetos:'Número de fetos',bcf:'Batimentos (BCF)',placenta:'Placenta',amnio:'Líquido amniótico',ig:'Idade gestacional'};
 
 function toggleGest() {
   const t = document.getElementById('f-tipo').value;
   document.getElementById('card-abdominal').style.display = t === 'Gestacional' ? 'none' : 'block';
   document.getElementById('card-gestacional').style.display = t === 'Gestacional' ? 'block' : 'none';
+  organSelecoes = {}; // reseta impressões ao trocar tipo de exame
   document.getElementById('f-conclusao').value = t === 'Gestacional'
     ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
     : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+}
+
+function filtrarOrgaosPorSexo() {
+  const sexo = document.getElementById('f-sexo').value;
+  const isMacho = sexo === 'Macho' || sexo === 'Macho castrado';
+  const rowP = document.getElementById('row-prostata');
+  const rowU = document.getElementById('row-utero-f');
+  if (rowP) rowP.style.display = isMacho ? '' : 'none';
+  if (rowU) rowU.style.display = isMacho ? 'none' : '';
+  if (isMacho) {
+    // oculta útero feminino: zera valor para não aparecer no laudo
+    const eu = document.getElementById('o-utero-f');
+    if (eu) eu.value = '';
+    const su = document.querySelector('#row-utero-f select');
+    if (su) su.selectedIndex = 0;
+    delete organSelecoes.utero_f;
+    // restaura próstata com default se estava em branco
+    const ep = document.getElementById('o-prostata');
+    if (ep && !ep.value) ep.value = orgDefaults.prostata;
+  } else {
+    // oculta próstata: zera valor para não aparecer no laudo
+    const ep = document.getElementById('o-prostata');
+    if (ep) ep.value = '';
+    const sp = document.querySelector('#row-prostata select');
+    if (sp) sp.selectedIndex = 0;
+    delete organSelecoes.prostata;
+    // restaura útero feminino com default se estava em branco
+    const eu = document.getElementById('o-utero-f');
+    if (eu && !eu.value) eu.value = orgDefaults.utero_f;
+  }
 }
 
 function novoLaudo() {
@@ -1055,9 +1326,11 @@ function clearLaudoForm() {
   ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
   // reset all patologia selects to first option
   document.querySelectorAll('#card-abdominal select, #card-gestacional select').forEach(s => s.selectedIndex = 0);
+  organSelecoes = {};
   fotosTmp = [];
   renderFotosGrid();
   toggleGest();
+  filtrarOrgaosPorSexo();
 }
 
 function getLaudoData() {
@@ -1142,6 +1415,7 @@ function editLaudo(id) {
   populateClinicaSelects();
   if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgAbdom[k].texto||''; });
   if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgGest[k].texto||''; });
+  filtrarOrgaosPorSexo(); // após popular órgãos: zera o órgão do sexo oposto
   fotosTmp = (l.fotos || []).slice();
   renderFotosGrid();
   goPage('novo-laudo');
@@ -1159,71 +1433,110 @@ document.getElementById('sb-logo').src = LOGO_B64;
 // ─── PREVIEW & PRINT ──────────────────────────────────────────────────────────
 function fmtDP(d) { if(!d) return '___'; const p = d.split('-'); return p.length===3 ? p[2]+'/'+p[1]+'/'+p[0] : d; }
 
+// LOGO DO SISTEMA (VetRoutine) — aparece APENAS na sidebar. Nunca usar no laudo.
 const LOGO_B64 = 'logo.png';
 
-function buildLaudoHTML(l, orgRows) {
-  const lc = getConfig().laudo || {};
+function buildLaudoHTML(l) {
+  const lc  = getConfig().laudo || {};
   const cor = lc.cor || '#3d7a52';
-  const corLight = cor + '33'; // transparência para bordas
-  const titulo = lc.titulo || 'Relatório Ultrassonográfico';
-  const labelAchados = lc.labelAchados || 'Achados Ultrassonográficos';
+  const titulo         = lc.titulo         || 'Relatório Ultrassonográfico';
+  const labelAchados   = lc.labelAchados   || 'Achados Ultrassonográficos';
   const labelConclusao = lc.labelConclusao || 'Impressão Diagnóstica';
-  const secAchados = lc.secAchados !== false;
-  const secConclusao = lc.secConclusao !== false;
+  const secAchados    = lc.secAchados    !== false;
+  const secConclusao  = lc.secConclusao  !== false;
   const secAssinatura = lc.secAssinatura !== false;
-  const secFotos = lc.secFotos !== false;
+  const secFotos      = lc.secFotos      !== false;
+  const secFooter     = lc.secFooter     !== false;
   const nome = getConfig().nome || 'Patrine Cagnini';
   const esp  = getConfig().esp  || 'Médica Veterinária | Ultrassonografista';
   const crmv = getConfig().crmv || 'CRMV-SC 09377';
-  return '<div style="max-width:800px;overflow:hidden;font-family:Arial,sans-serif;background:#fff">'
-    /* CABEÇALHO — faixa cinza centralizada estilo PDF */
-    + '<div style="background:#d4d0cb;padding:16px 28px 12px;text-align:center;border-bottom:1px solid #b8b4ae">'
-      + '<img src="' + getLogo() + '" style="max-height:72px;max-width:190px;object-fit:contain;display:block;margin:0 auto 8px" alt="Logo">'
-      + '<div style="font-size:14px;font-weight:700;letter-spacing:.22em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
+  // tipografia
+  const fonte  = lc.fonte    || 'Arial, sans-serif';
+  const sz     = parseInt(lc.fontsize || '12');
+  const lh     = lc.lineh    || '1.6';
+  const hstyle = lc.headerStyle || 'gray';
+  const szSm   = Math.max(9,  sz - 1);
+  const szXs   = Math.max(8,  sz - 2);
+  const szLg   = Math.round(sz * 1.17);
+  // achados por órgão
+  const isGest = l.tipo === 'Gestacional';
+  const orgs   = isGest ? l.orgGest   : l.orgAbdom;
+  const nomes  = isGest ? orgNomesGest : orgNomesAbdom;
+  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
+    return '<tr style="border-bottom:1px solid #edf2ef">'
+      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</td>'
+      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</td>'
+      + '</tr>';
+  }).join('') : '';
+  // cabeçalho (3 estilos)
+  const logoSrc = getLogo();
+  const logoTag = logoSrc ? '<img src="' + logoSrc + '" alt="Logo" style="max-height:110px;max-width:260px;object-fit:contain;display:block;margin:0 auto 6px">' : '';
+  let headerHTML;
+  if (hstyle === 'white') {
+    headerHTML = '<div style="background:' + cor + '0a;padding:14px 28px 10px;text-align:center;border-bottom:3px solid ' + cor + '">'
+      + logoTag
+      + '<div style="font-size:' + szLg + 'px;font-weight:700;letter-spacing:.22em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
       + '<div style="font-size:9px;letter-spacing:.16em;color:#5a5854;margin-top:3px;text-transform:uppercase">' + esp + '</div>'
-      + '<div style="font-size:13px;color:#7a7670;margin-top:6px">🐾</div>'
-    + '</div>'
+      + '</div>';
+  } else if (hstyle === 'minimal') {
+    headerHTML = '<div style="background:' + cor + '0a;padding:12px 28px;display:flex;align-items:center;gap:18px;border-bottom:2px solid ' + cor + '">'
+      + (logoSrc ? '<img src="' + logoSrc + '" alt="Logo" style="max-height:52px;max-width:90px;object-fit:contain">' : '')
+      + '<div>'
+        + '<div style="font-size:' + szLg + 'px;font-weight:700;letter-spacing:.12em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
+        + '<div style="font-size:9px;letter-spacing:.1em;color:#5a5854;margin-top:2px;text-transform:uppercase">' + esp + '</div>'
+        + '<div style="font-size:9px;color:#7a7670;margin-top:2px">' + crmv + '</div>'
+      + '</div>'
+      + '</div>';
+  } else {
+    headerHTML = '<div style="background:' + cor + '14;padding:16px 28px 12px;text-align:center;border-bottom:2px solid ' + cor + '40">'
+      + logoTag
+      + '<div style="font-size:' + szLg + 'px;font-weight:700;letter-spacing:.22em;color:#2a2826;text-transform:uppercase">' + nome + '</div>'
+      + '<div style="font-size:9px;letter-spacing:.16em;color:#5a5854;margin-top:3px;text-transform:uppercase">' + esp + '</div>'
+      + '</div>';
+  }
+  return '<div style="max-width:800px;overflow:hidden;font-family:' + fonte + ';background:#fff">'
+    + headerHTML
     /* DADOS DO PACIENTE */
     + '<div style="padding:10px 28px 8px;background:#f5f4f0;border-bottom:1px solid #e2e1dc">'
-      + '<table style="width:100%;border-collapse:collapse">'
+      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">'
         + '<tr>'
-          + '<td style="padding:3px 10px 3px 0;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Paciente</span><div style="font-size:11px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></td>'
-          + '<td style="padding:3px 10px;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</span><div style="font-size:11px;color:#1a1a18">' + (l.especie||'—') + (l.raca?' · '+l.raca:'') + '</div></td>'
-          + '<td style="padding:3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Sexo</span><div style="font-size:11px;color:#1a1a18">' + (l.sexo||'—') + '</div></td>'
-          + '<td style="padding:3px 0 3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Idade</span><div style="font-size:11px;color:#1a1a18">' + (l.idade||'—') + '</div></td>'
-          + '<td style="padding:3px 0 3px 10px;width:20%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Data</span><div style="font-size:11px;color:#1a1a18">' + fmtDP(l.data) + '</div></td>'
+          + '<td style="padding:3px 10px 3px 0;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Paciente</span><div style="font-size:' + szSm + 'px;font-weight:600;color:#1a1a18">' + (l.paciente||'—') + '</div></td>'
+          + '<td style="padding:3px 10px;width:25%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Espécie / Raça</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.especie||'—') + (l.raca?' · '+l.raca:'') + '</div></td>'
+          + '<td style="padding:3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Sexo</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.sexo||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px;width:15%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Idade</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.idade||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px;width:20%"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Data</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + fmtDP(l.data) + '</div></td>'
         + '</tr>'
         + '<tr>'
-          + '<td style="padding:3px 10px 3px 0"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Tutor</span><div style="font-size:11px;color:#1a1a18">' + (l.tutor||'—') + '</div></td>'
-          + '<td style="padding:3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Veterinário solicitante</span><div style="font-size:11px;color:#1a1a18">' + (l.vet||'—') + '</div></td>'
-          + '<td style="padding:3px 0 3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Clínica</span><div style="font-size:11px;color:#1a1a18">' + (l.clinica||'—') + '</div></td>'
+          + '<td style="padding:3px 10px 3px 0"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Tutor</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.tutor||'—') + '</div></td>'
+          + '<td style="padding:3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Veterinário solicitante</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.vet||'—') + '</div></td>'
+          + '<td style="padding:3px 0 3px 10px" colspan="2"><span style="font-size:8.5px;color:#9b9a95;text-transform:uppercase;letter-spacing:.05em">Clínica</span><div style="font-size:' + szSm + 'px;color:#1a1a18">' + (l.clinica||'—') + '</div></td>'
         + '</tr>'
       + '</table>'
     + '</div>'
     /* TÍTULO */
     + '<div style="text-align:center;padding:8px 28px 4px">'
-      + '<div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#1e1e1c">' + titulo + '</div>'
+      + '<div style="font-size:' + sz + 'px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#1e1e1c">' + titulo + '</div>'
       + '<div style="font-size:9px;color:#9b9a95;margin-top:2px;letter-spacing:.1em;text-transform:uppercase">' + (l.tipo||'') + '</div>'
     + '</div>'
     + '<div style="height:2px;background:' + cor + ';margin:6px 28px 0"></div>'
     /* ACHADOS */
     + (secAchados ? '<div style="padding:10px 28px 14px">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
-      + '<table style="width:100%;border-collapse:collapse">' + orgRows + '</table>'
+      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">' + orgRows + '</table>'
     + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelConclusao + '</div>'
-      + '<div style="font-size:12px;color:#1e1e1c;line-height:1.7;white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
-      + (l.obs ? '<div style="margin-top:8px;font-size:11px;color:#6b6a65;font-style:italic;line-height:1.6">' + l.obs + '</div>' : '')
+      + '<div style="font-size:' + sz + 'px;color:#1e1e1c;line-height:' + lh + ';white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
+      + (l.obs ? '<div style="margin-top:8px;font-size:' + szSm + 'px;color:#6b6a65;font-style:italic;line-height:' + lh + '">' + l.obs + '</div>' : '')
     + '</div>' : '')
     /* ASSINATURA */
     + (secAssinatura ? '<div style="padding:10px 28px 18px;display:flex;justify-content:flex-end">'
       + '<div style="text-align:center">'
         + '<div style="width:200px;border-top:1.5px solid ' + cor + ';padding-top:6px">'
-          + '<div style="font-size:11px;font-weight:700;color:#1e1e1c">' + nome + '</div>'
-          + '<div style="font-size:10px;color:#6b6a65">' + esp + '</div>'
-          + '<div style="font-size:10px;color:#6b6a65">' + crmv + '</div>'
+          + '<div style="font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c">' + nome + '</div>'
+          + '<div style="font-size:' + szXs + 'px;color:#6b6a65">' + esp + '</div>'
+          + '<div style="font-size:' + szXs + 'px;color:#6b6a65">' + crmv + '</div>'
         + '</div>'
       + '</div>'
     + '</div>' : '')
@@ -1240,31 +1553,34 @@ function buildLaudoHTML(l, orgRows) {
           + '</div>'
         + '</div>'
       ) : '')
+    /* RODAPÉ */
+    + (secFooter ?
+        '<div style="border-top:2px solid ' + cor + ';padding:8px 28px;display:flex;align-items:center;justify-content:space-between;background:' + cor + '14">'
+          + (logoSrc ? '<img src="' + logoSrc + '" alt="Logo" style="max-height:48px;max-width:120px;object-fit:contain">' : '<div></div>')
+          + '<div style="text-align:right">'
+            + '<div style="font-size:9px;font-weight:700;color:#2a2826;letter-spacing:.9px;text-transform:uppercase">' + nome + '</div>'
+            + '<div style="font-size:7.5px;color:#5a5854;letter-spacing:1.2px;text-transform:uppercase;margin-top:2px">' + esp + '</div>'
+            + '<div style="font-size:8px;color:' + cor + ';font-weight:600;letter-spacing:1px;margin-top:3px">' + crmv + '</div>'
+          + '</div>'
+        + '</div>'
+      : '')
   + '</div>';
 }
 
 function renderPreview(l) {
-  const isGest = l.tipo === 'Gestacional';
-  const orgs = isGest ? l.orgGest : l.orgAbdom;
-  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
-  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
-  }).join('') : '';
-  document.getElementById('viz-area').innerHTML = '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l, orgRows) + '</div>';
+  document.getElementById('viz-area').innerHTML = '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l) + '</div>';
 }
 
 function imprimirLaudo() {
   const l = viewId ? laudos.find(function(x){ return x.id === viewId; }) : getLaudoData();
   if (!l) return;
-  const isGest = l.tipo === 'Gestacional';
-  const orgs = isGest ? l.orgGest : l.orgAbdom;
-  const nomes = isGest ? orgNomesGest : orgNomesAbdom;
-  const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef"><td style="padding:7px 10px;font-size:12px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top">' + nomes[k] + '</td><td style="padding:7px 10px;font-size:12px;color:#2a2a28;line-height:1.65;white-space:pre-wrap">' + orgs[k].texto + '</td></tr>';
-  }).join('') : '';
-  const body = buildLaudoHTML(l, orgRows);
+  const lc = getConfig().laudo || {};
+  const margens = lc.margens || '12mm';
+  const papel   = lc.papel   || 'A4';
+  const fonte   = lc.fonte   || 'Arial, sans-serif';
+  const body = buildLaudoHTML(l);
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0}body{background:#fff;padding:20px}@page{margin:12mm}@media print{body{padding:0}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Laudo - ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -1312,35 +1628,35 @@ function renderFotosGrid() {
 const organPatologias = {
   bexiga: {
     normal: 'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.',
-    cistolitiase: 'Vesícula urinária com presença de estrutura hiperecogênica em lúmen, formadora de intenso sombreamento acústico posterior, medindo aproximadamente ___ cm.\n\nImpressão: Cistolitíase. Recomenda-se correlação com urinálise e avaliação da possibilidade de obstrução urinária.',
-    cistite: 'Vesícula urinária com paredes espessadas e hiperecogênicas, medindo aproximadamente ___ cm de espessura, associada a conteúdo ecogênico em suspensão.\n\nImpressão: Alterações compatíveis com cistite. Recomenda-se correlação com urinálise e cultura urinária.',
+    cistolitiase: 'Vesícula urinária com presença de estrutura hiperecogênica em lúmen, formadora de intenso sombreamento acústico posterior, medindo aproximadamente ___ cm.',
+    cistite: 'Vesícula urinária com paredes espessadas e hiperecogênicas, medindo aproximadamente ___ cm de espessura, associada a conteúdo ecogênico em suspensão.',
     espessamento: 'Vesícula urinária com paredes espessadas, medindo aproximadamente ___ cm de espessura. Conteúdo luminal heterogêneo com material em suspensão.',
     na: ''
   },
   rins: {
     normal: 'Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.',
-    nefropatia: 'Rins localizados em topografia habitual, apresentando redução/perda da definição córtico-medular, aumento difuso da ecogenicidade cortical, contornos irregulares e discreta redução dimensional.\n\nImpressão: Alterações ultrassonográficas compatíveis com nefropatia crônica. Recomenda-se correlação com função renal e urinálise.',
+    nefropatia: 'Rins localizados em topografia habitual, apresentando redução/perda da definição córtico-medular, aumento difuso da ecogenicidade cortical, contornos irregulares e discreta redução dimensional.',
     nefrolitiase: 'Rim direito/esquerdo apresentando estrutura hiperecogênica em pelve renal, formadora de sombreamento acústico posterior, medindo aproximadamente ___ cm. Sem sinais de dilatação pielocalicial evidente.',
     hidronefrose: 'Rim direito/esquerdo apresentando dilatação do sistema pielocalicial, com pelve medindo aproximadamente ___ cm. Parênquima renal com espessura reduzida.',
     cisto: 'Rim direito/esquerdo apresentando formação cavitária arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm, sem sinais de vascularização ao Doppler.'
   },
   figado: {
     normal: 'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.',
-    hepatopatia: 'Fígado apresentando aumento difuso da ecogenicidade do parênquima, ecotextura grosseira/heterogênea, margens arredondadas e discreto aumento das dimensões, podendo dificultar a caracterização dos vasos intra-hepáticos. Não foram observadas formações focais evidentes.\n\nImpressão: Hepatopatia crônica/degeneração gordurosa. Pode estar associada a processo metabólico, endocrinopatia ou colestase. Recomenda-se correlação com exames laboratoriais e acompanhamento clínico.',
-    cisto_hepatico: 'Fígado apresentando múltiplas formações cavitárias arredondadas, anecogênicas, de paredes finas, distribuídas pelo parênquima hepático.\n\nImpressão: Alterações compatíveis com doença cística hepática/fibropolicistose. Recomenda-se correlação com exames complementares e acompanhamento clínico.',
-    nodulo_hepatico: 'Fígado apresentando formação nodular hipo/hiperecogênica em ___ lobo hepático, medindo aproximadamente ___ cm, com contornos bem definidos. Não foram observadas outras formações focais evidentes.\n\nImpressão: Nódulo hepático. Não se descarta processo infiltrativo/neoplásico. Recomenda-se análise citológica/histopatológica.',
+    hepatopatia: 'Fígado apresentando aumento difuso da ecogenicidade do parênquima, ecotextura grosseira/heterogênea, margens arredondadas e discreto aumento das dimensões, podendo dificultar a caracterização dos vasos intra-hepáticos. Não foram observadas formações focais evidentes.',
+    cisto_hepatico: 'Fígado apresentando múltiplas formações cavitárias arredondadas, anecogênicas, de paredes finas, distribuídas pelo parênquima hepático.',
+    nodulo_hepatico: 'Fígado apresentando formação nodular hipo/hiperecogênica em ___ lobo hepático, medindo aproximadamente ___ cm, com contornos bem definidos. Não foram observadas outras formações focais evidentes.',
     hepatomegalia: 'Fígado com dimensões aumentadas, ultrapassando o gradil costal, superfície lisa, ecogenicidade e ecotextura preservadas.'
   },
   vbiliar: {
     normal: 'Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.',
-    lama_biliar: 'Vesícula biliar com repleção adequada, paredes finas e regulares, contendo material ecogênico amorfo/dependente em lúmen, sem formação de sombreamento acústico posterior, ocupando aproximadamente __% do lúmen vesicular.\n\nImpressão: Presença de lama biliar discreta/moderada/importante. Achado pode estar relacionado à estase biliar, jejum prolongado ou alterações hepatobiliares.',
+    lama_biliar: 'Vesícula biliar com repleção adequada, paredes finas e regulares, contendo material ecogênico amorfo/dependente em lúmen, sem formação de sombreamento acústico posterior, ocupando aproximadamente __% do lúmen vesicular.',
     colelitíase: 'Vesícula biliar com presença de estrutura(s) hiperecogênica(s) em lúmen, formadora(s) de sombreamento acústico posterior, medindo aproximadamente ___ cm.',
     colecistite: 'Vesícula biliar com paredes espessadas medindo ___ cm, conteúdo heterogêneo com material em suspensão. Sinal de Murphy ultrassonográfico positivo.'
   },
   baco: {
     normal: 'Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.',
     esplenomegalia: 'Baço com dimensões aumentadas, medindo aproximadamente ___ cm no maior eixo. Ecogenicidade e ecotextura preservadas, sem formações focais evidentes.',
-    nodulo_baco: 'Baço apresentando formação nodular hipo/hiperecogênica, medindo aproximadamente ___ cm, com contornos bem/mal definidos.\n\nImpressão: Nódulo esplênico. Não se descarta processo infiltrativo/neoplásico. Recomenda-se correlação clínica.',
+    nodulo_baco: 'Baço apresentando formação nodular hipo/hiperecogênica, medindo aproximadamente ___ cm, com contornos bem/mal definidos.',
     hematoma_baco: 'Baço com formação heterogênea em região ___, apresentando área hipo/anecogênica irregular, sugestiva de hematoma/lesão traumática.'
   },
   estomago: {
@@ -1351,25 +1667,25 @@ const organPatologias = {
   },
   intestino: {
     normal: 'Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.',
-    enteropatia: 'Alças intestinais apresentando discreto/moderado espessamento difuso das paredes, preservando estratificação parietal, associado à hipomotilidade e conteúdo gasoso/líquido em lúmen.\n\nImpressão: Enteropatia difusa. Alterações podem estar relacionadas a processo inflamatório/infeccioso intestinal.',
-    obstrucao: 'Alças intestinais dilatadas, com acúmulo de conteúdo líquido/gasoso em lúmen, hipomotilidade e ausência de peristaltismo em segmento avaliado.\n\nImpressão: Alterações sugestivas de obstrução intestinal. Recomenda-se avaliação clínica urgente.',
+    enteropatia: 'Alças intestinais apresentando discreto/moderado espessamento difuso das paredes, preservando estratificação parietal, associado à hipomotilidade e conteúdo gasoso/líquido em lúmen.',
+    obstrucao: 'Alças intestinais dilatadas, com acúmulo de conteúdo líquido/gasoso em lúmen, hipomotilidade e ausência de peristaltismo em segmento avaliado.',
     intussuscepcao: 'Evidencia-se imagem em alvo/rosca em corte transversal, com múltiplas camadas concêntricas, compatível com intussuscepção intestinal em região ___.',
     corpo_estranho_int: 'Segmento intestinal com estrutura hiperecogênica em lúmen, formadora de sombreamento acústico/reverberação posterior, associada a dilatação a montante, sugestiva de corpo estranho.'
   },
   pancreas: {
     normal: 'Ecogenicidade e ecotextura preservadas.',
-    pancreatite: 'Pâncreas aumentado de dimensões, hipoecogênico/heterogêneo, associado à hiperecogenicidade da gordura adjacente.\n\nImpressão: Alterações ultrassonográficas sugestivas de pancreatite. Recomenda-se correlação com exames laboratoriais específicos.',
-    massa_pancreas: 'Pâncreas apresentando formação nodular hipo/heterogênea em ___, medindo aproximadamente ___ cm, com contornos irregulares.\n\nImpressão: Massa pancreática. Não se descarta neoplasia. Recomenda-se análise histopatológica.'
+    pancreatite: 'Pâncreas aumentado de dimensões, hipoecogênico/heterogêneo, associado à hiperecogenicidade da gordura adjacente.',
+    massa_pancreas: 'Pâncreas apresentando formação nodular hipo/heterogênea em ___, medindo aproximadamente ___ cm, com contornos irregulares.'
   },
   adrenais: {
     normal: 'Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.',
-    hiperplasia_adrenal: 'Adrenais apresentando aumento bilateral das dimensões, mantendo formato habitual, associado à presença de nodulação em polo cranial.\n\nImpressão: Hiperplasia adrenal bilateral associada à nodulação em polo cranial, podendo sugerir alteração endócrina/neoplásica. Recomenda-se correlação com exames hormonais.',
+    hiperplasia_adrenal: 'Adrenais apresentando aumento bilateral das dimensões, mantendo formato habitual, associado à presença de nodulação em polo cranial.',
     nodulo_adrenal: 'Adrenal direita/esquerda apresentando formação nodular medindo aproximadamente ___ cm, de ecogenicidade homogênea, com contornos regulares.',
-    massa_adrenal: 'Adrenal direita/esquerda apresentando formação expansiva medindo aproximadamente ___ cm, heterogênea, com contornos irregulares.\n\nImpressão: Massa adrenal. Não se descarta feocromocitoma ou carcinoma adrenocortical. Recomenda-se avaliação com especialista.'
+    massa_adrenal: 'Adrenal direita/esquerda apresentando formação expansiva medindo aproximadamente ___ cm, heterogênea, com contornos irregulares.'
   },
   linfo: {
     normal: 'Não foram observadas alterações ecográficas neste exame.',
-    linfadenomegalia: 'Evidenciou-se aumento generalizado dos linfonodos abdominais, incluindo linfonodos do tronco celíaco, mesentéricos e ilíacos mediais.\n\nImpressão: Linfadenomegalia abdominal generalizada. Alterações podem estar relacionadas a processo inflamatório, infeccioso ou infiltrativo/neoplásico.'
+    linfadenomegalia: 'Evidenciou-se aumento generalizado dos linfonodos abdominais, incluindo linfonodos do tronco celíaco, mesentéricos e ilíacos mediais.'
   },
   prostata: {
     normal: 'Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.',
@@ -1378,11 +1694,20 @@ const organPatologias = {
     cisto_prostata: 'Próstata com presença de formação cística arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm.',
     na: ''
   },
+  // Útero abdominal (fêmea não gestante)
+  utero_f: {
+    normal: 'Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.',
+    piometra: 'Útero com cornos uterinos distendidos, preenchidos por conteúdo ecogênico/heterogêneo em lúmen, com paredes espessadas e irregulares.',
+    mucometra: 'Útero com cornos uterinos dilatados, preenchidos por conteúdo anecogênico homogêneo, com paredes finas e regulares.',
+    hiperplasia_endometrial: 'Útero com espessamento endometrial difuso e paredes irregulares, associado a conteúdo luminal heterogêneo, com presença de imagens císticas distribuídas pelo endométrio.',
+    cisto_ovariano: 'Ovário direito/esquerdo apresentando formação cística arredondada, anecogênica, de paredes finas, medindo aproximadamente ___ cm.',
+    na: ''
+  },
   // Gestacional
   utero: {
     normal: 'Útero gravídico, com vesículas embrionárias identificadas, conteúdo anecogênico homogêneo.',
-    reabsorcao: 'Útero gravídico com vesícula(s) embrionária(s) sem embrião identificado e/ou ausência de batimentos cardíacos fetais.\n\nImpressão: Achados compatíveis com reabsorção fetal. Recomenda-se acompanhamento.',
-    morte_fetal: 'Útero gravídico com feto(s) sem batimentos cardíacos identificáveis, apresentando colapso estrutural.\n\nImpressão: Óbito fetal. Recomenda-se correlação clínica imediata.'
+    reabsorcao: 'Útero gravídico com vesícula(s) embrionária(s) sem embrião identificado e/ou ausência de batimentos cardíacos fetais.',
+    morte_fetal: 'Útero gravídico com feto(s) sem batimentos cardíacos identificáveis, apresentando colapso estrutural.'
   },
   bcf: {
     normal: 'Batimentos cardíacos fetais presentes e rítmicos.',
@@ -1401,6 +1726,109 @@ const organPatologias = {
   }
 };
 
+// ─── IMPRESSÕES DIAGNÓSTICAS POR PATOLOGIA ───────────────────────────────────
+// Baseado no Guia de Relatórios AquinoVet — impressão limpa para o campo conclusão
+const organImpressoes = {
+  bexiga: {
+    cistolitiase:      'Cistolitíase vesical. Recomenda-se correlação com urinálise e avaliação da possibilidade de obstrução urinária.',
+    cistite:           'Alterações compatíveis com processo inflamatório vesical (cistite). Recomenda-se correlação com urinálise e cultura urinária.',
+    espessamento:      'Espessamento de parede vesical evidenciado. Recomenda-se correlação com urinálise e acompanhamento clínico.'
+  },
+  rins: {
+    nefropatia:        'Imagem relacionada com nefropatia (aspecto de cronicidade). Recomenda-se correlação com função renal e urinálise.',
+    nefrolitiase:      'Imagem indicativa de litíase renal. Recomenda-se correlação com urinálise e avaliação do trato urinário.',
+    hidronefrose:      'Imagem compatível com hidronefrose. Recomenda-se avaliação do trato urinário e correlação clínica urgente.',
+    cisto:             'Imagem compatível com cisto renal. Recomenda-se acompanhamento ultrassonográfico.'
+  },
+  figado: {
+    hepatopatia:       'Alterações compatíveis com hepatopatia crônica e/ou infiltração gordurosa e/ou endocrinopatia. Recomenda-se correlação com exames laboratoriais hepáticos.',
+    cisto_hepatico:    'Alterações compatíveis com doença cística hepática/fibropolicistose. Recomenda-se correlação com exames complementares e acompanhamento clínico.',
+    nodulo_hepatico:   'Nódulo hepático evidenciado. Não se descarta processo infiltrativo/neoplásico. Recomenda-se avaliação citológica/histopatológica.',
+    hepatomegalia:     'Hepatomegalia evidenciada. Recomenda-se correlação clínica e laboratorial para elucidação da etiologia.'
+  },
+  vbiliar: {
+    lama_biliar:       'Lama biliar evidenciada. Achado pode estar relacionado à estase biliar, jejum prolongado ou alterações hepatobiliares.',
+    'colelitíase':     'Imagem indicativa de cálculo biliar (colelitíase). Recomenda-se acompanhamento clínico.',
+    colecistite:       'Alterações compatíveis com processo inflamatório / colecistite. Recomenda-se correlação clínica e laboratorial.'
+  },
+  baco: {
+    esplenomegalia:    'Esplenomegalia evidenciada. Recomenda-se correlação clínica e laboratorial para avaliação etiológica.',
+    nodulo_baco:       'Nódulo esplênico evidenciado. Não se descarta processo infiltrativo/neoplásico. Recomenda-se correlação clínica e exames complementares.',
+    hematoma_baco:     'Imagem sugestiva de hematoma/lesão traumática esplênica. Recomenda-se avaliação clínica imediata.'
+  },
+  estomago: {
+    gastrite:              'Alterações compatíveis com processo inflamatório gástrico (gastrite). Recomenda-se correlação clínica.',
+    corpo_estranho:        'Imagem sugestiva de corpo estranho gástrico. Recomenda-se avaliação clínica.',
+    espessamento_gastrico: 'Espessamento parietal gástrico evidenciado. Não se descarta processo infiltrativo/neoplásico. A critério clínico, sugere-se acompanhamento.'
+  },
+  intestino: {
+    enteropatia:           'Imagem relacionada a processo inflamatório difuso (enteropatia). Recomenda-se correlação clínica e exames complementares.',
+    obstrucao:             'Alterações sugestivas de obstrução intestinal. Recomenda-se avaliação clínica urgente.',
+    intussuscepcao:        'Imagem relacionada com intussuscepção intestinal. Recomenda-se avaliação clínica urgente.',
+    corpo_estranho_int:    'Imagem relacionada com corpo estranho intestinal. Recomenda-se avaliação clínica.'
+  },
+  pancreas: {
+    pancreatite:           'Alterações ultrassonográficas sugestivas de pancreatite. Recomenda-se correlação com exames laboratoriais específicos (lipase/amilase).',
+    massa_pancreas:        'Massa pancreática evidenciada. Não se descarta processo neoplásico. Recomenda-se análise histopatológica.'
+  },
+  adrenais: {
+    hiperplasia_adrenal:   'Hiperplasia adrenal bilateral evidenciada. Possível endocrinopatia associada. Recomenda-se correlação com exames hormonais.',
+    nodulo_adrenal:        'Nódulo adrenal evidenciado. Recomenda-se acompanhamento e correlação clínica.',
+    massa_adrenal:         'Massa adrenal evidenciada. Não se descarta feocromocitoma ou carcinoma adrenocortical. Recomenda-se avaliação especializada.'
+  },
+  linfo: {
+    linfadenomegalia:      'Linfadenomegalia abdominal evidenciada. Alterações podem estar relacionadas a processo inflamatório, infeccioso ou infiltrativo/neoplásico. Caso o clínico julgue necessário, sugere-se avaliação citológica complementar.'
+  },
+  prostata: {
+    hiperplasia_prostata:  'Imagem compatível com processo hiperplásico prostático. Recomenda-se correlação clínica.',
+    prostatite:            'Imagem sugestiva de processo inflamatório prostático (prostatite). Recomenda-se correlação clínica e laboratorial.',
+    cisto_prostata:        'Cisto prostático evidenciado. Recomenda-se acompanhamento ultrassonográfico.'
+  },
+  utero_f: {
+    piometra:                  'Imagem compatível com piometra. Recomenda-se avaliação clínica e cirúrgica urgente.',
+    mucometra:                 'Imagem compatível com mucometra/hidrometra. Recomenda-se correlação clínica.',
+    hiperplasia_endometrial:   'Alterações compatíveis com hiperplasia endometrial cística (HEC). Recomenda-se correlação hormonal.',
+    cisto_ovariano:            'Cisto ovariano evidenciado. Recomenda-se acompanhamento ultrassonográfico.'
+  },
+  utero: {
+    reabsorcao:            'Achados compatíveis com reabsorção fetal. Recomenda-se acompanhamento clínico.',
+    morte_fetal:           'Óbito fetal evidenciado. Recomenda-se correlação clínica imediata.'
+  },
+  placenta: {
+    placentite:            'Imagem sugestiva de processo inflamatório placentário (placentite). Recomenda-se acompanhamento.',
+    descolamento:          'Imagem sugestiva de descolamento placentário parcial. Recomenda-se avaliação clínica urgente.'
+  },
+  amnio: {
+    oligodramnio:          'Achado compatível com oligodrâmnio. Recomenda-se acompanhamento clínico.',
+    polidramnio:           'Achado compatível com polidrâmnio. Recomenda-se correlação clínica.'
+  }
+};
+
+// Mapa de seleções atuais por órgão — resetado a cada novo laudo
+let organSelecoes = {};
+
+function atualizarImpressao() {
+  const linhas = [];
+  Object.keys(organSelecoes).forEach(function(organ) {
+    var val = organSelecoes[organ];
+    if (!val || val === 'normal' || val === 'na' || val === 'custom') return;
+    var imp = organImpressoes[organ] && organImpressoes[organ][val];
+    if (imp) linhas.push('- ' + imp);
+  });
+  var el = document.getElementById('f-conclusao');
+  if (!el) return;
+  if (linhas.length > 0) {
+    el.value = linhas.join('\n');
+  } else {
+    var cfg = getConfig();
+    var isGest = document.getElementById('f-tipo') && document.getElementById('f-tipo').value === 'Gestacional';
+    el.value = (cfg.laudo && cfg.laudo.modeloConclusao) ? cfg.laudo.modeloConclusao
+      : isGest
+        ? '- Gestação em andamento sem intercorrências ultrassonográficas.\n- Fetos viáveis com BCF presentes.'
+        : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  }
+}
+
 function setOrganText(fieldId, value, organ) {
   if (value === 'custom') return; // campos manuais
   const el = document.getElementById(fieldId);
@@ -1412,11 +1840,14 @@ function setOrganText(fieldId, value, organ) {
     el.style.height = 'auto';
     el.style.height = el.scrollHeight + 'px';
   }
+  // Registra seleção e atualiza impressão diagnóstica automaticamente
+  organSelecoes[organ] = value;
+  atualizarImpressao();
 }
 
 // ─── CLÍNICA SELECTS ─────────────────────────────────────────────────────────
 function populateClinicaSelects() {
-  const ids = ['f-clinica', 'r-clinica'];
+  const ids = ['f-clinica', 'r-clinica', 'ag-clinica-modal'];
   ids.forEach(function(id) {
     const el = document.getElementById(id);
     if (!el) return;
@@ -1502,6 +1933,7 @@ function updateDashboard() {
 
   renderBarFC('d-fc', 4);
   renderBarForma('d-forma');
+  renderAgendaDia();
 }
 
 // ─── FIN OVERVIEW ────────────────────────────────────────────────────────────
@@ -1516,7 +1948,7 @@ function updateFinOverview() {
   sal.textContent = fmt(recMes - despMes);
   sal.className = 'metric-value ' + (recMes-despMes>=0?'green':'red');
   renderBarFC('f-fc', 6);
-  renderBarForma('f-forma');
+  renderBarForma('f-forma-chart');
 }
 
 function renderBarFC(elId, n) {
@@ -1643,8 +2075,8 @@ function renderReceber() {
 // ─── CLÍNICAS ─────────────────────────────────────────────────────────────────
 function addClinica() {
   if (!document.getElementById('cl-nome').value) { alert('Informe o nome da clínica.'); return; }
-  clinicas.push({id:Date.now(), nome:document.getElementById('cl-nome').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, obs:document.getElementById('cl-obs').value});
-  ['cl-nome','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-obs'].forEach(id => document.getElementById(id).value='');
+  clinicas.push({id:Date.now(), nome:document.getElementById('cl-nome').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, endereco:document.getElementById('cl-endereco').value, obs:document.getElementById('cl-obs').value});
+  ['cl-nome','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value='');
   save(); renderClinicas(); populateClinicaSelects(); toast('Clínica cadastrada!');
 }
 
@@ -1663,7 +2095,7 @@ function renderClinicas() {
       const tot = receitas.filter(r=>(r.clinica||'').toLowerCase()===c.nome.toLowerCase()).reduce((s,r)=>s+r.valor,0);
       const qtdLaudos = laudos.filter(l=>(l.clinica||'').toLowerCase()===c.nome.toLowerCase()).length;
       return `<tr>
-        <td><strong>${c.nome}</strong>${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
+        <td><strong>${c.nome}</strong>${c.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${c.endereco} <a href="https://maps.google.com/?q=${encodeURIComponent(c.endereco)}" target="_blank" style="color:var(--teal);text-decoration:none;white-space:nowrap">🗺 Maps</a></div>`:''}${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
         <td style="color:var(--text2)">${c.responsavel||c.contato||'—'}</td>
         <td style="color:var(--text2);white-space:nowrap">${c.telefone||'—'}</td>
         <td style="color:var(--text2)">${c.email||'—'}</td>
@@ -1795,32 +2227,104 @@ document.getElementById('sb-logo').src = LOGO_B64;
 
 // ─── PAINEL DE CONTROLE ───────────────────────────────────────────────────────
 function renderPainel() {
-  // carrega configurações salvas
   const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
   document.getElementById('cfg-nome').value  = cfg.nome  || 'Patrine Cagnini';
   document.getElementById('cfg-esp').value   = cfg.esp   || 'Médica Veterinária | Ultrassonografista';
   document.getElementById('cfg-crmv').value  = cfg.crmv  || 'CRMV-SC 09377';
-  // logo preview
-  const logo = localStorage.getItem('uv_logo') || LOGO_B64;
+  const logo = getLogo();
   const prev = document.getElementById('logo-preview');
   prev.innerHTML = logo
     ? '<img src="' + logo + '" style="max-height:90px;max-width:160px;object-fit:contain">'
     : '<span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>';
-  // laudo config
   const lc = cfg.laudo || {};
-  document.getElementById('cfg-titulo').value           = lc.titulo        || 'Relatório Ultrassonográfico';
-  document.getElementById('cfg-cor').value              = lc.cor           || '#3d7a52';
-  document.getElementById('cfg-label-achados').value    = lc.labelAchados  || 'Achados Ultrassonográficos';
-  document.getElementById('cfg-label-conclusao').value  = lc.labelConclusao|| 'Impressão Diagnóstica';
-  document.getElementById('cfg-sec-achados').checked    = lc.secAchados    !== false;
-  document.getElementById('cfg-sec-conclusao').checked  = lc.secConclusao  !== false;
-  document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura !== false;
-  document.getElementById('cfg-sec-fotos').checked      = lc.secFotos      !== false;
+  document.getElementById('cfg-titulo').value           = lc.titulo         || 'Relatório Ultrassonográfico';
+  document.getElementById('cfg-cor').value              = lc.cor            || '#3d7a52';
+  document.getElementById('cfg-label-achados').value    = lc.labelAchados   || 'Achados Ultrassonográficos';
+  document.getElementById('cfg-label-conclusao').value  = lc.labelConclusao || 'Impressão Diagnóstica';
+  document.getElementById('cfg-sec-achados').checked    = lc.secAchados     !== false;
+  document.getElementById('cfg-sec-conclusao').checked  = lc.secConclusao   !== false;
+  document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura  !== false;
+  document.getElementById('cfg-sec-fotos').checked      = lc.secFotos       !== false;
+  document.getElementById('cfg-sec-footer').checked    = lc.secFooter      !== false;
   document.getElementById('cfg-modelo-conclusao').value = lc.modeloConclusao || '';
-  // status supabase
+  document.getElementById('cfg-fonte').value            = lc.fonte        || 'Arial, sans-serif';
+  document.getElementById('cfg-fontsize').value         = lc.fontsize     || '12';
+  document.getElementById('cfg-lineh').value            = lc.lineh        || '1.6';
+  document.getElementById('cfg-margens').value          = lc.margens      || '12mm';
+  document.getElementById('cfg-papel').value            = lc.papel        || 'A4';
+  document.getElementById('cfg-header-style').value     = lc.headerStyle  || 'gray';
   const lbl = document.getElementById('sync-label');
   const el = document.getElementById('painel-sync-status');
   if (el) el.textContent = lbl ? lbl.textContent : '—';
+  stpc(curPSec);
+}
+
+function renderPrevia() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : {
+    paciente: 'Rex', tutor: 'João Silva', especie: 'Canino', raca: 'Labrador',
+    sexo: 'Macho', idade: '5 anos',
+    data: new Date().toISOString().split('T')[0],
+    tipo: 'Abdominal', resultado: 'Normal',
+    orgAbdom: { bexiga: { texto: orgDefaults.bexiga }, figado: { texto: orgDefaults.figado }, rins: { texto: orgDefaults.rins } },
+    conclusao: 'Exame dentro dos limites da normalidade. Aspectos sonográficos não revelam alterações significativas na janela avaliada.'
+  };
+  document.getElementById('previa-area').innerHTML =
+    '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l) + '</div>';
+}
+
+function abrirJanelaPDF(l, titulo) {
+  const lc      = getConfig().laudo || {};
+  const margens = lc.margens || '12mm';
+  const papel   = lc.papel   || 'A4';
+  const fonte   = lc.fonte   || 'Arial, sans-serif';
+  const body    = buildLaudoHTML(l);
+  const win     = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
+    + '<title>' + titulo + '</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    + 'body{background:#fff;font-family:' + fonte + '}'
+    + 'table,td,th,span,div{font-family:inherit}'
+    + '@page{size:' + papel + ';margin:0}'
+    + '.pdf-dica{position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a5fa8;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 20px;font-size:13px;font-family:Arial,sans-serif}'
+    + '.pdf-dica b{font-weight:700}'
+    + '.pdf-btn{background:#fff;color:#1a5fa8;border:none;border-radius:4px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}'
+    + '.pdf-conteudo{padding:' + margens + '}'
+    + '@media print{.pdf-dica{display:none}.pdf-conteudo{padding:' + margens + '}}'
+    + '</style></head><body>'
+    + '<div class="pdf-dica">'
+    +   '📥 No diálogo que abrir: em <b>Destino</b> selecione <b>Salvar como PDF</b>'
+    +   '<button class="pdf-btn" onclick="window.print()">Salvar PDF agora</button>'
+    + '</div>'
+    + '<div class="pdf-conteudo">' + body + '</div>'
+    + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script>'
+    + '</body></html>');
+  win.document.close();
+}
+
+function baixarLaudoPDF() {
+  const l = viewId ? laudos.find(function(x){ return x.id === viewId; }) : getLaudoData();
+  if (!l) return;
+  abrirJanelaPDF(l, 'Laudo — ' + (l.paciente || 'VetRoutine'));
+}
+
+function baixarPreviasPDF() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : null;
+  if (!l) { toast('Nenhum laudo salvo para exportar.'); return; }
+  abrirJanelaPDF(l, 'Prévia — ' + (l.paciente || 'VetRoutine'));
+}
+
+function imprimirPrevia() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : null;
+  if (!l) { toast('Nenhum laudo salvo para imprimir.'); return; }
+  const lc = getConfig().laudo || {};
+  const margens = lc.margens || '12mm';
+  const papel   = lc.papel   || 'A4';
+  const fonte   = lc.fonte   || 'Arial, sans-serif';
+  const body = buildLaudoHTML(l);
+  const win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.close();
 }
 
 function salvarConfig() {
@@ -1843,7 +2347,14 @@ function salvarConfigLaudo() {
     secConclusao:   document.getElementById('cfg-sec-conclusao').checked,
     secAssinatura:  document.getElementById('cfg-sec-assinatura').checked,
     secFotos:       document.getElementById('cfg-sec-fotos').checked,
+    secFooter:      document.getElementById('cfg-sec-footer').checked,
     modeloConclusao: document.getElementById('cfg-modelo-conclusao').value,
+    fonte:       document.getElementById('cfg-fonte').value,
+    fontsize:    document.getElementById('cfg-fontsize').value,
+    lineh:       document.getElementById('cfg-lineh').value,
+    margens:     document.getElementById('cfg-margens').value,
+    papel:       document.getElementById('cfg-papel').value,
+    headerStyle: document.getElementById('cfg-header-style').value,
   };
   localStorage.setItem('uv_config', JSON.stringify(cfg));
   toast('Configuração do laudo salva!');
@@ -1869,12 +2380,475 @@ function removerLogo() {
   toast('Logo removida.');
 }
 
+function getDefaultLogoSVG() {
+  const cfg  = getConfig();
+  const cor  = (cfg.laudo && cfg.laudo.cor) || '#3d7a52';
+  const nome = (cfg.nome || 'Patrine Cagnini').toUpperCase();
+  const crmv =  cfg.crmv || 'CRMV-SC 09377';
+  const s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="300" height="80">'
+    // arcos de ultrassom emanando da pata
+    + '<path d="M40 76 A32 32 0 0 1 8 44"  fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".16"/>'
+    + '<path d="M40 76 A32 32 0 0 0 72 44" fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".16"/>'
+    + '<path d="M40 76 A22 22 0 0 1 18 54" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".34"/>'
+    + '<path d="M40 76 A22 22 0 0 0 62 54" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".34"/>'
+    + '<path d="M40 76 A11 11 0 0 1 29 65" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".62"/>'
+    + '<path d="M40 76 A11 11 0 0 0 51 65" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".62"/>'
+    // pata principal
+    + '<ellipse cx="40" cy="68" rx="8.5" ry="7.5" fill="' + cor + '"/>'
+    // dedos
+    + '<ellipse cx="24" cy="56" rx="5.5" ry="6"   fill="' + cor + '"/>'
+    + '<ellipse cx="34" cy="52" rx="5.5" ry="5.5" fill="' + cor + '"/>'
+    + '<ellipse cx="46" cy="52" rx="5.5" ry="5.5" fill="' + cor + '"/>'
+    + '<ellipse cx="56" cy="56" rx="5.5" ry="6"   fill="' + cor + '"/>'
+    // linha separadora vertical
+    + '<line x1="84" y1="8" x2="84" y2="74" stroke="' + cor + '" stroke-width="1" opacity=".28"/>'
+    // nome
+    + '<text x="98" y="30" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#1e1e1c" letter-spacing="1.5">' + nome + '</text>'
+    // especialidade
+    + '<text x="98" y="46" font-family="Arial,sans-serif" font-size="9"   fill="#5a5854" letter-spacing="2.4">MÉDICA VETERINÁRIA</text>'
+    + '<text x="98" y="60" font-family="Arial,sans-serif" font-size="9"   fill="#5a5854" letter-spacing="2.4">ULTRASSONOGRAFISTA</text>'
+    // CRMV
+    + '<text x="98" y="73" font-family="Arial,sans-serif" font-size="8.5" fill="' + cor + '" letter-spacing="1.5">' + crmv + '</text>'
+    + '</svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+}
+
+// LOGO DO LAUDO (veterinário) — aparece APENAS no laudo impresso. Nunca usar na sidebar.
+// Retorna vazio se nenhuma logo foi carregada pelo veterinário (Configurações → Identidade visual).
 function getLogo() {
-  return localStorage.getItem('uv_logo') || LOGO_B64;
+  return localStorage.getItem('uv_logo') || '';
 }
 
 function getConfig() {
   return JSON.parse(localStorage.getItem('uv_config') || '{}');
+}
+
+// ─── AGENDA ───────────────────────────────────────────────────────────────────
+function renderAgenda() {
+  if (agendaViewMode === 'mes') renderCalMes();
+  else if (agendaViewMode === 'semana') renderCalSemana();
+  else renderCalDia();
+  updateAgendaToolbar();
+}
+
+function updateAgendaToolbar() {
+  const lbl = document.getElementById('ag-month-label');
+  if (!lbl) return;
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if (agendaViewMode === 'mes') {
+    lbl.textContent = meses[agendaViewDate.getMonth()] + ' ' + agendaViewDate.getFullYear();
+  } else if (agendaViewMode === 'semana') {
+    const seg = getMonday(agendaViewDate);
+    const dom = new Date(seg); dom.setDate(dom.getDate() + 6);
+    lbl.textContent = fmtD(dateToStr(seg)) + ' – ' + fmtD(dateToStr(dom));
+  } else {
+    lbl.textContent = fmtD(dateToStr(agendaViewDate));
+  }
+}
+
+function getMonday(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = (day === 0) ? -6 : 1 - day;
+  dt.setDate(dt.getDate() + diff);
+  return dt;
+}
+
+function dateToStr(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function agendaNav(dir) {
+  if (agendaViewMode === 'mes') agendaViewDate.setMonth(agendaViewDate.getMonth() + dir);
+  else if (agendaViewMode === 'semana') agendaViewDate.setDate(agendaViewDate.getDate() + dir * 7);
+  else agendaViewDate.setDate(agendaViewDate.getDate() + dir);
+  renderAgenda();
+}
+
+function agendaToday() {
+  agendaViewDate = new Date();
+  renderAgenda();
+}
+
+function setAgendaMode(mode) {
+  agendaViewMode = mode;
+  document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('vt-' + mode);
+  if (btn) btn.classList.add('active');
+  renderAgenda();
+}
+
+function renderCalMes() {
+  const y = agendaViewDate.getFullYear();
+  const m = agendaViewDate.getMonth();
+  const todayStr = today();
+  const start = new Date(y, m, 1);
+  const startDow = start.getDay();
+  start.setDate(start.getDate() - (startDow === 0 ? 6 : startDow - 1));
+
+  const diasHdr = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  let html = '<div class="cal-grid">';
+  diasHdr.forEach(d => { html += '<div class="cal-header">' + d + '</div>'; });
+
+  const cur = new Date(start);
+  for (let week = 0; week < 6; week++) {
+    let allOther = true;
+    for (let i = 0; i < 7; i++) { if (new Date(cur.getTime() + i*86400000).getMonth() === m) { allOther = false; break; } }
+    if (allOther && week >= 4) break;
+    for (let dow = 0; dow < 7; dow++) {
+      const ds = dateToStr(cur);
+      const isToday = ds === todayStr;
+      const isOther = cur.getMonth() !== m;
+      const dayEvs = agenda.filter(a => a.data === ds).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+      html += '<div class="cal-cell' + (isToday ? ' today' : '') + (isOther ? ' other-month' : '') + '" onclick="abrirNovaAgenda(\'' + ds + '\')">';
+      html += '<div class="day-num">' + cur.getDate() + '</div>';
+      dayEvs.slice(0, 3).forEach(ev => {
+        const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')" title="' + (ev.hora||'') + ' · ' + (ev.paciente||'') + '">'
+          + (ev.hora ? ev.hora.slice(0,5) + ' ' : '') + (ev.paciente || 'Agendamento') + '</div>';
+      });
+      if (dayEvs.length > 3) html += '<div class="ev-more" onclick="event.stopPropagation();agendaViewDate=new Date(\'' + ds + 'T12:00:00\');setAgendaMode(\'dia\')">+' + (dayEvs.length - 3) + ' mais</div>';
+      html += '</div>';
+      cur.setDate(cur.getDate() + 1);
+    }
+  }
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function renderCalSemana() {
+  const seg = getMonday(agendaViewDate);
+  const todayStr = today();
+  const dias = [];
+  for (let i = 0; i < 7; i++) { const d = new Date(seg); d.setDate(d.getDate() + i); dias.push(d); }
+  const nomesDia = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const horas = [];
+  for (let h = 7; h <= 20; h++) horas.push(h.toString().padStart(2,'0') + ':00');
+
+  let html = '<div class="week-grid" style="overflow-x:auto">';
+  html += '<div class="wg-header" style="border-right:1px solid var(--border)"></div>';
+  dias.forEach((d, i) => {
+    const ds = dateToStr(d);
+    const isToday = ds === todayStr;
+    html += '<div class="wg-header' + (isToday ? '" style="color:var(--teal);border-bottom:2px solid var(--teal)' : '') + '">'
+      + nomesDia[i] + ' <strong>' + d.getDate() + '</strong></div>';
+  });
+  horas.forEach(hora => {
+    html += '<div class="wg-time">' + hora + '</div>';
+    dias.forEach(d => {
+      const ds = dateToStr(d);
+      const isToday = ds === todayStr;
+      const evs = agenda.filter(a => a.data === ds && (a.hora||'').startsWith(hora.slice(0,2)));
+      html += '<div class="wg-slot' + (isToday ? ' today-col' : '') + '" onclick="abrirNovaAgenda(\'' + ds + '\',\'' + hora.slice(0,5) + '\')">';
+      evs.forEach(ev => {
+        const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')">'
+          + (ev.paciente || 'Agendamento') + '</div>';
+      });
+      html += '</div>';
+    });
+  });
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function renderCalDia() {
+  const ds = dateToStr(agendaViewDate);
+  const todayStr = today();
+  const isToday = ds === todayStr;
+  const horas = [];
+  for (let h = 7; h <= 20; h++) horas.push(h.toString().padStart(2,'0') + ':00');
+
+  let html = '<div class="day-grid">';
+  html += '<div class="wg-header" style="border-right:1px solid var(--border)"></div>';
+  html += '<div class="wg-header' + (isToday ? '" style="color:var(--teal);border-bottom:2px solid var(--teal)' : '') + '">'
+    + fmtD(ds) + '</div>';
+  horas.forEach(hora => {
+    const evs = agenda.filter(a => a.data === ds && (a.hora||'').startsWith(hora.slice(0,2)));
+    html += '<div class="wg-time">' + hora + '</div>';
+    html += '<div class="wg-slot' + (isToday ? ' today-col' : '') + '" style="min-height:56px" onclick="abrirNovaAgenda(\'' + ds + '\',\'' + hora.slice(0,5) + '\')">';
+    evs.forEach(ev => {
+      const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+      html += '<div style="background:' + cor + ';color:#fff;border-radius:6px;padding:6px 10px;margin-bottom:4px;cursor:pointer" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')">'
+        + '<div style="font-weight:600;font-size:13px">' + (ev.hora||'') + ' · ' + (ev.paciente || 'Agendamento') + '</div>'
+        + '<div style="font-size:11px;opacity:.85">' + [ev.tipo, ev.vet].filter(Boolean).join(' · ') + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function abrirNovaAgenda(data, hora) {
+  agendaEditId = null;
+  document.getElementById('ag-pac').value = '';
+  document.getElementById('ag-tutor').value = '';
+  document.getElementById('ag-esp').value = 'Canino';
+  document.getElementById('ag-data').value = data || today();
+  document.getElementById('ag-hora').value = hora || '09:00';
+  document.getElementById('ag-tipo').value = 'Abdominal total';
+  document.getElementById('ag-clinica-modal').value = '';
+  document.getElementById('ag-local').value = '';
+  document.getElementById('ag-vet').value = '';
+  document.getElementById('ag-obs').value = '';
+  document.getElementById('ag-status').value = 'Agendado';
+  document.getElementById('ag-del-btn').style.display = 'none';
+  document.getElementById('ag-gcal-btn').style.display = 'none';
+  document.getElementById('ag-ics-btn').style.display = 'none';
+  document.getElementById('ag-laudo-btn').style.display = 'none';
+  document.getElementById('ag-maps-btn').style.display = 'none';
+  document.getElementById('ag-modal-title').textContent = 'Novo agendamento';
+  document.getElementById('modal-agenda').classList.add('open');
+}
+
+function abrirEditAgenda(id) {
+  const ev = agenda.find(a => a.id === id);
+  if (!ev) return;
+  agendaEditId = id;
+  document.getElementById('ag-pac').value = ev.paciente || '';
+  document.getElementById('ag-tutor').value = ev.tutor || '';
+  document.getElementById('ag-esp').value = ev.especie || 'Canino';
+  document.getElementById('ag-data').value = ev.data || today();
+  document.getElementById('ag-hora').value = ev.hora || '09:00';
+  document.getElementById('ag-tipo').value = ev.tipo || 'Abdominal total';
+  document.getElementById('ag-clinica-modal').value = ev.clinica || '';
+  document.getElementById('ag-local').value = ev.local || '';
+  document.getElementById('ag-vet').value = ev.vet || '';
+  document.getElementById('ag-obs').value = ev.obs || '';
+  atualizarMapsBtn();
+  document.getElementById('ag-status').value = ev.status || 'Agendado';
+  document.getElementById('ag-del-btn').style.display = '';
+  document.getElementById('ag-gcal-btn').style.display = '';
+  document.getElementById('ag-ics-btn').style.display = '';
+  document.getElementById('ag-laudo-btn').style.display = '';
+  atualizarGcalLink();
+  document.getElementById('ag-modal-title').textContent = 'Editar agendamento';
+  document.getElementById('modal-agenda').classList.add('open');
+}
+
+function fecharAgenda() {
+  document.getElementById('modal-agenda').classList.remove('open');
+  agendaEditId = null;
+}
+
+function salvarAgenda() {
+  const ev = {
+    id: agendaEditId || Date.now(),
+    paciente: document.getElementById('ag-pac').value,
+    tutor: document.getElementById('ag-tutor').value,
+    especie: document.getElementById('ag-esp').value,
+    data: document.getElementById('ag-data').value,
+    hora: document.getElementById('ag-hora').value,
+    tipo: document.getElementById('ag-tipo').value,
+    clinica: document.getElementById('ag-clinica-modal').value,
+    local: document.getElementById('ag-local').value,
+    vet: document.getElementById('ag-vet').value,
+    obs: document.getElementById('ag-obs').value,
+    status: document.getElementById('ag-status').value,
+  };
+  if (!ev.data) { toast('Informe a data do agendamento.'); return; }
+  if (agendaEditId) {
+    const idx = agenda.findIndex(a => a.id === agendaEditId);
+    if (idx >= 0) agenda[idx] = ev; else agenda.push(ev);
+  } else {
+    agenda.push(ev);
+  }
+  saveAgenda();
+  fecharAgenda();
+  renderAgenda();
+  toast('Agendamento salvo.');
+}
+
+function excluirAgenda() {
+  if (!agendaEditId) return;
+  if (!confirm('Excluir este agendamento?')) return;
+  const id = agendaEditId;
+  agenda = agenda.filter(a => a.id !== id);
+  saveAgenda();
+  cloudDelete('uv_agenda', id);
+  fecharAgenda();
+  renderAgenda();
+  toast('Agendamento excluído.');
+}
+
+function gerarLaudoFromAgenda() {
+  const ev = agenda.find(a => a.id === agendaEditId);
+  if (!ev) return;
+  fecharAgenda();
+  editId = null;
+  clearLaudoForm();
+  document.getElementById('f-pac').value = ev.paciente || '';
+  document.getElementById('f-tutor').value = ev.tutor || '';
+  document.getElementById('f-esp').value = ev.especie || 'Canino';
+  document.getElementById('f-data').value = ev.data || today();
+  document.getElementById('f-vet').value = ev.vet || '';
+  if (ev.clinica) document.getElementById('f-clinica').value = ev.clinica;
+  if (ev.tipo && ev.tipo !== 'Outro') document.getElementById('f-tipo').value = ev.tipo;
+  toggleGest();
+  filtrarOrgaosPorSexo();
+  populateClinicaSelects();
+  goPage('novo-laudo');
+  toast('Dados do agendamento carregados no formulário.');
+}
+
+function atualizarGcalLink() {
+  const pac = (document.getElementById('ag-pac')||{}).value || '';
+  const tipo = (document.getElementById('ag-tipo')||{}).value || '';
+  const data = (document.getElementById('ag-data')||{}).value || '';
+  const hora = (document.getElementById('ag-hora')||{}).value || '';
+  const vet = (document.getElementById('ag-vet')||{}).value || '';
+  const obs = (document.getElementById('ag-obs')||{}).value || '';
+  const local = (document.getElementById('ag-local')||{}).value || '';
+  const btn = document.getElementById('ag-gcal-btn');
+  if (!btn || !data || !hora) return;
+  const ds = data.replace(/-/g,'');
+  const hs = hora.replace(':','') + '00';
+  const [hh, mm] = hora.split(':').map(Number);
+  const endMin = hh * 60 + mm + 45;
+  const endHs = Math.floor(endMin/60).toString().padStart(2,'0') + (endMin%60).toString().padStart(2,'0') + '00';
+  const title = encodeURIComponent((pac||'Exame') + ' – ' + (tipo||'Ultrassom Veterinário'));
+  const details = encodeURIComponent('Veterinário: ' + (vet||'—') + (obs ? '\n' + obs : ''));
+  const url = 'https://calendar.google.com/calendar/event?action=TEMPLATE&text=' + title
+    + '&dates=' + ds + 'T' + hs + '/' + ds + 'T' + endHs
+    + '&details=' + details
+    + (local ? '&location=' + encodeURIComponent(local) : '')
+    + '&sf=true&output=xml';
+  btn.onclick = function(e) { e.preventDefault(); window.open(url, '_blank'); };
+}
+
+function exportICS() {
+  const ev = agenda.find(a => a.id === agendaEditId);
+  if (!ev) return;
+  const blob = gerarICSBlob([ev]);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (ev.paciente || 'agendamento').replace(/\s+/g,'_') + '.ics';
+  a.click();
+}
+
+function exportICSAll() {
+  if (!agenda.length) { toast('Nenhum agendamento para exportar.'); return; }
+  const blob = gerarICSBlob(agenda);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'agenda_vetroutine.ics';
+  a.click();
+}
+
+function gerarICSBlob(evs) {
+  let events = '';
+  evs.forEach(ev => {
+    const ds = (ev.data || today()).replace(/-/g,'');
+    const hs = (ev.hora || '09:00').replace(':','') + '00';
+    const [hh, mm] = (ev.hora || '09:00').split(':').map(Number);
+    const endMin = hh * 60 + mm + 45;
+    const endHs = Math.floor(endMin/60).toString().padStart(2,'0') + (endMin%60).toString().padStart(2,'0') + '00';
+    events += 'BEGIN:VEVENT\r\n'
+      + 'UID:' + ev.id + '@vetroutine\r\n'
+      + 'DTSTART:' + ds + 'T' + hs + '\r\n'
+      + 'DTEND:' + ds + 'T' + endHs + '\r\n'
+      + 'SUMMARY:' + (ev.paciente||'Exame') + ' – ' + (ev.tipo||'Ultrassom') + '\r\n'
+      + 'DESCRIPTION:Tutor: ' + (ev.tutor||'—') + '\\nVet: ' + (ev.vet||'—') + (ev.obs ? '\\nObs: ' + ev.obs : '') + '\r\n'
+      + (ev.local ? 'LOCATION:' + ev.local + '\r\n' : '')
+      + 'STATUS:' + (ev.status === 'Cancelado' ? 'CANCELLED' : 'CONFIRMED') + '\r\n'
+      + 'END:VEVENT\r\n';
+  });
+  const ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//VetRoutine//PT\r\nCALSCALE:GREGORIAN\r\n' + events + 'END:VCALENDAR';
+  return new Blob([ics], {type:'text/calendar;charset=utf-8'});
+}
+
+function renderAgendaDia() {
+  const todayStr = today();
+  const el = document.getElementById('d-agenda-list');
+  const dataEl = document.getElementById('d-agenda-data');
+  const badge = document.getElementById('d-agenda-badge');
+  if (!el) return;
+
+  // formata data por extenso
+  if (dataEl) {
+    const dt = new Date(todayStr + 'T12:00:00');
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const dias = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+    dataEl.textContent = dias[dt.getDay()] + ', ' + dt.getDate() + ' de ' + meses[dt.getMonth()];
+  }
+
+  const todayEvs = agenda
+    .filter(a => a.data === todayStr)
+    .sort((a, b) => (a.hora || '23:59').localeCompare(b.hora || '23:59'));
+
+  const pendentes = todayEvs.filter(a => a.status !== 'Cancelado' && a.status !== 'Realizado').length;
+  if (badge) {
+    if (pendentes > 0) { badge.textContent = pendentes + ' pendente' + (pendentes > 1 ? 's' : ''); badge.style.display = ''; }
+    else { badge.style.display = 'none'; }
+  }
+
+  if (!todayEvs.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px 0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg><p>Nenhum exame agendado para hoje.</p></div>';
+    return;
+  }
+
+  el.innerHTML = todayEvs.map(ev => {
+    const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+    const isRealizado = ev.status === 'Realizado';
+    const isCancelado = ev.status === 'Cancelado';
+    const pendente = !isRealizado && !isCancelado;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);opacity:' + (isCancelado ? '.45' : '1') + ';flex-wrap:wrap">'
+      + '<div style="font-size:16px;font-weight:700;color:var(--teal);min-width:46px;text-align:center;letter-spacing:-.5px">' + (ev.hora || '—') + '</div>'
+      + '<div style="flex:1;min-width:160px">'
+        + '<div style="font-weight:600;font-size:14px;color:var(--text)' + (isRealizado ? ';text-decoration:line-through;color:var(--text3)' : '') + '">'
+          + (ev.paciente || 'Sem nome')
+          + (ev.especie ? ' <span style="font-weight:400;color:var(--text3);font-size:12px">· ' + ev.especie + '</span>' : '')
+        + '</div>'
+        + '<div style="font-size:12px;color:var(--text2);margin-top:2px">' + [ev.tipo, ev.vet, ev.clinica].filter(Boolean).join(' · ') + '</div>'
+      + '</div>'
+      + '<span style="background:' + cor + ';color:#fff;font-size:11px;padding:2px 9px;border-radius:12px;white-space:nowrap">' + ev.status + '</span>'
+      + (pendente ? '<button class="btn btn-sm" style="white-space:nowrap" onclick="marcarRealizadoAgenda(' + ev.id + ')">✓ Realizado</button>' : '')
+      + (pendente ? '<button class="btn btn-sm btn-primary" style="white-space:nowrap" onclick="gerarLaudoFromAgendaId(' + ev.id + ')">📋 Gerar laudo</button>' : '')
+      + '<button class="btn btn-sm" style="white-space:nowrap" onclick="abrirEditAgenda(' + ev.id + ')">✎</button>'
+      + '</div>';
+  }).join('');
+}
+
+function marcarRealizadoAgenda(id) {
+  const idx = agenda.findIndex(a => a.id === id);
+  if (idx < 0) return;
+  agenda[idx].status = 'Realizado';
+  saveAgenda();
+  renderAgendaDia();
+  if (document.getElementById('ag-cal')) renderAgenda();
+  toast('Exame marcado como realizado.');
+}
+
+function gerarLaudoFromAgendaId(id) {
+  agendaEditId = id;
+  gerarLaudoFromAgenda();
+}
+
+function autoFillLocalFromClinica() {
+  const nome = (document.getElementById('ag-clinica-modal')||{}).value || '';
+  const cl = clinicas.find(c => c.nome === nome);
+  const localEl = document.getElementById('ag-local');
+  if (cl && cl.endereco && localEl && !localEl.value) localEl.value = cl.endereco;
+  atualizarGcalLink();
+  atualizarMapsBtn();
+}
+
+function atualizarMapsBtn() {
+  const local = (document.getElementById('ag-local')||{}).value || '';
+  const btn = document.getElementById('ag-maps-btn');
+  if (!btn) return;
+  if (local) {
+    btn.href = 'https://maps.google.com/?q=' + encodeURIComponent(local);
+    btn.style.display = '';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+function saveAgenda() {
+  localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  try { sbUpsert('uv_agenda', agenda); } catch(e) {}
 }
 
 // ─── SUPABASE ─────────────────────────────────────────────────────────────────
@@ -1923,6 +2897,7 @@ async function syncCloud() {
       sbUpsert('uv_receitas', receitas),
       sbUpsert('uv_despesas', despesas),
       sbUpsert('uv_clinicas', clinicas),
+      sbUpsert('uv_agenda',   agenda),
     ]);
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
@@ -1947,6 +2922,12 @@ async function initCloud() {
 document.getElementById('sb-logo').src = LOGO_B64;
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
+  // agenda em bloco separado pois a tabela pode ainda não existir
+  try {
+    const ra = await sbFetch('uv_agenda');
+    agenda = ra;
+    localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  } catch(e) {}
 }
 
 window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
