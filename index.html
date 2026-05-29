@@ -622,7 +622,7 @@
 - Sem evidências de alterações estruturais significativas nos órgãos avaliados.</textarea>
             </div>
             <div class="form-field"><label>Observações adicionais</label>
-              <textarea id="f-obs" rows="2">A interposição de barreiras físicas pode interferir na formação das imagens abdominais e na definição das estruturas.</textarea>
+              <textarea id="f-obs" rows="2"></textarea>
             </div>
           </div>
           <div class="actions-bar">
@@ -1823,7 +1823,7 @@ function clearLaudoForm() {
   document.getElementById('f-forma').value = 'Pix';
   document.getElementById('f-fpago').value = 'Pago';
   document.getElementById('f-conclusao').value = getConfig().laudo && getConfig().laudo.modeloConclusao ? getConfig().laudo.modeloConclusao : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
-  document.getElementById('f-obs').value = 'A interposição de barreiras físicas pode interferir na formação das imagens abdominais e na definição das estruturas.';
+  document.getElementById('f-obs').value = '';
   Object.keys(orgDefaults).forEach(k => { const el = document.getElementById('o-'+k); if(el) el.value = orgDefaults[k]; });
   ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
   // reset all patologia selects to first option
