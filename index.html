@@ -1604,6 +1604,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let laudos = [], receitas = [], despesas = [], clinicas = [];
+let localSaveTs = 0; // timestamp do último save local — impede initCloud de sobrescrever dados frescos
 let agenda = [];
 let agendaViewDate = new Date();
 let agendaViewMode = 'mes';
@@ -1936,6 +1937,7 @@ function salvarLaudo() {
     }
     toast('Laudo salvo! Receita lançada automaticamente.');
   }
+  localSaveTs = Date.now();
   save();
 }
 
@@ -3752,6 +3754,12 @@ async function syncCloud() {
 }
 
 async function initCloud() {
+  // Se houve um save local nos últimos 90s, apenas envia para nuvem — não sobrescreve dados locais frescos
+  if (Date.now() - localSaveTs < 90000) {
+    try { await syncCloud(); } catch(e) {}
+    setSyncStatus('ok');
+    return;
+  }
   setSyncStatus('sync');
   try {
     const [rl, rr, rd, rc] = await Promise.all([
