@@ -1877,7 +1877,7 @@ function clearLaudoForm() {
   document.getElementById('f-fpago').value = 'Pago';
   document.getElementById('f-conclusao').value = getConfig().laudo && getConfig().laudo.modeloConclusao ? getConfig().laudo.modeloConclusao : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
   document.getElementById('f-obs').value = getConfig().laudo && getConfig().laudo.modeloObs ? getConfig().laudo.modeloObs : '';
-  Object.keys(orgDefaults).forEach(k => { const el = document.getElementById('o-'+k); if(el) el.value = orgDefaults[k]; });
+  Object.keys(orgDefaults).forEach(k => { const el = document.getElementById(orgElId(k)); if(el) el.value = orgDefaults[k]; });
   ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
   // reset all patologia selects to first option
   document.querySelectorAll('#card-abdominal select, #card-gestacional select').forEach(s => s.selectedIndex = 0);
@@ -1888,11 +1888,14 @@ function clearLaudoForm() {
   filtrarOrgaosPorSexo();
 }
 
+// converte key JS (ex: utero_f) para ID do elemento HTML (ex: o-utero-f)
+function orgElId(k) { return 'o-' + k.replace(/_/g, '-'); }
+
 function getLaudoData() {
   const orgAbdom = {};
-  Object.keys(orgNomesAbdom).forEach(k => { orgAbdom[k] = { texto: (document.getElementById('o-'+k)||{}).value||'' }; });
+  Object.keys(orgNomesAbdom).forEach(k => { orgAbdom[k] = { texto: (document.getElementById(orgElId(k))||{}).value||'' }; });
   const orgGest = {};
-  Object.keys(orgNomesGest).forEach(k => { orgGest[k] = { texto: (document.getElementById('o-'+k)||{}).value||'' }; });
+  Object.keys(orgNomesGest).forEach(k => { orgGest[k] = { texto: (document.getElementById(orgElId(k))||{}).value||'' }; });
   return {
     tipo: document.getElementById('f-tipo').value,
     resultado: document.getElementById('f-resultado').value,
@@ -1977,8 +1980,8 @@ function editLaudo(id) {
   document.getElementById('f-obs').value = l.obs || '';
   toggleGest();
   populateClinicaSelects();
-  if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgAbdom[k].texto||''; });
-  if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgGest[k].texto||''; });
+  if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById(orgElId(k)); if(ei) ei.value = l.orgAbdom[k].texto||''; });
+  if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById(orgElId(k)); if(ei) ei.value = l.orgGest[k].texto||''; });
   filtrarOrgaosPorSexo(); // após popular órgãos: zera o órgão do sexo oposto
   fotosTmp = (l.fotos || []).slice();
   renderFotosGrid();
