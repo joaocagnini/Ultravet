@@ -644,6 +644,7 @@
           <div class="actions-bar">
             <button class="btn" onclick="cancelarLaudo()">Cancelar</button>
             <button class="btn" onclick="previewLaudo()">👁 Pré-visualizar</button>
+            <button class="btn" onclick="revisarComIA()" title="Revisar ortografia e gramática com IA">🤖 Revisar</button>
             <button class="btn btn-primary" onclick="salvarLaudo()">💾 Salvar laudo</button>
           </div>
         </div>
@@ -1108,6 +1109,17 @@
                 <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
               </tbody>
             </table>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">🤖 Revisão com IA</div></div>
+            <div class="form-field" style="margin-bottom:10px">
+              <label>Chave de API Anthropic (Claude)</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="password" id="cfg-api-key" placeholder="sk-ant-..." style="flex:1;font-family:monospace;font-size:12px">
+                <button class="btn btn-primary" onclick="salvarApiKey()">Salvar</button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px">A chave fica salva localmente no dispositivo. Obtenha em <a href="https://console.anthropic.com/" target="_blank" style="color:var(--teal)">console.anthropic.com</a></div>
+            </div>
           </div>
         </div><!-- /pc-sistema -->
 
@@ -3770,6 +3782,199 @@ updateDashboard();
 document.getElementById('sb-logo').src = LOGO_B64;
 initCloud();
 
+// ─── REVISÃO COM IA ───────────────────────────────────────────────────────
+function salvarApiKey() {
+  const key = document.getElementById('cfg-api-key').value.trim();
+  if (!key) { toast('Cole a chave antes de salvar.'); return; }
+  localStorage.setItem('uv_api_key', key);
+  toast('Chave de API salva!');
+}
+
+function getApiKey() {
+  return localStorage.getItem('uv_api_key') || '';
+}
+
+// Mapa de fieldId → nome legível para exibir no modal
+const campoNomes = {
+  'o-bexiga':'Vesícula urinária','o-rins':'Rins','o-figado':'Fígado',
+  'o-vbiliar':'Vesícula biliar','o-baco':'Baço','o-estomago':'Estômago',
+  'o-intestino':'Alças intestinais','o-pancreas':'Pâncreas','o-adrenais':'Adrenais',
+  'o-linfo':'Linfonodos','o-utero-f':'Útero','o-prostata':'Próstata',
+  'o-testis':'Testículos','o-utero':'Útero (gestacional)','o-bcf':'BCF',
+  'o-placenta':'Placenta','o-amnio':'Líquido amniótico',
+  'f-conclusao':'Impressão diagnóstica','f-obs':'Observações'
+};
+
+let sugestoesPendentes = {};
+
+async function revisarComIA() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    toast('Configure a chave de API no Painel → Sistema → Revisão com IA.');
+    return;
+  }
+
+  // Coleta todos os textos preenchidos
+  const campos = {};
+  Object.keys(campoNomes).forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el && el.value && el.value.trim().length > 10) {
+      campos[id] = el.value.trim();
+    }
+  });
+
+  if (!Object.keys(campos).length) {
+    toast('Preencha os achados antes de revisar.');
+    return;
+  }
+
+  // Abre modal com loading
+  sugestoesPendentes = {};
+  document.getElementById('modal-revisao').style.display = 'block';
+  document.getElementById('revisao-loading').style.display = 'block';
+  document.getElementById('revisao-lista').style.display = 'none';
+  document.getElementById('revisao-vazio').style.display = 'none';
+  document.getElementById('revisao-footer').style.display = 'none';
+  document.getElementById('revisao-subtitulo').textContent = 'Verificando textos do laudo…';
+
+  // Monta lista legível para o prompt
+  const linhas = Object.keys(campos).map(function(id) {
+    return '"' + id + '": ' + JSON.stringify(campos[id]);
+  }).join(',\n');
+
+  const prompt = 'Você é um revisor de laudos ultrassonográficos veterinários em português do Brasil.\n'
+    + 'Corrija APENAS erros de digitação, ortografia e concordância gramatical nos textos abaixo.\n'
+    + 'NÃO altere terminologia técnica veterinária (ex: ecogenicidade, hipoecoico, anecogênico, etc).\n'
+    + 'NÃO mude o conteúdo, significado ou estrutura das frases.\n'
+    + 'Retorne SOMENTE um objeto JSON com os campos que precisam de correção.\n'
+    + 'Se um campo não tem erros, omita-o do JSON.\n'
+    + 'Se não há nenhum erro, retorne: {}\n\n'
+    + 'Campos para revisar:\n{\n' + linhas + '\n}';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(function(){ return {}; });
+      throw new Error((err.error && err.error.message) || 'Erro ' + resp.status);
+    }
+
+    const data = await resp.json();
+    const texto = data.content && data.content[0] && data.content[0].text || '{}';
+
+    // Extrai JSON da resposta (mesmo se vier com texto extra)
+    const match = texto.match(/\{[\s\S]*\}/);
+    const correcoes = match ? JSON.parse(match[0]) : {};
+
+    document.getElementById('revisao-loading').style.display = 'none';
+    document.getElementById('revisao-footer').style.display = 'flex';
+
+    const ids = Object.keys(correcoes).filter(function(id){ return campos[id] && correcoes[id] !== campos[id]; });
+
+    if (!ids.length) {
+      document.getElementById('revisao-vazio').style.display = 'block';
+      document.getElementById('revisao-subtitulo').textContent = 'Nenhum erro encontrado ✅';
+      document.getElementById('btn-aceitar-todas').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('revisao-subtitulo').textContent = ids.length + ' sugestão(ões) encontrada(s)';
+    sugestoesPendentes = {};
+    ids.forEach(function(id){ sugestoesPendentes[id] = correcoes[id]; });
+
+    const lista = document.getElementById('revisao-lista');
+    lista.style.display = 'flex';
+    lista.innerHTML = ids.map(function(id) {
+      const nome = campoNomes[id] || id;
+      const original = campos[id];
+      const corrigido = correcoes[id];
+      return '<div id="sug-' + id + '" style="border:1px solid var(--border);border-radius:8px;overflow:hidden">'
+        + '<div style="padding:8px 12px;background:var(--surface2);font-size:12px;font-weight:700;color:var(--teal)">' + nome + '</div>'
+        + '<div style="padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+          + '<div>'
+            + '<div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px;text-transform:uppercase">Original</div>'
+            + '<div style="font-size:12px;color:var(--text2);line-height:1.5;white-space:pre-wrap">' + original + '</div>'
+          + '</div>'
+          + '<div style="border-left:2px solid var(--teal-bg);padding-left:12px">'
+            + '<div style="font-size:10px;font-weight:700;color:var(--teal);margin-bottom:4px;text-transform:uppercase">Sugestão</div>'
+            + '<div style="font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap">' + corrigido + '</div>'
+          + '</div>'
+        + '</div>'
+        + '<div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end">'
+          + '<button class="btn btn-sm" onclick="ignorarSugestao(\'' + id + '\')" style="color:var(--red)">✗ Ignorar</button>'
+          + '<button class="btn btn-sm btn-primary" onclick="aceitarSugestao(\'' + id + '\')">✓ Aceitar</button>'
+        + '</div>'
+      + '</div>';
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('revisao-loading').style.display = 'none';
+    document.getElementById('revisao-footer').style.display = 'flex';
+    document.getElementById('revisao-lista').style.display = 'block';
+    document.getElementById('revisao-lista').innerHTML = '<div style="color:var(--red);padding:16px;background:#fff0f0;border-radius:8px">Erro ao conectar com a IA: ' + e.message + '</div>';
+    document.getElementById('btn-aceitar-todas').style.display = 'none';
+  }
+}
+
+function aceitarSugestao(id) {
+  const el = document.getElementById(id);
+  if (el && sugestoesPendentes[id]) {
+    el.value = sugestoesPendentes[id];
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+  delete sugestoesPendentes[id];
+  const sug = document.getElementById('sug-' + id);
+  if (sug) {
+    sug.style.opacity = '.4';
+    sug.style.pointerEvents = 'none';
+    sug.querySelector('.btn-primary').textContent = '✓ Aceito';
+  }
+}
+
+function ignorarSugestao(id) {
+  delete sugestoesPendentes[id];
+  const sug = document.getElementById('sug-' + id);
+  if (sug) {
+    sug.style.opacity = '.3';
+    sug.style.pointerEvents = 'none';
+  }
+}
+
+function aceitarTodasSugestoes() {
+  Object.keys(sugestoesPendentes).forEach(aceitarSugestao);
+  toast('Todas as sugestões aceitas!');
+}
+
+function fecharRevisao() {
+  document.getElementById('modal-revisao').style.display = 'none';
+  sugestoesPendentes = {};
+}
+
+// Carrega api key no painel quando abrir
+const _origStpc = stpc;
+stpc = function(name) {
+  _origStpc(name);
+  if (name === 'pc-sistema') {
+    const k = getApiKey();
+    const el = document.getElementById('cfg-api-key');
+    if (el && k) el.value = k;
+  }
+};
+
 // ─── PAINEL LATERAL DE IMAGENS ────────────────────────────────────────────
 let fotoPanelOpen = false;
 
@@ -3814,6 +4019,34 @@ function atualizarBotaoFotoPanel() {
   if (fotoPanelOpen) renderFotoPanelLateral();
 }
 </script>
+
+<!-- ═══ MODAL REVISÃO COM IA ════════════════════════════════════════════════ -->
+<div id="modal-revisao" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);overflow-y:auto">
+  <div style="background:#fff;border-radius:10px;max-width:720px;margin:40px auto;padding:0;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--teal);color:#fff">
+      <div>
+        <div style="font-size:16px;font-weight:700">🤖 Revisão com IA</div>
+        <div style="font-size:12px;opacity:.85" id="revisao-subtitulo">Verificando textos do laudo…</div>
+      </div>
+      <button onclick="fecharRevisao()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div id="revisao-body" style="padding:20px 24px;min-height:120px">
+      <div id="revisao-loading" style="text-align:center;padding:32px;color:var(--text2)">
+        <div style="font-size:28px;margin-bottom:8px">⏳</div>
+        <div>Analisando textos com IA…</div>
+      </div>
+      <div id="revisao-lista" style="display:none;display:flex;flex-direction:column;gap:14px"></div>
+      <div id="revisao-vazio" style="display:none;text-align:center;padding:32px;color:var(--text2)">
+        <div style="font-size:28px;margin-bottom:8px">✅</div>
+        <div>Nenhum erro encontrado. Laudo pronto para salvar!</div>
+      </div>
+    </div>
+    <div id="revisao-footer" style="display:none;padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--surface2)">
+      <button class="btn" onclick="fecharRevisao()">Fechar</button>
+      <button class="btn btn-primary" onclick="aceitarTodasSugestoes()" id="btn-aceitar-todas">✅ Aceitar todas</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ PAINEL LATERAL DE IMAGENS ══════════════════════════════════════════ -->
 <div id="foto-panel-lateral" style="
