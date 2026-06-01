@@ -680,7 +680,8 @@
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn" onclick="goPage('laudos')">← Voltar</button>
-            <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir / Salvar PDF</button>
+            <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir</button>
+            <button class="btn btn-primary" onclick="baixarLaudoPDF()">📥 Baixar PDF</button>
           </div>
         </div>
         <div id="viz-area"></div>
@@ -2987,6 +2988,23 @@ function abrirJanelaPDF(l, titulo) {
   win.document.close();
 }
 
+// Encontra a última linha "branca" antes do ponto ideal de corte
+function findSafeYCut(canvas, idealY, searchRange) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const start = Math.min(Math.floor(idealY), canvas.height - 1);
+  const end   = Math.max(0, Math.floor(start - searchRange));
+  for (let y = start; y > end; y--) {
+    const d = ctx.getImageData(0, y, w, 1).data;
+    let white = true;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] < 245 || d[i+1] < 245 || d[i+2] < 245) { white = false; break; }
+    }
+    if (white) return y;
+  }
+  return idealY; // nenhuma linha branca encontrada: usa o ponto original
+}
+
 async function baixarLaudoPDF() {
   const l = viewId ? laudos.find(x => x.id === viewId) : getLaudoData();
   if (!l) return;
@@ -3000,16 +3018,40 @@ async function baixarLaudoPDF() {
   toast('Gerando PDF…');
   try {
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 });
-    const imgData = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const imgH  = (canvas.height * pageW) / canvas.width;
-    let yPos = 0, rem = imgH;
-    pdf.addImage(imgData, 'PNG', 0, yPos, pageW, imgH, '', 'FAST');
-    rem -= pageH;
-    while (rem > 0) { yPos -= pageH; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, yPos, pageW, imgH, '', 'FAST'); rem -= pageH; }
+    const pdf    = new jsPDF({ orientation: 'portrait', unit: 'mm', format });
+    const pageW  = pdf.internal.pageSize.getWidth();
+    const pageH  = pdf.internal.pageSize.getHeight();
+    const pxPerMm   = canvas.width / pageW;
+    const pageHpx   = pageH * pxPerMm;
+    const searchPx  = pageHpx * 0.12; // busca até 12% da altura acima do corte
+
+    let yPx = 0;
+    let first = true;
+    while (yPx < canvas.height) {
+      const idealCut = yPx + pageHpx;
+      const cutPx = idealCut >= canvas.height
+        ? canvas.height
+        : findSafeYCut(canvas, idealCut, searchPx);
+      const sliceHpx = cutPx - yPx;
+
+      // Cria canvas temporário com o trecho desta página
+      const tmp = document.createElement('canvas');
+      tmp.width  = canvas.width;
+      tmp.height = sliceHpx;
+      const tctx = tmp.getContext('2d');
+      tctx.fillStyle = '#ffffff';
+      tctx.fillRect(0, 0, tmp.width, tmp.height);
+      tctx.drawImage(canvas, 0, yPx, canvas.width, sliceHpx, 0, 0, canvas.width, sliceHpx);
+
+      const imgData  = tmp.toDataURL('image/jpeg', 0.93);
+      const sliceHmm = sliceHpx / pxPerMm;
+
+      if (!first) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, sliceHmm, '', 'FAST');
+      first = false;
+      yPx   = cutPx;
+    }
     pdf.save(nomeArq);
     toast('PDF baixado com sucesso!');
   } catch(e) {
