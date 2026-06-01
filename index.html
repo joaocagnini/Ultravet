@@ -1767,6 +1767,123 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') 
+function setSyncStatus(s) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (s === 'ok')      { dot.style.background = '#0f7a5a'; lbl.textContent = 'Sincronizado'; }
+  else if (s === 'sync') { dot.style.background = '#b35c00'; lbl.textContent = 'Sincronizando…'; }
+  else                 { dot.style.background = '#c0392b'; lbl.textContent = 'Offline (local)'; }
+}
+
+async function sbFetch(table) {
+  const r = await fetch(SB_URL + '/rest/v1/' + table + '?select=*', { headers: SB_H });
+  if (!r.ok) throw new Error(r.status);
+  const rows = await r.json();
+  return rows.map(row => row.payload);
+}
+
+async function sbUpsert(table, items) {
+  if (!items.length) return;
+  await fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: SB_H,
+    body: JSON.stringify(items.map(item => ({ id: item.id, payload: item })))
+  });
+}
+
+async function cloudDelete(table, id) {
+  try {
+    await fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+      method: 'DELETE',
+      headers: SB_H
+    });
+  } catch(e) {}
+}
+
+async function syncCloud() {
+  setSyncStatus('sync');
+  try {
+    await Promise.all([
+      sbUpsert('uv_laudos',   laudos),
+      sbUpsert('uv_receitas', receitas),
+      sbUpsert('uv_despesas', despesas),
+      sbUpsert('uv_clinicas', clinicas),
+      sbUpsert('uv_agenda',   agenda),
+    ]);
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('offline'); }
+}
+
+async function initCloud() {
+  // Se houve um save local nos últimos 90s, apenas envia para nuvem — não sobrescreve dados locais frescos
+  if (Date.now() - localSaveTs < 90000) {
+    try { await syncCloud(); } catch(e) {}
+    setSyncStatus('ok');
+    return;
+  }
+  setSyncStatus('sync');
+  try {
+    const [rl, rr, rd, rc] = await Promise.all([
+      sbFetch('uv_laudos'),
+      sbFetch('uv_receitas'),
+      sbFetch('uv_despesas'),
+      sbFetch('uv_clinicas'),
+    ]);
+    laudos    = filtrarExcluidos('uv_laudos',   rl);
+    receitas  = filtrarExcluidos('uv_receitas', rr);
+    despesas  = filtrarExcluidos('uv_despesas', rd);
+    clinicas  = filtrarExcluidos('uv_clinicas', rc);
+    save();
+    populateClinicaSelects();
+    
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
+document.getElementById('sb-logo').src = LOGO_B64;
+    setSyncStatus('ok');
+  } catch(e) { setSyncStatus('offline'); }
+  // agenda em bloco separado pois a tabela pode ainda não existir
+  try {
+    const ra = await sbFetch('uv_agenda');
+    agenda = ra;
+    localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  } catch(e) {}
+}
+
+window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
+setInterval(() => { if (document.getElementById('sync-dot')) initCloud(); }, 60000);
+
+
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
 function toggleSidebar() {
   const sb = document.querySelector('.sidebar');
