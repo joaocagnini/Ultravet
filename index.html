@@ -3090,6 +3090,20 @@ function atualizarBotaoFotoPanel() {
   btn.style.display = (fotosTmp.length > 0 && !fotoPanelOpen) ? 'block' : 'none';
   if (fotoPanelOpen) renderFotoPanelLateral();
 }
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+(function() {
+  try { laudos    = JSON.parse(localStorage.getItem('uv_laudos')    || '[]'); } catch(e) { laudos    = []; }
+  try { receitas  = JSON.parse(localStorage.getItem('uv_receitas')  || '[]'); } catch(e) { receitas  = []; }
+  try { despesas  = JSON.parse(localStorage.getItem('uv_despesas')  || '[]'); } catch(e) { despesas  = []; }
+  try { clinicas  = JSON.parse(localStorage.getItem('uv_clinicas')  || '[]'); } catch(e) { clinicas  = []; }
+  try { agenda    = JSON.parse(localStorage.getItem('uv_agenda')    || '[]'); } catch(e) { agenda    = []; }
+  populateClinicaSelects();
+  updateDashboard();
+  initSidebar();
+  document.getElementById('sb-logo').src = LOGO_B64;
+  initCloud();
+})();
 </script>
 
 <!-- ═══ MODAL CONFIRMAÇÃO ═══════════════════════════════════════════════════ -->
