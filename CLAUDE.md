@@ -169,6 +169,7 @@ Separadores: #c5ddd0 / #d8e8de / #edf2ef
 5. **Zero dependências externas de CDN** — exceto o Supabase já integrado via fetch nativo.
 6. **Comentários mínimos e em português** — o código já é legível; comentários só onde a lógica for não-óbvia.
 7. **Ao concluir a tarefa**, informar quais funções foram adicionadas ou modificadas e atualizar o histórico de versões no topo do arquivo (bloco de comentário).
+8. **Deploy Netlify** — usar `[skip netlify]` em todos os commits durante desenvolvimento para não gastar build minutes. Só omitir o skip quando o João disser "publica", "faz deploy" ou "sobe para o ar".
 
 ---
 
