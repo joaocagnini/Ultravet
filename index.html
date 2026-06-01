@@ -1986,12 +1986,18 @@ function editLaudo(id) {
 }
 
 function delLaudo(id) {
-  if (!confirm('Excluir este laudo permanentemente?')) return;
-  laudos = laudos.filter(l => l.id !== id);
-  save(); renderLaudos(); updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
-  cloudDelete('uv_laudos', id);
-  toast('Laudo excluído.');
+  confirmarAcao(
+    'Excluir laudo',
+    'Esta ação é permanente e não pode ser desfeita. Deseja realmente excluir este laudo?',
+    'Excluir',
+    function() {
+      marcarExcluido('uv_laudos', id);
+      laudos = laudos.filter(l => l.id !== id);
+      save(); renderLaudos(); updateDashboard();
+      cloudDelete('uv_laudos', id);
+      toast('Laudo excluído.');
+    }
+  );
 }
 
 // ─── PREVIEW & PRINT ──────────────────────────────────────────────────────────
@@ -3752,10 +3758,10 @@ async function initCloud() {
       sbFetch('uv_despesas'),
       sbFetch('uv_clinicas'),
     ]);
-    laudos    = rl;
-    receitas  = rr;
-    despesas  = rd;
-    clinicas  = rc;
+    laudos    = filtrarExcluidos('uv_laudos',   rl);
+    receitas  = filtrarExcluidos('uv_receitas', rr);
+    despesas  = filtrarExcluidos('uv_despesas', rd);
+    clinicas  = filtrarExcluidos('uv_clinicas', rc);
     save();
     populateClinicaSelects();
     updateDashboard();
@@ -3781,6 +3787,39 @@ populateClinicaSelects();
 updateDashboard();
 document.getElementById('sb-logo').src = LOGO_B64;
 initCloud();
+
+// ─── EXCLUSÃO SEGURA ──────────────────────────────────────────────────────
+// Armazena IDs excluídos para impedir que o sync os traga de volta
+function getExcluidos() {
+  try { return JSON.parse(localStorage.getItem('uv_excluidos') || '{}'); } catch(e) { return {}; }
+}
+function marcarExcluido(tabela, id) {
+  const ex = getExcluidos();
+  if (!ex[tabela]) ex[tabela] = [];
+  if (!ex[tabela].includes(id)) ex[tabela].push(id);
+  localStorage.setItem('uv_excluidos', JSON.stringify(ex));
+}
+function filtrarExcluidos(tabela, items) {
+  const ids = (getExcluidos()[tabela] || []);
+  return ids.length ? items.filter(function(i){ return !ids.includes(i.id); }) : items;
+}
+
+// Modal de confirmação reutilizável (substitui o confirm() nativo)
+function confirmarAcao(titulo, mensagem, textoBotao, callback) {
+  const modal = document.getElementById('modal-confirmar');
+  document.getElementById('mc-titulo').textContent   = titulo;
+  document.getElementById('mc-mensagem').textContent = mensagem;
+  const btnOk = document.getElementById('mc-ok');
+  btnOk.textContent = textoBotao;
+  btnOk.onclick = function() {
+    fecharConfirmar();
+    callback();
+  };
+  modal.style.display = 'flex';
+}
+function fecharConfirmar() {
+  document.getElementById('modal-confirmar').style.display = 'none';
+}
 
 // ─── REVISÃO COM IA ───────────────────────────────────────────────────────
 function salvarApiKey() {
@@ -4019,6 +4058,20 @@ function atualizarBotaoFotoPanel() {
   if (fotoPanelOpen) renderFotoPanelLateral();
 }
 </script>
+
+<!-- ═══ MODAL CONFIRMAÇÃO ═══════════════════════════════════════════════════ -->
+<div id="modal-confirmar" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;width:380px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.22)">
+    <div style="padding:18px 22px 14px">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px" id="mc-titulo">Confirmar</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5" id="mc-mensagem"></div>
+    </div>
+    <div style="padding:12px 22px 18px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="fecharConfirmar()">Cancelar</button>
+      <button class="btn btn-danger" id="mc-ok">Excluir</button>
+    </div>
+  </div>
+</div>
 
 <!-- ═══ MODAL REVISÃO COM IA ════════════════════════════════════════════════ -->
 <div id="modal-revisao" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);overflow-y:auto">
