@@ -2157,10 +2157,10 @@ function buildLaudoHTML(l) {
   const orgs   = isGest ? l.orgGest   : l.orgAbdom;
   const nomes  = isGest ? orgNomesGest : orgNomesAbdom;
   const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
-      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</td>'
-      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</td>'
-      + '</tr>';
+    return '<div style="display:grid;grid-template-columns:155px 1fr;border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
+      + '<div style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</div>'
+      + '<div style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</div>'
+      + '</div>';
   }).join('') : '';
   // cabeçalho (3 estilos)
   const logoSrc = getLogo();
@@ -2218,7 +2218,7 @@ function buildLaudoHTML(l) {
     /* ACHADOS */
     + (secAchados ? '<div style="padding:10px 28px 14px">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
-      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">' + orgRows + '</table>'
+      + '<div style="width:100%;font-family:' + fonte + '">' + orgRows + '</div>'
     + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
