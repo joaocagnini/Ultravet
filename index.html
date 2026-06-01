@@ -61,7 +61,56 @@
   .nav-item:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.95); }
   .nav-item.active { background: rgba(0,168,150,.2); color: #00c9a7; }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
-  @media (max-width: 768px) { .sidebar { width: 60px; } .sidebar .nav-label { display: none; } .sidebar .nav-section { opacity:0;height:0;padding:0;overflow:hidden; } .sidebar .nav-item { justify-content:center;padding:10px 0;gap:0; } .sidebar .sb-footer-text { display:none; } .main { margin-left: 60px; } }
+  @media (max-width: 768px) {
+    /* Sidebar: sempre colapsada no mobile */
+    .sidebar { width: 60px; }
+    .sidebar .nav-label { display: none; }
+    .sidebar .nav-section { opacity:0;height:0;padding:0;overflow:hidden; }
+    .sidebar .nav-item { justify-content:center;padding:10px 0;gap:0; }
+    .sidebar .sb-footer-text { display:none; }
+    .sidebar .sb-logo-full { display:none !important; }
+    .sidebar .sb-logo-col { display:flex !important; }
+    .main { margin-left: 60px; }
+
+    /* Topbar: mais compacto */
+    .topbar { padding: 0 12px; }
+    .topbar-title { font-size: 14px; }
+    .topbar-sub { display: none; }
+
+    /* Cards: menos padding */
+    .card { padding: 14px; }
+    .card-header { margin-bottom: 10px; }
+
+    /* Grids: coluna única no mobile */
+    .fg-2, .fg-3, .fg-4 { grid-template-columns: 1fr !important; }
+    .metrics { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+
+    /* Achados por órgão: empilha verticalmente */
+    .organ-row { grid-template-columns: 1fr !important; gap: 6px; }
+    .organ-name { padding-top: 0; font-weight: 600; }
+
+    /* Tabelas: scroll horizontal */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .data-table { min-width: 480px; }
+
+    /* Actions bar: wrap */
+    .actions-bar { flex-wrap: wrap; gap: 8px; }
+    .actions-bar .btn { flex: 1; min-width: 120px; text-align: center; }
+
+    /* Modais: largura total */
+    #modal-confirmar > div { width: calc(100vw - 32px); margin: 0 16px; }
+    #modal-revisao > div { margin: 16px 8px; }
+
+    /* Painel lateral de fotos: largura maior no mobile */
+    #foto-panel-lateral { width: 85vw !important; }
+
+    /* Subtabs: scroll horizontal */
+    .subtabs { flex-wrap: wrap; gap: 6px; }
+    .subtabs-left { overflow-x: auto; flex-wrap: nowrap; }
+
+    /* Viz-laudo: botões menores */
+    #page-viz-laudo .btn { font-size: 12px; padding: 6px 10px; }
+  }
   .nav-section { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .08em; padding: 12px 10px 4px; }
   .sidebar-footer { padding: 12px 10px; border-top: 1px solid rgba(255,255,255,.1); font-size: 11px; color: rgba(255,255,255,.4); }
   .main { margin-left: 220px; flex: 1; min-height: 100vh; transition: margin-left .22s ease; }
