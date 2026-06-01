@@ -44,7 +44,15 @@
 
   /* Layout */
   .app { display: flex; min-height: 100vh; }
-  .sidebar { width: 220px; background: #1a3a5c; border-right: none; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; }
+  .sidebar { width: 220px; background: #1a3a5c; border-right: none; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; bottom: 0; z-index: 100; transition: width .22s ease; overflow: hidden; }
+  .sidebar.sb-col { width: 60px; }
+  .sidebar.sb-col .nav-label { display: none; }
+  .sidebar.sb-col .nav-section { opacity: 0; height: 0; padding: 0; margin: 0; overflow: hidden; }
+  .sidebar.sb-col .nav-item { justify-content: center; padding: 10px 0; gap: 0; }
+  .sidebar.sb-col .sb-footer-text { display: none; }
+  .sidebar.sb-col .sb-logo-full { display: none !important; }
+  .sidebar.sb-col .sb-logo-col { display: flex !important; }
+  .sidebar:not(.sb-col) .sb-logo-col { display: none !important; }
   .sidebar-logo { padding: 10px 10px 8px; border-bottom: 1px solid rgba(255,255,255,.1); }
   .sidebar-logo .logo-mark { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -.3px; }
   .sidebar-logo .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
@@ -53,9 +61,60 @@
   .nav-item:hover { background: rgba(255,255,255,.08); color: rgba(255,255,255,.95); }
   .nav-item.active { background: rgba(0,168,150,.2); color: #00c9a7; }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+  @media (max-width: 900px) {
+    /* Sidebar: sempre colapsada no mobile/tablet */
+    .sidebar { width: 60px; }
+    .sidebar .nav-label { display: none; }
+    .sidebar .nav-section { opacity:0;height:0;padding:0;overflow:hidden; }
+    .sidebar .nav-item { justify-content:center;padding:10px 0;gap:0; }
+    .sidebar .sb-footer-text { display:none; }
+    .sidebar .sb-logo-full { display:none !important; }
+    .sidebar .sb-logo-col { display:flex !important; }
+    .main { margin-left: 60px; }
+
+    /* Topbar: mais compacto */
+    .topbar { padding: 0 12px; }
+    .topbar-title { font-size: 14px; }
+    .topbar-sub { display: none; }
+
+    /* Cards: menos padding */
+    .card { padding: 14px; }
+    .card-header { margin-bottom: 10px; }
+
+    /* Grids: coluna única no mobile */
+    .fg-2, .fg-3, .fg-4 { grid-template-columns: 1fr !important; }
+    .metrics { grid-template-columns: 1fr 1fr !important; gap: 10px; }
+
+    /* Achados por órgão: empilha verticalmente */
+    .organ-row { grid-template-columns: 1fr !important; gap: 6px; }
+    .organ-name { padding-top: 0; font-weight: 600; }
+
+    /* Tabelas: scroll horizontal */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .data-table { min-width: 480px; }
+
+    /* Actions bar: wrap */
+    .actions-bar { flex-wrap: wrap; gap: 8px; }
+    .actions-bar .btn { flex: 1; min-width: 120px; text-align: center; }
+
+    /* Modais: largura total */
+    #modal-confirmar > div { width: calc(100vw - 32px); margin: 0 16px; }
+    #modal-revisao > div { margin: 16px 8px; }
+
+    /* Painel lateral de fotos: largura maior no mobile */
+    #foto-panel-lateral { width: 85vw !important; }
+
+    /* Subtabs: scroll horizontal */
+    .subtabs { flex-wrap: wrap; gap: 6px; }
+    .subtabs-left { overflow-x: auto; flex-wrap: nowrap; }
+
+    /* Viz-laudo: botões menores */
+    #page-viz-laudo .btn { font-size: 12px; padding: 6px 10px; }
+  }
   .nav-section { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .08em; padding: 12px 10px 4px; }
   .sidebar-footer { padding: 12px 10px; border-top: 1px solid rgba(255,255,255,.1); font-size: 11px; color: rgba(255,255,255,.4); }
-  .main { margin-left: 220px; flex: 1; min-height: 100vh; }
+  .main { margin-left: 220px; flex: 1; min-height: 100vh; transition: margin-left .22s ease; }
+  .main.sb-col { margin-left: 60px; }
   .topbar { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 28px; height: 56px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
   .topbar-title { font-size: 15px; font-weight: 600; color: var(--text); }
   .topbar-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
@@ -230,52 +289,66 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-logo" onclick="goPage('dashboard')" style="cursor:pointer;text-align:center" title="Ir para o início">
-      <div style="background:#fff;border-radius:10px;padding:4px;overflow:hidden"><img id="sb-logo" style="width:100%;height:128px;object-fit:cover;object-position:center top;display:block" alt="VetRoutine"></div>
-      
+    <div class="sidebar-logo" style="border-bottom:1px solid rgba(255,255,255,.1)">
+      <!-- Logo expandida: imagem original -->
+      <div class="sb-logo-full" onclick="goPage('dashboard')" style="cursor:pointer;padding:10px 10px 8px;display:flex;align-items:center;justify-content:space-between">
+        <div style="background:#fff;border-radius:8px;padding:4px;overflow:hidden;flex:1;margin-right:8px">
+          <img id="sb-logo" style="width:100%;height:96px;object-fit:cover;object-position:center top;display:block" alt="VetRoutine">
+        </div>
+        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Retrair menu" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);padding:4px;display:flex;align-items:center;flex-shrink:0" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;transition:transform .22s"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+      <!-- Logo colapsada: só VR + botão expandir -->
+      <div class="sb-logo-col" onclick="toggleSidebar()" style="cursor:pointer;padding:10px 0;display:none;flex-direction:column;align-items:center;gap:6px" title="Expandir menu">
+        <div class="sidebar-logo-vr" style="background:#0f7a5a;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:13px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1">VR</span>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" style="width:14px;height:14px;transform:rotate(180deg)"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section">Principal</div>
-      <a class="nav-item active" onclick="goPage('dashboard')" href="#">
+      <a class="nav-item active" onclick="goPage('dashboard')" href="#" title="Dashboard">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-        Dashboard
+        <span class="nav-label">Dashboard</span>
       </a>
       <div class="nav-section">Laudos</div>
-      <a class="nav-item" onclick="goPage('laudos')" href="#">
+      <a class="nav-item" onclick="goPage('laudos')" href="#" title="Todos os laudos">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-        Todos os laudos
+        <span class="nav-label">Todos os laudos</span>
       </a>
-      <a class="nav-item" onclick="novoLaudo()" href="#">
+      <a class="nav-item" onclick="novoLaudo()" href="#" title="Novo laudo">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-        Novo laudo
+        <span class="nav-label">Novo laudo</span>
       </a>
       <div class="nav-section">Agenda</div>
-      <a class="nav-item" onclick="goPage('agenda')" href="#">
+      <a class="nav-item" onclick="goPage('agenda')" href="#" title="Agenda">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        Agenda
+        <span class="nav-label">Agenda</span>
       </a>
       <div class="nav-section">Financeiro</div>
-      <a class="nav-item" onclick="goPage('financeiro')" href="#">
+      <a class="nav-item" onclick="goPage('financeiro')" href="#" title="Financeiro">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Financeiro
+        <span class="nav-label">Financeiro</span>
       </a>
-      <a class="nav-item" onclick="goPage('financeiro');stf('f-clinicas')" href="#">
+      <a class="nav-item" onclick="goPage('financeiro');stf('f-clinicas')" href="#" title="Clínicas parceiras">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        Clínicas parceiras
+        <span class="nav-label">Clínicas parceiras</span>
       </a>
       <div class="nav-section">Análises</div>
-      <a class="nav-item" onclick="goPage('relatorios')" href="#">
+      <a class="nav-item" onclick="goPage('relatorios')" href="#" title="Relatórios">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
-        Relatórios
+        <span class="nav-label">Relatórios</span>
       </a>
       <div class="nav-section">Sistema</div>
-      <a class="nav-item" onclick="goPage('painel')" href="#">
+      <a class="nav-item" onclick="goPage('painel')" href="#" title="Painel de controle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
-        Painel de controle
+        <span class="nav-label">Painel de controle</span>
       </a>
     </nav>
     <div class="sidebar-footer" style="display:flex;align-items:center;justify-content:space-between">
-      <div>
+      <div class="sb-footer-text">
         <span id="sync-dot" style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#9b9a95;margin-right:5px;vertical-align:middle"></span>
         <span id="sync-label">Carregando...</span> · v1.10
       </div>
@@ -442,7 +515,7 @@
                 <option value="espessamento">Espessamento de parede</option>
                 <option value="na">N/A</option>
               </select>
-              <textarea id="o-bexiga" rows="2">Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.</textarea>
+              <textarea id="o-bexiga" spellcheck="true" lang="pt" rows="2">Repleção líquida adequada, formato habitual, paredes finas e ecogênicas, margens internas lisas e conteúdo anecogênico e homogêneo.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Rins</div>
@@ -453,7 +526,7 @@
                 <option value="hidronefrose">Hidronefrose</option>
                 <option value="cisto">Cisto renal</option>
               </select>
-              <textarea id="o-rins" rows="2">Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.</textarea>
+              <textarea id="o-rins" spellcheck="true" lang="pt" rows="2">Formato mantido, localizados em topografia habitual, com dimensões simétricas. Arquitetura e relação córtico-medular preservadas.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Fígado</div>
@@ -465,7 +538,7 @@
                 <option value="nodulo_hepatico">Formação hepática</option>
                 <option value="hepatomegalia">Hepatomegalia</option>
               </select>
-              <textarea id="o-figado" rows="2">Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.</textarea>
+              <textarea id="o-figado" spellcheck="true" lang="pt" rows="2">Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas, ecogenicidade e ecotextura dentro dos padrões de normalidade.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Vesícula biliar</div>
@@ -476,7 +549,7 @@
                 <option value="mucocele">Mucocele biliar</option>
                 <option value="colecistite">Colecistite</option>
               </select>
-              <textarea id="o-vbiliar" rows="2">Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.</textarea>
+              <textarea id="o-vbiliar" spellcheck="true" lang="pt" rows="2">Repleção líquida moderada, paredes finas e ecogênicas, conteúdo anecogênico e homogêneo.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Baço</div>
@@ -486,7 +559,7 @@
                 <option value="nodulo_baco">Nódulo esplênico</option>
                 <option value="hematoma_baco">Hematoma esplênico</option>
               </select>
-              <textarea id="o-baco" rows="2">Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.</textarea>
+              <textarea id="o-baco" spellcheck="true" lang="pt" rows="2">Contornos definidos, superfície lisa, margens finas, ecogenicidade e ecotextura preservadas.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Estômago</div>
@@ -496,7 +569,7 @@
                 <option value="corpo_estranho">Corpo estranho gástrico</option>
                 <option value="espessamento_gastrico">Espessamento parietal</option>
               </select>
-              <textarea id="o-estomago" rows="2">Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.</textarea>
+              <textarea id="o-estomago" spellcheck="true" lang="pt" rows="2">Conteúdo luminal de padrão misto. Paredes com aspecto sonográfico preservado, mantendo estratificação em camadas.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Alças intestinais</div>
@@ -507,7 +580,7 @@
                 <option value="intussuscepcao">Intussuscepção</option>
                 <option value="corpo_estranho_int">Corpo estranho intestinal</option>
               </select>
-              <textarea id="o-intestino" rows="2">Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.</textarea>
+              <textarea id="o-intestino" spellcheck="true" lang="pt" rows="2">Segmentos avaliáveis com paredes preservadas, estratificação parietal mantida, sem evidências de processo obstrutivo.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Pâncreas</div>
@@ -517,7 +590,7 @@
                 <option value="edema_pancreas">Edema pancreático</option>
                 <option value="massa_pancreas">Massa pancreática</option>
               </select>
-              <textarea id="o-pancreas" rows="2">Ecogenicidade e ecotextura preservadas.</textarea>
+              <textarea id="o-pancreas" spellcheck="true" lang="pt" rows="2">Ecogenicidade e ecotextura preservadas.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Adrenais</div>
@@ -527,7 +600,7 @@
                 <option value="nodulo_adrenal">Nódulo adrenal</option>
                 <option value="massa_adrenal">Massa adrenal</option>
               </select>
-              <textarea id="o-adrenais" rows="2">Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.</textarea>
+              <textarea id="o-adrenais" spellcheck="true" lang="pt" rows="2">Formato mantido, bordos regulares, distinção córtico-medular preservada e ecogenicidade habitual.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Linfonodos</div>
@@ -535,7 +608,7 @@
                 <option value="normal">Normal</option>
                 <option value="linfadenomegalia">Linfadenomegalia abdominal</option>
               </select>
-              <textarea id="o-linfo" rows="2">Não foram observadas alterações ecográficas neste exame.</textarea>
+              <textarea id="o-linfo" spellcheck="true" lang="pt" rows="2">Não foram observadas alterações ecográficas neste exame.</textarea>
             </div>
             <div class="organ-row" id="row-utero-f" style="display:none">
               <div class="organ-name">Útero</div>
@@ -547,7 +620,7 @@
                 <option value="cisto_ovariano">Cisto ovariano</option>
                 <option value="na">N/A</option>
               </select>
-              <textarea id="o-utero-f" rows="2">Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.</textarea>
+              <textarea id="o-utero-f" spellcheck="true" lang="pt" rows="2">Útero não gestante visualizado em topografia habitual, paredes com ecogenicidade preservada, sem alterações estruturais evidentes.</textarea>
             </div>
             <div class="organ-row" id="row-prostata">
               <div class="organ-name">Próstata</div>
@@ -558,7 +631,7 @@
                 <option value="cisto_prostata">Cisto prostático</option>
                 <option value="na">N/A</option>
               </select>
-              <textarea id="o-prostata" rows="2">Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.</textarea>
+              <textarea id="o-prostata" spellcheck="true" lang="pt" rows="2">Em topografia habitual (pélvica), com formato bilobado, dimensões dentro da normalidade, contornos definidos, ecogenicidade e ecotextura preservadas.</textarea>
             </div>
             <div class="organ-row" id="row-testis">
               <div class="organ-name">Testículos</div>
@@ -568,7 +641,7 @@
                 <option value="testis_orqui">Orquiectomizado</option>
                 <option value="na">N/A</option>
               </select>
-              <textarea id="o-testis" rows="2"></textarea>
+              <textarea id="o-testis" spellcheck="true" lang="pt" rows="2"></textarea>
             </div>
           </div>
         </div>
@@ -584,14 +657,14 @@
                 <option value="reabsorcao">Reabsorção fetal</option>
                 <option value="morte_fetal">Óbito fetal</option>
               </select>
-              <textarea id="o-utero" rows="2">Útero gravídico, com vesículas embrionárias identificadas, conteúdo anecogênico homogêneo.</textarea>
+              <textarea id="o-utero" spellcheck="true" lang="pt" rows="2">Útero gravídico, com vesículas embrionárias identificadas, conteúdo anecogênico homogêneo.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Número de fetos</div>
               <select onchange="setOrganText('o-fetos', this.value, 'fetos')">
                 <option value="custom">Informar manualmente</option>
               </select>
-              <textarea id="o-fetos" rows="1" placeholder="Ex: 3 fetos identificados, BCF presentes."></textarea>
+              <textarea id="o-fetos" spellcheck="true" lang="pt" rows="1" placeholder="Ex: 3 fetos identificados, BCF presentes."></textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Batimentos (BCF)</div>
@@ -600,7 +673,7 @@
                 <option value="bcf_ausente">Ausentes</option>
                 <option value="bcf_irregular">Irregulares</option>
               </select>
-              <textarea id="o-bcf" rows="1">Batimentos cardíacos fetais presentes e rítmicos.</textarea>
+              <textarea id="o-bcf" spellcheck="true" lang="pt" rows="1">Batimentos cardíacos fetais presentes e rítmicos.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Placenta</div>
@@ -609,7 +682,7 @@
                 <option value="placentite">Placentite</option>
                 <option value="descolamento">Descolamento placentário</option>
               </select>
-              <textarea id="o-placenta" rows="1">Inserção placentária sem alterações, espessura preservada.</textarea>
+              <textarea id="o-placenta" spellcheck="true" lang="pt" rows="1">Inserção placentária sem alterações, espessura preservada.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Líquido amniótico</div>
@@ -618,14 +691,14 @@
                 <option value="oligodramnio">Oligodrâmnio</option>
                 <option value="polidramnio">Polidrâmnio</option>
               </select>
-              <textarea id="o-amnio" rows="1">Volume de líquido amniótico dentro da normalidade.</textarea>
+              <textarea id="o-amnio" spellcheck="true" lang="pt" rows="1">Volume de líquido amniótico dentro da normalidade.</textarea>
             </div>
             <div class="organ-row">
               <div class="organ-name">Idade gestacional</div>
               <select onchange="setOrganText('o-ig', this.value, 'ig')">
                 <option value="custom">Informar manualmente</option>
               </select>
-              <textarea id="o-ig" rows="1" placeholder="Ex: IG estimada em 35 dias."></textarea>
+              <textarea id="o-ig" spellcheck="true" lang="pt" rows="1" placeholder="Ex: IG estimada em 35 dias."></textarea>
             </div>
           </div>
         </div>
@@ -634,16 +707,17 @@
           <div class="form-section" style="margin-top:0">Impressão diagnóstica</div>
           <div class="form-grid" style="grid-template-columns:1fr">
             <div class="form-field"><label>Conclusão / comentários</label>
-              <textarea id="f-conclusao" rows="4">- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.
+              <textarea id="f-conclusao" spellcheck="true" lang="pt" rows="4">- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.
 - Sem evidências de alterações estruturais significativas nos órgãos avaliados.</textarea>
             </div>
             <div class="form-field"><label>Observações adicionais</label>
-              <textarea id="f-obs" rows="2"></textarea>
+              <textarea id="f-obs" spellcheck="true" lang="pt" rows="2"></textarea>
             </div>
           </div>
           <div class="actions-bar">
             <button class="btn" onclick="cancelarLaudo()">Cancelar</button>
             <button class="btn" onclick="previewLaudo()">👁 Pré-visualizar</button>
+            <button class="btn" onclick="revisarComIA()" title="Revisar ortografia e gramática com IA">🤖 Revisar</button>
             <button class="btn btn-primary" onclick="salvarLaudo()">💾 Salvar laudo</button>
           </div>
         </div>
@@ -1108,6 +1182,17 @@
                 <tr><td style="color:var(--text2)">Repositório</td><td><a href="https://github.com/joaocagnini/Ultravet" target="_blank" style="color:var(--teal)">github.com/joaocagnini/Ultravet</a></td></tr>
               </tbody>
             </table>
+          </div>
+          <div class="card">
+            <div class="card-header"><div class="card-title">🤖 Revisão com IA</div></div>
+            <div class="form-field" style="margin-bottom:10px">
+              <label>Chave de API Anthropic (Claude)</label>
+              <div style="display:flex;gap:8px;align-items:center">
+                <input type="password" id="cfg-api-key" placeholder="sk-ant-..." style="flex:1;font-family:monospace;font-size:12px">
+                <button class="btn btn-primary" onclick="salvarApiKey()">Salvar</button>
+              </div>
+              <div style="font-size:11px;color:var(--text3);margin-top:4px">A chave fica salva localmente no dispositivo. Obtenha em <a href="https://console.anthropic.com/" target="_blank" style="color:var(--teal)">console.anthropic.com</a></div>
+            </div>
           </div>
         </div><!-- /pc-sistema -->
 
@@ -1592,6 +1677,7 @@ function(t){t.__bidiEngine__=t.prototype.__bidiEngine__=function(t){var r,n,i,a,
 <script>
 // ─── STATE ───────────────────────────────────────────────────────────────────
 let laudos = [], receitas = [], despesas = [], clinicas = [];
+let localSaveTs = 0; // timestamp do último save local — impede initCloud de sobrescrever dados frescos
 let agenda = [];
 let agendaViewDate = new Date();
 let agendaViewMode = 'mes';
@@ -1680,7 +1766,40 @@ function goPage(name) {
   document.getElementById('topbar-sub').textContent = sub;
   const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
-  if (name === 'dashboard') updateDashboard();
+  if (name === 'dashboard') 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
   if (name === 'laudos') renderLaudos();
   if (name === 'agenda') { renderAgenda(); }
@@ -1749,14 +1868,17 @@ const orgDefaults = {
 const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',utero_f:'Útero',prostata:'Próstata',testis:'Testículos'};
 const orgNomesGest = {utero:'Útero',fetos:'Número de fetos',bcf:'Batimentos (BCF)',placenta:'Placenta',amnio:'Líquido amniótico',ig:'Idade gestacional'};
 
-function toggleGest() {
+function toggleGest(isEditing) {
   const t = document.getElementById('f-tipo').value;
   document.getElementById('card-abdominal').style.display = t === 'Gestacional' ? 'none' : 'block';
   document.getElementById('card-gestacional').style.display = t === 'Gestacional' ? 'block' : 'none';
-  organSelecoes = {}; // reseta impressões ao trocar tipo de exame
-  document.getElementById('f-conclusao').value = t === 'Gestacional'
-    ? 'Prenhes positiva com fetos de idade entre ___ a ___ dias de gestação;\nFaltam entre ___ a ___ dias para o parto;'
-    : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  // ao editar laudo existente, não apaga impressão/seleções salvas
+  if (!isEditing) {
+    organSelecoes = {};
+    document.getElementById('f-conclusao').value = t === 'Gestacional'
+      ? 'Prenhes positiva com fetos de idade entre ___ a ___ dias de gestação;\nFaltam entre ___ a ___ dias para o parto;'
+      : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  }
 }
 
 function filtrarOrgaosPorSexo() {
@@ -1865,7 +1987,7 @@ function clearLaudoForm() {
   document.getElementById('f-fpago').value = 'Pago';
   document.getElementById('f-conclusao').value = getConfig().laudo && getConfig().laudo.modeloConclusao ? getConfig().laudo.modeloConclusao : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
   document.getElementById('f-obs').value = getConfig().laudo && getConfig().laudo.modeloObs ? getConfig().laudo.modeloObs : '';
-  Object.keys(orgDefaults).forEach(k => { const el = document.getElementById('o-'+k); if(el) el.value = orgDefaults[k]; });
+  Object.keys(orgDefaults).forEach(k => { const el = document.getElementById(orgElId(k)); if(el) el.value = orgDefaults[k]; });
   ['utero','fetos','bcf','placenta','amnio','ig'].forEach(k => { const el = document.getElementById('o-'+k); if(el && organPatologias[k] && organPatologias[k].normal) el.value = organPatologias[k].normal; });
   // reset all patologia selects to first option
   document.querySelectorAll('#card-abdominal select, #card-gestacional select').forEach(s => s.selectedIndex = 0);
@@ -1876,11 +1998,14 @@ function clearLaudoForm() {
   filtrarOrgaosPorSexo();
 }
 
+// converte key JS (ex: utero_f) para ID do elemento HTML (ex: o-utero-f)
+function orgElId(k) { return 'o-' + k.replace(/_/g, '-'); }
+
 function getLaudoData() {
   const orgAbdom = {};
-  Object.keys(orgNomesAbdom).forEach(k => { orgAbdom[k] = { texto: (document.getElementById('o-'+k)||{}).value||'' }; });
+  Object.keys(orgNomesAbdom).forEach(k => { orgAbdom[k] = { texto: (document.getElementById(orgElId(k))||{}).value||'' }; });
   const orgGest = {};
-  Object.keys(orgNomesGest).forEach(k => { orgGest[k] = { texto: (document.getElementById('o-'+k)||{}).value||'' }; });
+  Object.keys(orgNomesGest).forEach(k => { orgGest[k] = { texto: (document.getElementById(orgElId(k))||{}).value||'' }; });
   return {
     tipo: document.getElementById('f-tipo').value,
     resultado: document.getElementById('f-resultado').value,
@@ -1921,8 +2046,8 @@ function salvarLaudo() {
     }
     toast('Laudo salvo! Receita lançada automaticamente.');
   }
+  localSaveTs = Date.now();
   save();
-  goPage('laudos');
 }
 
 function cancelarLaudo() { goPage('laudos'); }
@@ -1961,25 +2086,32 @@ function editLaudo(id) {
   setCurrency('f-valor-rec', l.valorRec || 0);
   document.getElementById('f-forma').value = l.forma || 'Pix';
   document.getElementById('f-fpago').value = l.fpago || 'Pago';
-  document.getElementById('f-conclusao').value = l.conclusao || '';
-  document.getElementById('f-obs').value = l.obs || '';
-  toggleGest();
+  toggleGest(true); // apenas alterna visibilidade, sem apagar dados salvos
   populateClinicaSelects();
-  if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgAbdom[k].texto||''; });
-  if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById('o-'+k); if(ei) ei.value = l.orgGest[k].texto||''; });
-  filtrarOrgaosPorSexo(); // após popular órgãos: zera o órgão do sexo oposto
+  if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById(orgElId(k)); if(ei) ei.value = l.orgAbdom[k].texto||''; });
+  if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById(orgElId(k)); if(ei) ei.value = l.orgGest[k].texto||''; });
+  filtrarOrgaosPorSexo();
+  // carrega impressão e obs APÓS todos os órgãos e toggles — garante que não sejam sobrescritos
+  document.getElementById('f-conclusao').value = l.conclusao || '';
+  document.getElementById('f-obs').value = l.obs || ''; // após popular órgãos: zera o órgão do sexo oposto
   fotosTmp = (l.fotos || []).slice();
   renderFotosGrid();
   goPage('novo-laudo');
 }
 
 function delLaudo(id) {
-  if (!confirm('Excluir este laudo permanentemente?')) return;
-  laudos = laudos.filter(l => l.id !== id);
-  save(); renderLaudos(); updateDashboard();
-document.getElementById('sb-logo').src = LOGO_B64;
-  cloudDelete('uv_laudos', id);
-  toast('Laudo excluído.');
+  confirmarAcao(
+    'Excluir laudo',
+    'Esta ação é permanente e não pode ser desfeita. Deseja realmente excluir este laudo?',
+    'Excluir',
+    function() {
+      marcarExcluido('uv_laudos', id);
+      laudos = laudos.filter(l => l.id !== id);
+      save(); renderLaudos(); updateDashboard();
+      cloudDelete('uv_laudos', id);
+      toast('Laudo excluído.');
+    }
+  );
 }
 
 // ─── PREVIEW & PRINT ──────────────────────────────────────────────────────────
@@ -2096,11 +2228,11 @@ function buildLaudoHTML(l) {
     + '</div>' : '')
     /* FOTOS */
     + (secFotos && l.fotos && l.fotos.length ? (
-        '<div style="padding:10px 28px 20px;border-top:1px solid #edf2ef">'
-          + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">Imagens do Exame</div>'
+        '<div style="padding:10px 28px 20px;border-top:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
+          + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px;padding-bottom:4px;border-bottom:1px solid #e0e0dc;page-break-after:avoid;break-after:avoid">Imagens do Exame</div>'
           + '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">'
             + l.fotos.map(function(f) {
-                return '<div style="border:1px solid #ddd;border-radius:4px;overflow:hidden;background:#f8f8f8;page-break-inside:avoid">'
+                return '<div style="border:1px solid #ddd;border-radius:4px;overflow:hidden;background:#f8f8f8;page-break-inside:avoid;break-inside:avoid">'
                   + '<img src="' + f.src + '" style="width:100%;max-height:340px;object-fit:contain;display:block">'
                 + '</div>';
               }).join('')
@@ -2155,8 +2287,20 @@ function imprimirLaudo() {
   const papel   = lc.papel   || 'A4';
   const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
+  toast('Dica: desmarque "Cabeçalhos e rodapés" e selecione "Salvar como PDF" na janela de impressão');
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + nomeArquivoLaudo(l) + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}tr{page-break-inside:avoid;break-inside:avoid}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + nomeArquivoLaudo(l) + '</title><style>'
+    + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    + 'body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}'
+    + 'table,td,th,span,div{font-family:inherit}'
+    + 'tr{page-break-inside:avoid;break-inside:avoid}'
+    + 'img{page-break-inside:avoid;break-inside:avoid;max-width:100%}'
+    + 'p,div,td,li{orphans:4;widows:4}'
+    + '.organ-row,section{page-break-inside:avoid;break-inside:avoid}'
+    + '@page{size:' + papel + ';margin:0}'
+    + '@media print{body{padding:' + margens + '}}'
+    + '</style></head><body>' + body
+    + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
@@ -2170,7 +2314,7 @@ function adicionarFotos(input) {
     reader.onload = function(e) {
       fotosTmp.push({ src: e.target.result, name: file.name });
       done++;
-      if (done === files.length) renderFotosGrid();
+      if (done === files.length) { renderFotosGrid(); atualizarBotaoFotoPanel(); }
     };
     reader.readAsDataURL(file);
   });
@@ -2180,6 +2324,7 @@ function adicionarFotos(input) {
 function removerFoto(idx) {
   fotosTmp.splice(idx, 1);
   renderFotosGrid();
+  atualizarBotaoFotoPanel();
 }
 
 function renderFotosGrid() {
@@ -2595,7 +2740,40 @@ function addReceita() {
 
 function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
-  save(); renderReceitas(); renderReceber(); updateFinOverview(); updateDashboard();
+  save(); renderReceitas(); renderReceber(); updateFinOverview(); 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
   toast('Marcado como pago!');
 }
@@ -2603,7 +2781,40 @@ document.getElementById('sb-logo').src = LOGO_B64;
 function delRec(id) {
   receitas = receitas.filter(r => r.id!==id);
   cloudDelete('uv_receitas', id);
-  save(); renderReceitas(); updateFinOverview(); updateDashboard();
+  save(); renderReceitas(); updateFinOverview(); 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
 }
 
@@ -2859,7 +3070,40 @@ function importarBackup(input) {
       clinicas = dados.clinicas || [];
       save();
       populateClinicaSelects();
-      updateDashboard();
+      
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
       toast('Backup importado! ' + laudos.length + ' laudos, ' + receitas.length + ' receitas.');
     } catch(err) {
@@ -2949,6 +3193,23 @@ function abrirJanelaPDF(l, titulo) {
   win.document.close();
 }
 
+// Encontra a última linha "branca" antes do ponto ideal de corte
+function findSafeYCut(canvas, idealY, searchRange) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const start = Math.min(Math.floor(idealY), canvas.height - 1);
+  const end   = Math.max(0, Math.floor(start - searchRange));
+  for (let y = start; y > end; y--) {
+    const d = ctx.getImageData(0, y, w, 1).data;
+    let white = true;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] < 245 || d[i+1] < 245 || d[i+2] < 245) { white = false; break; }
+    }
+    if (white) return y;
+  }
+  return idealY; // nenhuma linha branca encontrada: usa o ponto original
+}
+
 async function baixarLaudoPDF() {
   const l = viewId ? laudos.find(x => x.id === viewId) : getLaudoData();
   if (!l) return;
@@ -2962,16 +3223,40 @@ async function baixarLaudoPDF() {
   toast('Gerando PDF…');
   try {
     const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 });
-    const imgData = canvas.toDataURL('image/png');
     const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format });
-    const pageW = pdf.internal.pageSize.getWidth();
-    const pageH = pdf.internal.pageSize.getHeight();
-    const imgH  = (canvas.height * pageW) / canvas.width;
-    let yPos = 0, rem = imgH;
-    pdf.addImage(imgData, 'PNG', 0, yPos, pageW, imgH, '', 'FAST');
-    rem -= pageH;
-    while (rem > 0) { yPos -= pageH; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, yPos, pageW, imgH, '', 'FAST'); rem -= pageH; }
+    const pdf    = new jsPDF({ orientation: 'portrait', unit: 'mm', format });
+    const pageW  = pdf.internal.pageSize.getWidth();
+    const pageH  = pdf.internal.pageSize.getHeight();
+    const pxPerMm   = canvas.width / pageW;
+    const pageHpx   = pageH * pxPerMm;
+    const searchPx  = pageHpx * 0.12; // busca até 12% da altura acima do corte
+
+    let yPx = 0;
+    let first = true;
+    while (yPx < canvas.height) {
+      const idealCut = yPx + pageHpx;
+      const cutPx = idealCut >= canvas.height
+        ? canvas.height
+        : findSafeYCut(canvas, idealCut, searchPx);
+      const sliceHpx = cutPx - yPx;
+
+      // Cria canvas temporário com o trecho desta página
+      const tmp = document.createElement('canvas');
+      tmp.width  = canvas.width;
+      tmp.height = sliceHpx;
+      const tctx = tmp.getContext('2d');
+      tctx.fillStyle = '#ffffff';
+      tctx.fillRect(0, 0, tmp.width, tmp.height);
+      tctx.drawImage(canvas, 0, yPx, canvas.width, sliceHpx, 0, 0, canvas.width, sliceHpx);
+
+      const imgData  = tmp.toDataURL('image/jpeg', 0.93);
+      const sliceHmm = sliceHpx / pxPerMm;
+
+      if (!first) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, sliceHmm, '', 'FAST');
+      first = false;
+      yPx   = cutPx;
+    }
     pdf.save(nomeArq);
     toast('PDF baixado com sucesso!');
   } catch(e) {
@@ -3731,6 +4016,12 @@ async function syncCloud() {
 }
 
 async function initCloud() {
+  // Se houve um save local nos últimos 90s, apenas envia para nuvem — não sobrescreve dados locais frescos
+  if (Date.now() - localSaveTs < 90000) {
+    try { await syncCloud(); } catch(e) {}
+    setSyncStatus('ok');
+    return;
+  }
   setSyncStatus('sync');
   try {
     const [rl, rr, rd, rc] = await Promise.all([
@@ -3739,13 +4030,46 @@ async function initCloud() {
       sbFetch('uv_despesas'),
       sbFetch('uv_clinicas'),
     ]);
-    laudos    = rl;
-    receitas  = rr;
-    despesas  = rd;
-    clinicas  = rc;
+    laudos    = filtrarExcluidos('uv_laudos',   rl);
+    receitas  = filtrarExcluidos('uv_receitas', rr);
+    despesas  = filtrarExcluidos('uv_despesas', rd);
+    clinicas  = filtrarExcluidos('uv_clinicas', rc);
     save();
     populateClinicaSelects();
-    updateDashboard();
+    
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
     setSyncStatus('ok');
   } catch(e) { setSyncStatus('offline'); }
@@ -3765,9 +4089,377 @@ load();
 document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
+
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
+initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
 initCloud();
+
+// ─── EXCLUSÃO SEGURA ──────────────────────────────────────────────────────
+// Armazena IDs excluídos para impedir que o sync os traga de volta
+function getExcluidos() {
+  try { return JSON.parse(localStorage.getItem('uv_excluidos') || '{}'); } catch(e) { return {}; }
+}
+function marcarExcluido(tabela, id) {
+  const ex = getExcluidos();
+  if (!ex[tabela]) ex[tabela] = [];
+  if (!ex[tabela].includes(id)) ex[tabela].push(id);
+  localStorage.setItem('uv_excluidos', JSON.stringify(ex));
+}
+function filtrarExcluidos(tabela, items) {
+  const ids = (getExcluidos()[tabela] || []);
+  return ids.length ? items.filter(function(i){ return !ids.includes(i.id); }) : items;
+}
+
+// Modal de confirmação reutilizável (substitui o confirm() nativo)
+function confirmarAcao(titulo, mensagem, textoBotao, callback) {
+  const modal = document.getElementById('modal-confirmar');
+  document.getElementById('mc-titulo').textContent   = titulo;
+  document.getElementById('mc-mensagem').textContent = mensagem;
+  const btnOk = document.getElementById('mc-ok');
+  btnOk.textContent = textoBotao;
+  btnOk.onclick = function() {
+    fecharConfirmar();
+    callback();
+  };
+  modal.style.display = 'flex';
+}
+function fecharConfirmar() {
+  document.getElementById('modal-confirmar').style.display = 'none';
+}
+
+// ─── REVISÃO COM IA ───────────────────────────────────────────────────────
+function salvarApiKey() {
+  const key = document.getElementById('cfg-api-key').value.trim();
+  if (!key) { toast('Cole a chave antes de salvar.'); return; }
+  localStorage.setItem('uv_api_key', key);
+  toast('Chave de API salva!');
+}
+
+function getApiKey() {
+  return localStorage.getItem('uv_api_key') || '';
+}
+
+// Mapa de fieldId → nome legível para exibir no modal
+const campoNomes = {
+  'o-bexiga':'Vesícula urinária','o-rins':'Rins','o-figado':'Fígado',
+  'o-vbiliar':'Vesícula biliar','o-baco':'Baço','o-estomago':'Estômago',
+  'o-intestino':'Alças intestinais','o-pancreas':'Pâncreas','o-adrenais':'Adrenais',
+  'o-linfo':'Linfonodos','o-utero-f':'Útero','o-prostata':'Próstata',
+  'o-testis':'Testículos','o-utero':'Útero (gestacional)','o-bcf':'BCF',
+  'o-placenta':'Placenta','o-amnio':'Líquido amniótico',
+  'f-conclusao':'Impressão diagnóstica','f-obs':'Observações'
+};
+
+let sugestoesPendentes = {};
+
+async function revisarComIA() {
+  const apiKey = getApiKey();
+  if (!apiKey) {
+    toast('Configure a chave de API no Painel → Sistema → Revisão com IA.');
+    return;
+  }
+
+  // Coleta todos os textos preenchidos
+  const campos = {};
+  Object.keys(campoNomes).forEach(function(id) {
+    const el = document.getElementById(id);
+    if (el && el.value && el.value.trim().length > 10) {
+      campos[id] = el.value.trim();
+    }
+  });
+
+  if (!Object.keys(campos).length) {
+    toast('Preencha os achados antes de revisar.');
+    return;
+  }
+
+  // Abre modal com loading
+  sugestoesPendentes = {};
+  document.getElementById('modal-revisao').style.display = 'block';
+  document.getElementById('revisao-loading').style.display = 'block';
+  document.getElementById('revisao-lista').style.display = 'none';
+  document.getElementById('revisao-vazio').style.display = 'none';
+  document.getElementById('revisao-footer').style.display = 'none';
+  document.getElementById('revisao-subtitulo').textContent = 'Verificando textos do laudo…';
+
+  // Monta lista legível para o prompt
+  const linhas = Object.keys(campos).map(function(id) {
+    return '"' + id + '": ' + JSON.stringify(campos[id]);
+  }).join(',\n');
+
+  const prompt = 'Você é um revisor de laudos ultrassonográficos veterinários em português do Brasil.\n'
+    + 'Corrija APENAS erros de digitação, ortografia e concordância gramatical nos textos abaixo.\n'
+    + 'NÃO altere terminologia técnica veterinária (ex: ecogenicidade, hipoecoico, anecogênico, etc).\n'
+    + 'NÃO mude o conteúdo, significado ou estrutura das frases.\n'
+    + 'Retorne SOMENTE um objeto JSON com os campos que precisam de correção.\n'
+    + 'Se um campo não tem erros, omita-o do JSON.\n'
+    + 'Se não há nenhum erro, retorne: {}\n\n'
+    + 'Campos para revisar:\n{\n' + linhas + '\n}';
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5',
+        max_tokens: 4096,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!resp.ok) {
+      const err = await resp.json().catch(function(){ return {}; });
+      throw new Error((err.error && err.error.message) || 'Erro ' + resp.status);
+    }
+
+    const data = await resp.json();
+    const texto = data.content && data.content[0] && data.content[0].text || '{}';
+
+    // Extrai JSON da resposta (mesmo se vier com texto extra)
+    const match = texto.match(/\{[\s\S]*\}/);
+    const correcoes = match ? JSON.parse(match[0]) : {};
+
+    document.getElementById('revisao-loading').style.display = 'none';
+    document.getElementById('revisao-footer').style.display = 'flex';
+
+    const ids = Object.keys(correcoes).filter(function(id){ return campos[id] && correcoes[id] !== campos[id]; });
+
+    if (!ids.length) {
+      document.getElementById('revisao-vazio').style.display = 'block';
+      document.getElementById('revisao-subtitulo').textContent = 'Nenhum erro encontrado ✅';
+      document.getElementById('btn-aceitar-todas').style.display = 'none';
+      return;
+    }
+
+    document.getElementById('revisao-subtitulo').textContent = ids.length + ' sugestão(ões) encontrada(s)';
+    sugestoesPendentes = {};
+    ids.forEach(function(id){ sugestoesPendentes[id] = correcoes[id]; });
+
+    const lista = document.getElementById('revisao-lista');
+    lista.style.display = 'flex';
+    lista.innerHTML = ids.map(function(id) {
+      const nome = campoNomes[id] || id;
+      const original = campos[id];
+      const corrigido = correcoes[id];
+      return '<div id="sug-' + id + '" style="border:1px solid var(--border);border-radius:8px;overflow:hidden">'
+        + '<div style="padding:8px 12px;background:var(--surface2);font-size:12px;font-weight:700;color:var(--teal)">' + nome + '</div>'
+        + '<div style="padding:10px 12px;display:grid;grid-template-columns:1fr 1fr;gap:12px">'
+          + '<div>'
+            + '<div style="font-size:10px;font-weight:700;color:var(--text3);margin-bottom:4px;text-transform:uppercase">Original</div>'
+            + '<div style="font-size:12px;color:var(--text2);line-height:1.5;white-space:pre-wrap">' + original + '</div>'
+          + '</div>'
+          + '<div style="border-left:2px solid var(--teal-bg);padding-left:12px">'
+            + '<div style="font-size:10px;font-weight:700;color:var(--teal);margin-bottom:4px;text-transform:uppercase">Sugestão</div>'
+            + '<div style="font-size:12px;color:var(--text);line-height:1.5;white-space:pre-wrap">' + corrigido + '</div>'
+          + '</div>'
+        + '</div>'
+        + '<div style="padding:8px 12px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end">'
+          + '<button class="btn btn-sm" onclick="ignorarSugestao(\'' + id + '\')" style="color:var(--red)">✗ Ignorar</button>'
+          + '<button class="btn btn-sm btn-primary" onclick="aceitarSugestao(\'' + id + '\')">✓ Aceitar</button>'
+        + '</div>'
+      + '</div>';
+    }).join('');
+
+  } catch(e) {
+    document.getElementById('revisao-loading').style.display = 'none';
+    document.getElementById('revisao-footer').style.display = 'flex';
+    document.getElementById('revisao-lista').style.display = 'block';
+    document.getElementById('revisao-lista').innerHTML = '<div style="color:var(--red);padding:16px;background:#fff0f0;border-radius:8px">Erro ao conectar com a IA: ' + e.message + '</div>';
+    document.getElementById('btn-aceitar-todas').style.display = 'none';
+  }
+}
+
+function aceitarSugestao(id) {
+  const el = document.getElementById(id);
+  if (el && sugestoesPendentes[id]) {
+    el.value = sugestoesPendentes[id];
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
+  }
+  delete sugestoesPendentes[id];
+  const sug = document.getElementById('sug-' + id);
+  if (sug) {
+    sug.style.opacity = '.4';
+    sug.style.pointerEvents = 'none';
+    sug.querySelector('.btn-primary').textContent = '✓ Aceito';
+  }
+}
+
+function ignorarSugestao(id) {
+  delete sugestoesPendentes[id];
+  const sug = document.getElementById('sug-' + id);
+  if (sug) {
+    sug.style.opacity = '.3';
+    sug.style.pointerEvents = 'none';
+  }
+}
+
+function aceitarTodasSugestoes() {
+  Object.keys(sugestoesPendentes).forEach(aceitarSugestao);
+  toast('Todas as sugestões aceitas!');
+}
+
+function fecharRevisao() {
+  document.getElementById('modal-revisao').style.display = 'none';
+  sugestoesPendentes = {};
+}
+
+// Carrega api key no painel quando abrir
+const _origStpc = stpc;
+stpc = function(name) {
+  _origStpc(name);
+  if (name === 'pc-sistema') {
+    const k = getApiKey();
+    const el = document.getElementById('cfg-api-key');
+    if (el && k) el.value = k;
+  }
+};
+
+// ─── PAINEL LATERAL DE IMAGENS ────────────────────────────────────────────
+let fotoPanelOpen = false;
+
+function toggleFotoPanel() {
+  fotoPanelOpen = !fotoPanelOpen;
+  const panel = document.getElementById('foto-panel-lateral');
+  const btn   = document.getElementById('foto-panel-btn');
+  const largura = Math.max(300, Math.round(window.innerWidth * 0.30));
+  panel.style.width = fotoPanelOpen ? largura + 'px' : '0';
+  if (btn) btn.style.display = fotoPanelOpen ? 'none' : (fotosTmp.length ? 'block' : 'none');
+  if (fotoPanelOpen) renderFotoPanelLateral();
+}
+
+function renderFotoPanelLateral() {
+  const el = document.getElementById('foto-panel-imgs');
+  if (!el) return;
+  const fotos = fotosTmp.length ? fotosTmp
+    : (viewId ? (laudos.find(function(l){ return l.id===viewId; })?.fotos || []) : []);
+  if (!fotos.length) {
+    el.innerHTML = '<div style="padding:20px 12px;text-align:center;color:var(--text3);font-size:12px;line-height:1.5">Nenhuma imagem carregada.<br>Use o campo de fotos no formulário.</div>';
+    return;
+  }
+  el.innerHTML = fotos.map(function(f, i) {
+    return '<div style="border-radius:6px;overflow:hidden;border:1px solid var(--border);background:#000;cursor:pointer" onclick="abrirFotoZoom(\'' + f.src + '\')">'
+      + '<img src="' + f.src + '" style="width:100%;max-height:50vh;object-fit:contain;display:block">'
+      + (f.name ? '<div style="padding:3px 6px;font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff">' + f.name + '</div>' : '')
+      + '</div>';
+  }).join('');
+}
+
+function abrirFotoZoom(src) {
+  const ov = document.createElement('div');
+  ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;display:flex;align-items:center;justify-content:center;cursor:zoom-out';
+  ov.innerHTML = '<img src="' + src + '" style="max-width:94vw;max-height:94vh;object-fit:contain;border-radius:4px">';
+  ov.onclick = function(){ document.body.removeChild(ov); };
+  document.body.appendChild(ov);
+}
+
+function atualizarBotaoFotoPanel() {
+  const btn = document.getElementById('foto-panel-btn');
+  if (!btn) return;
+  btn.style.display = (fotosTmp.length > 0 && !fotoPanelOpen) ? 'block' : 'none';
+  if (fotoPanelOpen) renderFotoPanelLateral();
+}
 </script>
+
+<!-- ═══ MODAL CONFIRMAÇÃO ═══════════════════════════════════════════════════ -->
+<div id="modal-confirmar" style="display:none;position:fixed;inset:0;z-index:600;background:rgba(0,0,0,.45);align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;width:380px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.22)">
+    <div style="padding:18px 22px 14px">
+      <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px" id="mc-titulo">Confirmar</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5" id="mc-mensagem"></div>
+    </div>
+    <div style="padding:12px 22px 18px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" onclick="fecharConfirmar()">Cancelar</button>
+      <button class="btn btn-danger" id="mc-ok">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL REVISÃO COM IA ════════════════════════════════════════════════ -->
+<div id="modal-revisao" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.5);overflow-y:auto">
+  <div style="background:#fff;border-radius:10px;max-width:720px;margin:40px auto;padding:0;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,.2)">
+    <div style="padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;background:var(--teal);color:#fff">
+      <div>
+        <div style="font-size:16px;font-weight:700">🤖 Revisão com IA</div>
+        <div style="font-size:12px;opacity:.85" id="revisao-subtitulo">Verificando textos do laudo…</div>
+      </div>
+      <button onclick="fecharRevisao()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <div id="revisao-body" style="padding:20px 24px;min-height:120px">
+      <div id="revisao-loading" style="text-align:center;padding:32px;color:var(--text2)">
+        <div style="font-size:28px;margin-bottom:8px">⏳</div>
+        <div>Analisando textos com IA…</div>
+      </div>
+      <div id="revisao-lista" style="display:none;display:flex;flex-direction:column;gap:14px"></div>
+      <div id="revisao-vazio" style="display:none;text-align:center;padding:32px;color:var(--text2)">
+        <div style="font-size:28px;margin-bottom:8px">✅</div>
+        <div>Nenhum erro encontrado. Laudo pronto para salvar!</div>
+      </div>
+    </div>
+    <div id="revisao-footer" style="display:none;padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--surface2)">
+      <button class="btn" onclick="fecharRevisao()">Fechar</button>
+      <button class="btn btn-primary" onclick="aceitarTodasSugestoes()" id="btn-aceitar-todas">✅ Aceitar todas</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ PAINEL LATERAL DE IMAGENS ══════════════════════════════════════════ -->
+<div id="foto-panel-lateral" style="
+  position:fixed;right:0;top:0;bottom:0;width:0;
+  background:#fff;border-left:2px solid var(--teal);
+  overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1);
+  z-index:210;display:flex;flex-direction:column;box-shadow:-4px 0 18px rgba(0,0,0,.10);min-width:0">
+  <div style="padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <span style="font-size:13px;font-weight:700;color:var(--teal)">📷 Imagens do exame</span>
+    <button onclick="toggleFotoPanel()" title="Fechar" style="background:none;border:none;font-size:18px;cursor:pointer;color:var(--text2);line-height:1;padding:2px 4px">✕</button>
+  </div>
+  <div id="foto-panel-imgs" style="overflow-y:auto;overflow-x:hidden;padding:8px;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0"></div>
+</div>
+
+<!-- botão flutuante que aparece quando há fotos -->
+<button id="foto-panel-btn" onclick="toggleFotoPanel()" title="Ver imagens do exame"
+  style="display:none;position:fixed;right:0;top:50%;transform:translateY(-50%);
+    background:var(--teal);color:#fff;border:none;cursor:pointer;
+    writing-mode:vertical-rl;text-orientation:mixed;
+    padding:14px 7px;font-size:12px;font-weight:600;letter-spacing:.06em;
+    border-radius:6px 0 0 6px;box-shadow:-2px 0 10px rgba(0,0,0,.18);
+    z-index:209;transition:background .15s">📷 Imagens</button>
 </body>
 </html>
