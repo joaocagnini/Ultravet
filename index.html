@@ -2782,56 +2782,6 @@ function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); 
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
-
-// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
-function toggleSidebar() {
-  const sb = document.querySelector('.sidebar');
-  const main = document.querySelector('.main');
-  const collapsed = sb.classList.toggle('sb-col');
-  if (main) main.classList.toggle('sb-col', collapsed);
-  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
-}
-function initSidebar() {
-  const isMobile = window.innerWidth <= 900;
-  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
-  if (isMobile || savedCol) {
-    const sb   = document.querySelector('.sidebar');
-    const main = document.querySelector('.main');
-    if (sb)   sb.classList.add('sb-col');
-    if (main) main.classList.add('sb-col');
-  }
-}
-window.addEventListener('resize', function() {
-  const sb   = document.querySelector('.sidebar');
-  const main = document.querySelector('.main');
-  if (!sb || !main) return;
-  if (window.innerWidth <= 900) {
-    sb.classList.add('sb-col');
-    main.classList.add('sb-col');
-  } else if (localStorage.getItem('uv_sb_col') !== '1') {
-    sb.classList.remove('sb-col');
-    main.classList.remove('sb-col');
-  }
-});
-
-updateDashboard();
-initSidebar();
-document.getElementById('sb-logo').src = LOGO_B64;
-    setSyncStatus('ok');
-  } catch(e) { setSyncStatus('offline'); }
-  // agenda em bloco separado pois a tabela pode ainda não existir
-  try {
-    const ra = await sbFetch('uv_agenda');
-    agenda = ra;
-    localStorage.setItem('uv_agenda', JSON.stringify(agenda));
-  } catch(e) {}
-}
-
-window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
-setInterval(() => { if (document.getElementById('sync-dot')) initCloud(); }, 60000);
-
-
-// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
 function toggleSidebar() {
   const sb = document.querySelector('.sidebar');
   const main = document.querySelector('.main');
