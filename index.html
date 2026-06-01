@@ -102,7 +102,7 @@
     #modal-revisao > div { margin: 16px 8px; }
 
     /* Painel lateral de fotos: largura maior no mobile */
-    #foto-panel-lateral { width: 85vw !important; }
+    #foto-panel-lateral button[onclick="toggleFotoPanel()"] { min-width: 44px; min-height: 44px; font-size: 22px; padding: 8px; }
 
     /* Subtabs: scroll horizontal */
     .subtabs { flex-wrap: wrap; gap: 6px; }
@@ -4365,10 +4365,13 @@ let fotoPanelOpen = false;
 
 function toggleFotoPanel() {
   fotoPanelOpen = !fotoPanelOpen;
-  const panel = document.getElementById('foto-panel-lateral');
-  const btn   = document.getElementById('foto-panel-btn');
-  const largura = Math.max(300, Math.round(window.innerWidth * 0.30));
+  const panel    = document.getElementById('foto-panel-lateral');
+  const btn      = document.getElementById('foto-panel-btn');
+  const backdrop = document.getElementById('foto-panel-backdrop');
+  const isMobile = window.innerWidth <= 900;
+  const largura  = isMobile ? Math.round(window.innerWidth * 0.85) : Math.max(300, Math.round(window.innerWidth * 0.30));
   panel.style.width = fotoPanelOpen ? largura + 'px' : '0';
+  if (backdrop) backdrop.style.display = fotoPanelOpen && isMobile ? 'block' : 'none';
   if (btn) btn.style.display = fotoPanelOpen ? 'none' : (fotosTmp.length ? 'block' : 'none');
   if (fotoPanelOpen) renderFotoPanelLateral();
 }
@@ -4449,7 +4452,9 @@ function atualizarBotaoFotoPanel() {
 </div>
 
 <!-- ═══ PAINEL LATERAL DE IMAGENS ══════════════════════════════════════════ -->
-<div id="foto-panel-lateral" style="
+<div <div id="foto-panel-backdrop" onclick="toggleFotoPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:209"></div>
+
+id="foto-panel-lateral" style="
   position:fixed;right:0;top:0;bottom:0;width:0;
   background:#fff;border-left:2px solid var(--teal);
   overflow:hidden;transition:width .22s cubic-bezier(.4,0,.2,1);
