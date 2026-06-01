@@ -4038,7 +4038,7 @@ function renderFotoPanelLateral() {
   }
   el.innerHTML = fotos.map(function(f, i) {
     return '<div style="border-radius:6px;overflow:hidden;border:1px solid var(--border);background:#000;cursor:pointer" onclick="abrirFotoZoom(\'' + f.src + '\')">'
-      + '<img src="' + f.src + '" style="width:100%;height:auto;display:block">'
+      + '<img src="' + f.src + '" style="width:100%;max-height:50vh;object-fit:contain;display:block">'
       + (f.name ? '<div style="padding:3px 6px;font-size:10px;color:var(--text3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;background:#fff">' + f.name + '</div>' : '')
       + '</div>';
   }).join('');
