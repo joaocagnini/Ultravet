@@ -50,8 +50,9 @@
   .sidebar.sb-col .nav-section { opacity: 0; height: 0; padding: 0; margin: 0; overflow: hidden; }
   .sidebar.sb-col .nav-item { justify-content: center; padding: 10px 0; gap: 0; }
   .sidebar.sb-col .sb-footer-text { display: none; }
-  .sidebar.sb-col .sidebar-logo-vr { width: 36px; height: 36px; font-size: 13px; }
-  .sidebar.sb-col .sb-toggle svg { transform: rotate(180deg); }
+  .sidebar.sb-col .sb-logo-full { display: none !important; }
+  .sidebar.sb-col .sb-logo-col { display: flex !important; }
+  .sidebar:not(.sb-col) .sb-logo-col { display: none !important; }
   .sidebar-logo { padding: 10px 10px 8px; border-bottom: 1px solid rgba(255,255,255,.1); }
   .sidebar-logo .logo-mark { font-size: 18px; font-weight: 600; color: var(--text); letter-spacing: -.3px; }
   .sidebar-logo .logo-sub { font-size: 11px; color: var(--text3); margin-top: 2px; }
@@ -239,8 +240,24 @@
 
   <!-- SIDEBAR -->
   <aside class="sidebar">
-    <div class="sidebar-logo" style="display:flex;align-items:center;justify-content:space-between;padding:10px 10px 8px;border-bottom:1px solid rgba(255,255,255,.1)"><div class="sidebar-logo-vr" onclick="goPage('dashboard')" style="cursor:pointer;background:#c0392b;border-radius:8px;width:44px;height:44px;display:flex;align-items:center;justify-content:center;flex-shrink:0" title="Início"><span style="font-size:16px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1">VR</span></div><button class="sb-toggle" onclick="toggleSidebar()" title="Retrair menu" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);padding:4px;display:flex;align-items:center;transition:color .15s" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;transition:transform .22s"><polyline points="15 18 9 12 15 6"/></svg></button></div>
-    <img id="sb-logo" style="display:none" alt="VR">
+    <div class="sidebar-logo" style="border-bottom:1px solid rgba(255,255,255,.1)">
+      <!-- Logo expandida: imagem original -->
+      <div class="sb-logo-full" onclick="goPage('dashboard')" style="cursor:pointer;padding:10px 10px 8px;display:flex;align-items:center;justify-content:space-between">
+        <div style="background:#fff;border-radius:8px;padding:4px;overflow:hidden;flex:1;margin-right:8px">
+          <img id="sb-logo" style="width:100%;height:96px;object-fit:cover;object-position:center top;display:block" alt="VetRoutine">
+        </div>
+        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Retrair menu" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);padding:4px;display:flex;align-items:center;flex-shrink:0" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;transition:transform .22s"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+      <!-- Logo colapsada: só VR + botão expandir -->
+      <div class="sb-logo-col" onclick="toggleSidebar()" style="cursor:pointer;padding:10px 0;display:none;flex-direction:column;align-items:center;gap:6px" title="Expandir menu">
+        <div class="sidebar-logo-vr" style="background:#c0392b;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
+          <span style="font-size:13px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1">VR</span>
+        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" style="width:14px;height:14px;transform:rotate(180deg)"><polyline points="15 18 9 12 15 6"/></svg>
+      </div>
+    </div>
     <nav class="sidebar-nav">
       <div class="nav-section">Principal</div>
       <a class="nav-item active" onclick="goPage('dashboard')" href="#" title="Dashboard">
