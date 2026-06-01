@@ -2180,7 +2180,7 @@ function imprimirLaudo() {
   const papel   = lc.papel   || 'A4';
   const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
-  toast('Para salvar como PDF: selecione "Salvar como PDF" na janela de impressão');
+  toast('Dica: desmarque "Cabeçalhos e rodapés" e selecione "Salvar como PDF" na janela de impressão');
   const win = window.open('', '_blank');
   win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + nomeArquivoLaudo(l) + '</title><style>'
     + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
