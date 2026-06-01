@@ -1,6 +1,7 @@
-# UltraVet — Prompt de Inicialização para Claude Code
+# VetRoutine — Prompt de Inicialização para Claude Code
 
-> Cole este prompt na primeira mensagem de uma sessão do Claude Code para retomar o projeto exatamente do ponto atual (v1.9).
+> Cole este prompt na primeira mensagem de uma sessão do Claude Code para retomar o projeto exatamente do ponto atual (v1.10+).
+> Última atualização: 02/06/2026
 
 ---
 
