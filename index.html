@@ -1762,14 +1762,17 @@ const orgDefaults = {
 const orgNomesAbdom = {bexiga:'Vesícula urinária',rins:'Rins',figado:'Fígado',vbiliar:'Vesícula biliar',baco:'Baço',estomago:'Estômago',intestino:'Alças intestinais',pancreas:'Pâncreas',adrenais:'Adrenais',linfo:'Linfonodos',utero_f:'Útero',prostata:'Próstata',testis:'Testículos'};
 const orgNomesGest = {utero:'Útero',fetos:'Número de fetos',bcf:'Batimentos (BCF)',placenta:'Placenta',amnio:'Líquido amniótico',ig:'Idade gestacional'};
 
-function toggleGest() {
+function toggleGest(isEditing) {
   const t = document.getElementById('f-tipo').value;
   document.getElementById('card-abdominal').style.display = t === 'Gestacional' ? 'none' : 'block';
   document.getElementById('card-gestacional').style.display = t === 'Gestacional' ? 'block' : 'none';
-  organSelecoes = {}; // reseta impressões ao trocar tipo de exame
-  document.getElementById('f-conclusao').value = t === 'Gestacional'
-    ? 'Prenhes positiva com fetos de idade entre ___ a ___ dias de gestação;\nFaltam entre ___ a ___ dias para o parto;'
-    : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  // ao editar laudo existente, não apaga impressão/seleções salvas
+  if (!isEditing) {
+    organSelecoes = {};
+    document.getElementById('f-conclusao').value = t === 'Gestacional'
+      ? 'Prenhes positiva com fetos de idade entre ___ a ___ dias de gestação;\nFaltam entre ___ a ___ dias para o parto;'
+      : '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.\n- Sem evidências de alterações estruturais significativas nos órgãos avaliados.';
+  }
 }
 
 function filtrarOrgaosPorSexo() {
@@ -1977,13 +1980,14 @@ function editLaudo(id) {
   setCurrency('f-valor-rec', l.valorRec || 0);
   document.getElementById('f-forma').value = l.forma || 'Pix';
   document.getElementById('f-fpago').value = l.fpago || 'Pago';
-  document.getElementById('f-conclusao').value = l.conclusao || '';
-  document.getElementById('f-obs').value = l.obs || '';
-  toggleGest();
+  toggleGest(true); // apenas alterna visibilidade, sem apagar dados salvos
   populateClinicaSelects();
   if (l.orgAbdom) Object.keys(l.orgAbdom).forEach(k => { const ei = document.getElementById(orgElId(k)); if(ei) ei.value = l.orgAbdom[k].texto||''; });
   if (l.orgGest) Object.keys(l.orgGest).forEach(k => { const ei = document.getElementById(orgElId(k)); if(ei) ei.value = l.orgGest[k].texto||''; });
-  filtrarOrgaosPorSexo(); // após popular órgãos: zera o órgão do sexo oposto
+  filtrarOrgaosPorSexo();
+  // carrega impressão e obs APÓS todos os órgãos e toggles — garante que não sejam sobrescritos
+  document.getElementById('f-conclusao').value = l.conclusao || '';
+  document.getElementById('f-obs').value = l.obs || ''; // após popular órgãos: zera o órgão do sexo oposto
   fotosTmp = (l.fotos || []).slice();
   renderFotosGrid();
   goPage('novo-laudo');
