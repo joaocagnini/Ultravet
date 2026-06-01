@@ -680,8 +680,7 @@
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn" onclick="goPage('laudos')">← Voltar</button>
-            <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir</button>
-            <button class="btn btn-primary" onclick="baixarLaudoPDF()">📥 Baixar PDF</button>
+            <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir / Salvar PDF</button>
           </div>
         </div>
         <div id="viz-area"></div>
@@ -2181,8 +2180,20 @@ function imprimirLaudo() {
   const papel   = lc.papel   || 'A4';
   const fonte   = lc.fonte   || 'Arial, sans-serif';
   const body = buildLaudoHTML(l);
+  toast('Para salvar como PDF: selecione "Salvar como PDF" na janela de impressão');
   const win = window.open('', '_blank');
-  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + nomeArquivoLaudo(l) + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}tr{page-break-inside:avoid;break-inside:avoid}img{page-break-inside:avoid;break-inside:avoid;max-width:100%}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + nomeArquivoLaudo(l) + '</title><style>'
+    + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    + 'body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}'
+    + 'table,td,th,span,div{font-family:inherit}'
+    + 'tr{page-break-inside:avoid;break-inside:avoid}'
+    + 'img{page-break-inside:avoid;break-inside:avoid;max-width:100%}'
+    + 'p,div,td,li{orphans:4;widows:4}'
+    + '.organ-row,section{page-break-inside:avoid;break-inside:avoid}'
+    + '@page{size:' + papel + ';margin:0}'
+    + '@media print{body{padding:' + margens + '}}'
+    + '</style></head><body>' + body
+    + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
 }
 
