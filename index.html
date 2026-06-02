@@ -62,9 +62,7 @@
   .nav-item.active { background: rgba(0,168,150,.2); color: #00c9a7; }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
   @media (max-width: 900px) {
-    /* Sidebar: sempre colapsada no mobile/tablet - sem botao de expandir */
-    .sb-toggle { display: none !important; }
-    .sb-logo-col > div:last-child { display: none !important; }
+    /* Sidebar: sempre colapsada no mobile/tablet */
     .sidebar { width: 60px; }
     .sidebar .nav-label { display: none; }
     .sidebar .nav-section { opacity:0;height:0;padding:0;overflow:hidden; }
@@ -104,7 +102,7 @@
     #modal-revisao > div { margin: 16px 8px; }
 
     /* Painel lateral de fotos: largura maior no mobile */
-    #foto-panel-lateral button[onclick="toggleFotoPanel()"] { min-width: 44px; min-height: 44px; font-size: 22px; padding: 8px; }
+    #foto-panel-lateral { width: 85vw !important; }
 
     /* Subtabs: scroll horizontal */
     .subtabs { flex-wrap: wrap; gap: 6px; }
@@ -297,11 +295,8 @@
         <div style="background:#fff;border-radius:8px;padding:4px;overflow:hidden;flex:1;margin-right:8px">
           <img id="sb-logo" style="width:100%;height:96px;object-fit:cover;object-position:center top;display:block" alt="VetRoutine">
         </div>
-        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Recolher/expandir menu" style="background:rgba(255,255,255,.08);border:none;cursor:pointer;color:rgba(255,255,255,.7);padding:6px;display:flex;align-items:center;border-radius:6px;flex-shrink:0;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.18)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.7)'">
-          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px">
-            <rect x="1" y="1" width="16" height="16" rx="2"/>
-            <line x1="6" y1="1" x2="6" y2="17"/>
-          </svg>
+        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Retrair menu" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);padding:4px;display:flex;align-items:center;flex-shrink:0" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;transition:transform .22s"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
       </div>
       <!-- Logo colapsada: só VR + botão expandir -->
@@ -309,12 +304,7 @@
         <div class="sidebar-logo-vr" style="background:#0f7a5a;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
           <span style="font-size:13px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1">VR</span>
         </div>
-        <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:5px;display:flex;align-items:center;justify-content:center">
-          <svg viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" style="width:16px;height:16px">
-            <rect x="1" y="1" width="16" height="16" rx="2"/>
-            <line x1="6" y1="1" x2="6" y2="17"/>
-          </svg>
-        </div>
+        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" style="width:14px;height:14px;transform:rotate(180deg)"><polyline points="15 18 9 12 15 6"/></svg>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -889,21 +879,7 @@
               <div class="form-field"><label>Telefone</label><input id="cl-telefone" placeholder="(XX) XXXXX-XXXX"></div>
               <div class="form-field"><label>E-mail</label><input id="cl-email" placeholder="email@clinica.com.br" type="email"></div>
               <div class="form-field"><label>Condição de pagamento</label><select id="cl-cond"><option>À vista</option><option>7 dias</option><option>15 dias</option><option>30 dias</option><option>Personalizado</option></select></div>
-              <div class="form-field">
-                <label>Origem / Parceria</label>
-                <select id="cl-origem" onchange="preencherDescontoClinica()">
-                  <option value="">— Selecione —</option>
-                  <option value="Bruna">Bruna</option>
-                  <option value="Hospital 4 Patas">Hospital 4 Patas</option>
-                  <option value="Meus Clientes">Meus Clientes (particular)</option>
-                  <option value="Outro">Outro</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Desconto da clínica (%)</label>
-                <input type="number" id="cl-desc" placeholder="0" min="0" max="100" step="0.1">
-                <div style="font-size:11px;color:var(--text3);margin-top:3px">Valor padrão da tabela, editável por clínica</div>
-              </div>
+              <div class="form-field"><label>Desconto (%)</label><input type="number" id="cl-desc" placeholder="0" min="0" max="100"></div>
               <div class="form-field" style="grid-column:span 2"><label>Endereço</label><input id="cl-endereco" placeholder="Rua, número — Bairro, Cidade — Estado"></div>
               <div class="form-field"><label>Observação</label><input id="cl-obs" placeholder="Opcional"></div>
             </div>
@@ -1230,6 +1206,7 @@
 
     </div><!-- /content -->
 
+
       <!-- ═══ MÓDULO CONSULTAS VETERINÁRIAS ═══════════════════════════════════ -->
 
       <!-- DASHBOARD CONSULTAS -->
@@ -1398,7 +1375,6 @@
         <div id="rx-list"><div class="empty-state"><p>Nenhuma receita emitida.</p></div></div>
       </div>
       <!-- ═══ FIM MÓDULO CONSULTAS ══════════════════════════════════════════════ -->
-
   </main>
 </div>
 
@@ -1887,9 +1863,8 @@ function save() {
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
-  localStorage.setItem('uv_pacientes', JSON.stringify(pacientes));
-  localStorage.setItem('uv_consultas_vet', JSON.stringify(consultas_vet));
-  localSaveTs = Date.now();
+  localStorage.setItem('uv_pacientes', JSON.stringify(typeof pacientes !== 'undefined' ? pacientes : []));
+  localStorage.setItem('uv_consultas_vet', JSON.stringify(typeof consultas_vet !== 'undefined' ? consultas_vet : []));
   syncCloud();
 }
 function load() {
@@ -1971,14 +1946,6 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') 
-
-  if (name === 'dashboard') updateDashboard();
-  if (name === 'laudos') renderLaudos();
-  if (name === 'agenda') { renderAgenda(); }
-  if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
-  if (name === 'relatorios') strp(curRpSec);
-  if (name === 'painel') abrirPainel();
-}
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MÓDULO CONSULTAS VETERINÁRIAS — isolado do módulo de laudos
@@ -2852,6 +2819,7 @@ function salvarLaudo() {
     }
     toast('Laudo salvo! Receita lançada automaticamente.');
   }
+  localSaveTs = Date.now();
   save();
 }
 
@@ -2952,10 +2920,10 @@ function buildLaudoHTML(l) {
   const orgs   = isGest ? l.orgGest   : l.orgAbdom;
   const nomes  = isGest ? orgNomesGest : orgNomesAbdom;
   const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
-    return '<div style="display:grid;grid-template-columns:155px 1fr;border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
-      + '<div style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</div>'
-      + '<div style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</div>'
-      + '</div>';
+    return '<tr style="border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
+      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</td>'
+      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</td>'
+      + '</tr>';
   }).join('') : '';
   // cabeçalho (3 estilos)
   const logoSrc = getLogo();
@@ -3013,7 +2981,7 @@ function buildLaudoHTML(l) {
     /* ACHADOS */
     + (secAchados ? '<div style="padding:10px 28px 14px">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
-      + '<div style="width:100%;font-family:' + fonte + '">' + orgRows + '</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">' + orgRows + '</table>'
     + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
@@ -3546,6 +3514,37 @@ function addReceita() {
 function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -3556,6 +3555,37 @@ function delRec(id) {
   receitas = receitas.filter(r => r.id!==id);
   cloudDelete('uv_receitas', id);
   save(); renderReceitas(); updateFinOverview(); 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -3634,25 +3664,9 @@ function renderReceber() {
 }
 
 // ─── CLÍNICAS ─────────────────────────────────────────────────────────────────
-// Desconto padrão por origem (baseado na tabelaRemuneracao)
-const descontosPadrao = {
-  'Bruna':           30,   // (210-147)/210 = 30%
-  'Hospital 4 Patas': 55,  // (247-110)/247 ≈ 55%
-  'Meus Clientes':   0,
-  'Outro':           0,
-};
-
-function preencherDescontoClinica() {
-  const origem = document.getElementById('cl-origem').value;
-  const descEl = document.getElementById('cl-desc');
-  if (origem && descontosPadrao[origem] !== undefined && !descEl.value) {
-    descEl.value = descontosPadrao[origem];
-  }
-}
-
 function addClinica() {
   if (!document.getElementById('cl-nome').value) { alert('Informe o nome da clínica.'); return; }
-  const dados = {nome:document.getElementById('cl-nome').value, sigla:document.getElementById('cl-sigla').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:parseFloat(document.getElementById('cl-desc').value)||0, origemClinica:document.getElementById('cl-origem').value, endereco:document.getElementById('cl-endereco').value, obs:document.getElementById('cl-obs').value};
+  const dados = {nome:document.getElementById('cl-nome').value, sigla:document.getElementById('cl-sigla').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, endereco:document.getElementById('cl-endereco').value, obs:document.getElementById('cl-obs').value};
   if (editClId) {
     // modo edição: atualiza o registro existente
     const idx = clinicas.findIndex(c => c.id === editClId);
@@ -3661,7 +3675,7 @@ function addClinica() {
     toast('Clínica atualizada!');
   } else {
     clinicas.push(Object.assign({id:Date.now()}, dados));
-    ['cl-nome','cl-sigla','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value=''); document.getElementById('cl-origem').value='';
+    ['cl-nome','cl-sigla','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value='');
     toast('Clínica cadastrada!');
   }
   save(); renderClinicas(); populateClinicaSelects();
@@ -3678,8 +3692,6 @@ function editClinica(id) {
   document.getElementById('cl-email').value       = c.email       || '';
   document.getElementById('cl-cond').value        = c.cond        || 'À vista';
   document.getElementById('cl-desc').value        = c.desc        || '';
-  document.getElementById('cl-origem').value = c.origemClinica || '';
-  document.getElementById('cl-origem').value      = c.origemClinica || '';
   document.getElementById('cl-endereco').value    = c.endereco    || '';
   document.getElementById('cl-obs').value         = c.obs         || '';
   document.getElementById('cl-btn-salvar').textContent = '💾 Salvar alterações';
@@ -3691,7 +3703,7 @@ function editClinica(id) {
 
 function cancelEditCl() {
   editClId = null;
-  ['cl-nome','cl-sigla','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value=''); document.getElementById('cl-origem').value='';
+  ['cl-nome','cl-sigla','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value='');
   document.getElementById('cl-btn-salvar').textContent = '+ Cadastrar clínica';
   document.getElementById('cl-btn-cancelar').style.display = 'none';
 }
@@ -3832,6 +3844,37 @@ function importarBackup(input) {
       save();
       populateClinicaSelects();
       
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -4767,6 +4810,37 @@ async function initCloud() {
     save();
     populateClinicaSelects();
     
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -4788,6 +4862,37 @@ load();
 document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
+
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
 
 updateDashboard();
 initSidebar();
@@ -5025,13 +5130,10 @@ let fotoPanelOpen = false;
 
 function toggleFotoPanel() {
   fotoPanelOpen = !fotoPanelOpen;
-  const panel    = document.getElementById('foto-panel-lateral');
-  const btn      = document.getElementById('foto-panel-btn');
-  const backdrop = document.getElementById('foto-panel-backdrop');
-  const isMobile = window.innerWidth <= 900;
-  const largura  = isMobile ? Math.round(window.innerWidth * 0.85) : Math.max(300, Math.round(window.innerWidth * 0.30));
+  const panel = document.getElementById('foto-panel-lateral');
+  const btn   = document.getElementById('foto-panel-btn');
+  const largura = Math.max(300, Math.round(window.innerWidth * 0.30));
   panel.style.width = fotoPanelOpen ? largura + 'px' : '0';
-  if (backdrop) backdrop.style.display = fotoPanelOpen && isMobile ? 'block' : 'none';
   if (btn) btn.style.display = fotoPanelOpen ? 'none' : (fotosTmp.length ? 'block' : 'none');
   if (fotoPanelOpen) renderFotoPanelLateral();
 }
@@ -5112,8 +5214,6 @@ function atualizarBotaoFotoPanel() {
 </div>
 
 <!-- ═══ PAINEL LATERAL DE IMAGENS ══════════════════════════════════════════ -->
-<div id="foto-panel-backdrop" onclick="toggleFotoPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:209"></div>
-
 <div id="foto-panel-lateral" style="
   position:fixed;right:0;top:0;bottom:0;width:0;
   background:#fff;border-left:2px solid var(--teal);
