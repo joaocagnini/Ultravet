@@ -1833,6 +1833,7 @@ function save() {
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
   if(typeof pacientes!=='undefined')localStorage.setItem('uv_pacientes',JSON.stringify(pacientes));
   if(typeof consultas_vet!=='undefined')localStorage.setItem('uv_consultas_vet',JSON.stringify(consultas_vet));
+  localSaveTs = Date.now();
   syncCloud();
 }
 function load() {
@@ -2785,7 +2786,6 @@ function salvarLaudo() {
     }
     toast('Laudo salvo! Receita lançada automaticamente.');
   }
-  localSaveTs = Date.now();
   save();
 }
 
