@@ -62,7 +62,9 @@
   .nav-item.active { background: rgba(0,168,150,.2); color: #00c9a7; }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
   @media (max-width: 900px) {
-    /* Sidebar: sempre colapsada no mobile/tablet */
+    /* Sidebar: sempre colapsada no mobile/tablet - sem botao de expandir */
+    .sb-toggle { display: none !important; }
+    .sb-logo-col > div:last-child { display: none !important; }
     .sidebar { width: 60px; }
     .sidebar .nav-label { display: none; }
     .sidebar .nav-section { opacity:0;height:0;padding:0;overflow:hidden; }
@@ -91,14 +93,7 @@
 
     /* Tabelas: scroll horizontal */
     .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-    .data-table { min-width: 600px; width: 100%; border-collapse: collapse; }
-  .data-table tbody tr { transition: background .1s; cursor: default; }
-  .data-table tbody tr:hover { background: var(--teal-bg); }
-  .data-table td { padding: 11px 14px; font-size: 13px; border-bottom: 1px solid var(--border); vertical-align: middle; }
-  .data-table th { padding: 10px 14px 10px; }
-  .list-page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 0; padding: 14px 0 14px; border-bottom: 1px solid var(--border); }
-  .list-page-header input.search-box { flex: 1; max-width: 380px; }
-  .list-container { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+    .data-table { min-width: 480px; }
 
     /* Actions bar: wrap */
     .actions-bar { flex-wrap: wrap; gap: 8px; }
@@ -109,7 +104,7 @@
     #modal-revisao > div { margin: 16px 8px; }
 
     /* Painel lateral de fotos: largura maior no mobile */
-    #foto-panel-lateral { width: 85vw !important; }
+    #foto-panel-lateral button[onclick="toggleFotoPanel()"] { min-width: 44px; min-height: 44px; font-size: 22px; padding: 8px; }
 
     /* Subtabs: scroll horizontal */
     .subtabs { flex-wrap: wrap; gap: 6px; }
@@ -302,8 +297,11 @@
         <div style="background:#fff;border-radius:8px;padding:4px;overflow:hidden;flex:1;margin-right:8px">
           <img id="sb-logo" style="width:100%;height:96px;object-fit:cover;object-position:center top;display:block" alt="VetRoutine">
         </div>
-        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Retrair menu" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);padding:4px;display:flex;align-items:center;flex-shrink:0" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;transition:transform .22s"><polyline points="15 18 9 12 15 6"/></svg>
+        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Recolher/expandir menu" style="background:rgba(255,255,255,.08);border:none;cursor:pointer;color:rgba(255,255,255,.7);padding:6px;display:flex;align-items:center;border-radius:6px;flex-shrink:0;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.18)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.7)'">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px">
+            <rect x="1" y="1" width="16" height="16" rx="2"/>
+            <line x1="6" y1="1" x2="6" y2="17"/>
+          </svg>
         </button>
       </div>
       <!-- Logo colapsada: só VR + botão expandir -->
@@ -311,7 +309,12 @@
         <div class="sidebar-logo-vr" style="background:#0f7a5a;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
           <span style="font-size:13px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1">VR</span>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" style="width:14px;height:14px;transform:rotate(180deg)"><polyline points="15 18 9 12 15 6"/></svg>
+        <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:5px;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" style="width:16px;height:16px">
+            <rect x="1" y="1" width="16" height="16" rx="2"/>
+            <line x1="6" y1="1" x2="6" y2="17"/>
+          </svg>
+        </div>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -348,23 +351,6 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
         <span class="nav-label">Relatórios</span>
       </a>
-      <div class="nav-section">Consultas</div>
-      <a class="nav-item" onclick="navConsulta('cv-dashboard')" href="#" title="Dashboard Consultas">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-        <span class="nav-label">Visão geral</span>
-      </a>
-      <a class="nav-item" onclick="navConsulta('pacientes')" href="#" title="Pacientes">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-        <span class="nav-label">Pacientes</span>
-      </a>
-      <a class="nav-item" onclick="navConsulta('consultas')" href="#" title="Atendimentos">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        <span class="nav-label">Atendimentos</span>
-      </a>
-      <a class="nav-item" onclick="navConsulta('receituario')" href="#" title="Receituário">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="M9 12h6M9 16h4"/></svg>
-        <span class="nav-label">Receituário</span>
-      </a>
       <div class="nav-section">Sistema</div>
       <a class="nav-item" onclick="goPage('painel')" href="#" title="Painel de controle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07M8.46 8.46a5 5 0 0 0 0 7.07"/></svg>
@@ -387,7 +373,7 @@
         <div class="topbar-title" id="topbar-title">Dashboard</div>
         <div class="topbar-sub" id="topbar-sub">Visão geral do sistema</div>
       </div>
-      <button id="btn-novo-laudo" class="btn btn-primary" onclick="novoLaudo()">
+      <button class="btn btn-primary" onclick="novoLaudo()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Novo laudo
       </button>
@@ -1229,127 +1215,6 @@
       </div>
 
     </div><!-- /content -->
-  
-      <!-- MÓDULO CONSULTAS -->
-      <div class="page" id="page-cv-dashboard">
-        <div class="metrics" style="margin-bottom:20px">
-          <div class="metric-card"><div class="metric-label">Consultas este mês</div><div class="metric-value" id="cv-mes">0</div></div>
-          <div class="metric-card"><div class="metric-label">Receita consultas</div><div class="metric-value green" id="cv-receita">R$ 0,00</div></div>
-          <div class="metric-card"><div class="metric-label">A receber</div><div class="metric-value amber" id="cv-receber">R$ 0,00</div></div>
-          <div class="metric-card"><div class="metric-label">Km este mês</div><div class="metric-value" id="cv-km">0 km</div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="card"><div class="card-header"><div class="card-title">📅 Próximos retornos</div><button class="btn btn-sm" onclick="navConsulta('consultas')">Ver todos →</button></div><div id="cv-retornos"><div class="empty-state"><p>Nenhum retorno agendado.</p></div></div></div>
-          <div class="card"><div class="card-header"><div class="card-title">🩺 Últimos atendimentos</div><button class="btn btn-sm" onclick="navConsulta('consultas')">Ver todos →</button></div><div id="cv-ultimos"><div class="empty-state"><p>Nenhum atendimento.</p></div></div></div>
-        </div>
-      </div>
-
-      <div class="page" id="page-pacientes">
-        <div class="actions-bar" style="margin-bottom:16px">
-          <input class="search-box" id="pac-busca" placeholder="🔍 Buscar por animal ou tutor..." oninput="renderPacientes()" style="flex:1;max-width:400px">
-          <button class="btn btn-primary" onclick="abrirNovoPaciente()">+ Novo paciente</button>
-        </div>
-        <div id="pac-list"><div class="empty-state"><p>Nenhum paciente cadastrado.</p></div></div>
-        <div id="pac-form-container" style="display:none">
-          <div class="card">
-            <div class="card-header"><div class="card-title" id="pac-form-titulo">Novo paciente</div></div>
-            <div class="form-section">Dados do animal</div>
-            <div class="form-grid fg-3">
-              <div class="form-field"><label>Nome do animal *</label><input id="pac-nome" spellcheck="true" lang="pt"></div>
-              <div class="form-field"><label>Espécie</label><select id="pac-especie"><option>Canino</option><option>Felino</option><option>Ave</option><option>Roedor</option><option>Réptil</option><option>Outro</option></select></div>
-              <div class="form-field"><label>Raça</label><input id="pac-raca"></div>
-              <div class="form-field"><label>Sexo</label><select id="pac-sexo-p"><option>Macho</option><option>Fêmea</option><option>Macho castrado</option><option>Fêmea castrada</option></select></div>
-              <div class="form-field"><label>Data de nascimento</label><input type="date" id="pac-nasc"></div>
-              <div class="form-field"><label>Peso (kg)</label><input type="number" id="pac-peso" step="0.1" min="0"></div>
-              <div class="form-field"><label>Pelagem / Cor</label><input id="pac-pelagem"></div>
-              <div class="form-field"><label>Microchip</label><input id="pac-chip"></div>
-              <div class="form-field"><label>Alergias / Obs.</label><input id="pac-obs-p"></div>
-            </div>
-            <div class="form-section">Dados do tutor</div>
-            <div class="form-grid fg-3">
-              <div class="form-field"><label>Nome do tutor *</label><input id="pac-tutor" spellcheck="true" lang="pt"></div>
-              <div class="form-field"><label>Telefone / WhatsApp</label><input id="pac-tel" placeholder="(XX) XXXXX-XXXX"></div>
-              <div class="form-field"><label>E-mail</label><input type="email" id="pac-email"></div>
-              <div class="form-field" style="grid-column:span 2"><label>Endereço</label><input id="pac-end"></div>
-              <div class="form-field"><label>CEP</label><input id="pac-cep" placeholder="00000-000"></div>
-            </div>
-            <div class="actions-bar">
-              <button class="btn" onclick="fecharFormPaciente()">Cancelar</button>
-              <button class="btn btn-primary" onclick="salvarPaciente()">💾 Salvar paciente</button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="page" id="page-consultas">
-        <div class="actions-bar" style="margin-bottom:16px">
-          <input class="search-box" id="cv-busca" placeholder="🔍 Buscar por paciente ou tutor..." oninput="renderConsultas()" style="flex:1;max-width:400px">
-          <button class="btn btn-primary" onclick="novaConsulta()">+ Nova consulta</button>
-        </div>
-        <div id="cv-list"><div class="empty-state"><p>Nenhuma consulta registrada.</p></div></div>
-      </div>
-
-      <div class="page" id="page-nova-consulta">
-        <div class="card">
-          <div class="card-header"><div class="card-title" id="cv-form-titulo">Nova consulta</div></div>
-          <div class="form-section">Paciente e data</div>
-          <div class="form-grid fg-3">
-            <div class="form-field" style="grid-column:span 2"><label>Paciente *</label><div style="display:flex;gap:8px"><select id="cv-paciente-sel" style="flex:1" onchange="preencherDadosPaciente()"><option value="">— Selecione —</option></select><button class="btn btn-sm" onclick="abrirNovoPaciente(true)">+</button></div><div id="cv-pac-info" style="font-size:12px;color:var(--text2);margin-top:4px"></div></div>
-            <div class="form-field"><label>Data *</label><input type="date" id="cv-data"></div>
-            <div class="form-field"><label>Hora</label><input type="time" id="cv-hora"></div>
-            <div class="form-field"><label>Tipo</label><select id="cv-tipo-at" onchange="preencherDadosPaciente()"><option>Domicílio</option><option>Clínica parceira</option><option>Consultório próprio</option><option>Outro</option></select></div>
-            <div class="form-field" style="grid-column:span 3"><label>Local / Endereço</label><input id="cv-local"></div>
-          </div>
-          <div class="form-section">Deslocamento</div>
-          <div class="form-grid fg-3">
-            <div class="form-field"><label>Km percorridos</label><input type="number" id="cv-km-perc" placeholder="0" min="0" step="0.1" oninput="calcularDeslocamento()"></div>
-            <div class="form-field"><label>R$ por km</label><input type="number" id="cv-vlr-km" value="1.50" step="0.10" oninput="calcularDeslocamento()"></div>
-            <div class="form-field"><label>Valor deslocamento</label><input type="text" id="cv-vlr-desl" readonly style="background:var(--surface2)"></div>
-          </div>
-          <div class="form-section">Exame físico</div>
-          <div class="form-grid fg-3">
-            <div class="form-field"><label>Peso atual (kg)</label><input type="number" id="cv-peso-at" step="0.1"></div>
-            <div class="form-field"><label>Temperatura (°C)</label><input type="number" id="cv-temp" step="0.1"></div>
-            <div class="form-field"><label>FC (bpm)</label><input type="number" id="cv-fc"></div>
-            <div class="form-field"><label>FR (rpm)</label><input type="number" id="cv-fr"></div>
-            <div class="form-field"><label>TPC</label><select id="cv-tpc"><option value="">—</option><option>&lt; 2s (normal)</option><option>2-3s (limítrofe)</option><option>&gt; 3s (alterado)</option></select></div>
-            <div class="form-field"><label>Mucosas</label><select id="cv-mucosas"><option value="">—</option><option>Róseas (normal)</option><option>Pálidas</option><option>Ictéricas</option><option>Cianóticas</option><option>Congestas</option></select></div>
-            <div class="form-field"><label>Hidratação</label><select id="cv-hidrat"><option value="">—</option><option>Normal (&lt; 5%)</option><option>5-7% (leve)</option><option>8-10% (moderada)</option><option>&gt; 10% (grave)</option></select></div>
-            <div class="form-field" style="grid-column:span 2"><label>Obs. exame físico</label><textarea id="cv-ef-obs" rows="2" spellcheck="true" lang="pt"></textarea></div>
-          </div>
-          <div class="form-section">Clínica</div>
-          <div class="form-grid fg-2">
-            <div class="form-field"><label>Queixa principal</label><textarea id="cv-queixa" rows="3" spellcheck="true" lang="pt"></textarea></div>
-            <div class="form-field"><label>Diagnóstico / Hipótese</label><textarea id="cv-diag" rows="3" spellcheck="true" lang="pt"></textarea></div>
-            <div class="form-field" style="grid-column:span 2"><label>Plano terapêutico</label><textarea id="cv-trat" rows="3" spellcheck="true" lang="pt"></textarea></div>
-          </div>
-          <div class="form-section">Prescrições</div>
-          <div id="cv-prescricoes-lista" style="margin-bottom:10px"></div>
-          <button class="btn btn-sm" onclick="adicionarMedicamento()" style="margin-bottom:16px">+ Adicionar medicamento</button>
-          <div class="form-section">Retorno e financeiro</div>
-          <div class="form-grid fg-3">
-            <div class="form-field"><label>Retorno agendado</label><input type="date" id="cv-retorno"></div>
-            <div class="form-field"><label>Valor consulta (R$)</label><input type="text" id="cv-vlr-cons" placeholder="0,00" oninput="maskCurrency(this);atualizarTotalConsulta()"></div>
-            <div class="form-field"><label>Total (R$)</label><input type="text" id="cv-vlr-total" readonly style="background:var(--surface2);font-weight:700"></div>
-            <div class="form-field"><label>Forma de pagamento</label><select id="cv-forma-p"><option>Pix</option><option>Dinheiro</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Transferência</option></select></div>
-            <div class="form-field"><label>Status</label><select id="cv-status-p"><option>Pago</option><option>Pendente</option></select></div>
-          </div>
-          <div class="actions-bar">
-            <button class="btn" onclick="navConsulta('consultas')">Cancelar</button>
-            <button class="btn" onclick="imprimirReceita()">🖨 Imprimir receita</button>
-            <button class="btn btn-primary" onclick="salvarConsulta()">💾 Salvar consulta</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="page" id="page-receituario">
-        <div class="actions-bar" style="margin-bottom:16px">
-          <input class="search-box" id="rx-busca" placeholder="🔍 Buscar por paciente..." oninput="renderReceituario()" style="flex:1;max-width:400px">
-        </div>
-        <div id="rx-list"><div class="empty-state"><p>Nenhuma receita emitida.</p></div></div>
-      </div>
-      <!-- FIM MÓDULO CONSULTAS -->
-
   </main>
 </div>
 
@@ -1838,9 +1703,6 @@ function save() {
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
-  if(typeof pacientes!=='undefined')localStorage.setItem('uv_pacientes',JSON.stringify(pacientes));
-  if(typeof consultas_vet!=='undefined')localStorage.setItem('uv_consultas_vet',JSON.stringify(consultas_vet));
-  localSaveTs = Date.now();
   syncCloud();
 }
 function load() {
@@ -1849,8 +1711,6 @@ function load() {
   try { despesas = JSON.parse(localStorage.getItem('uv_despesas') || '[]'); } catch(e){despesas=[];}
   try { clinicas = JSON.parse(localStorage.getItem('uv_clinicas') || '[]'); } catch(e){clinicas=[];}
   try { agenda = JSON.parse(localStorage.getItem('uv_agenda') || '[]'); } catch(e){agenda=[];}
-  try { pacientes = JSON.parse(localStorage.getItem('uv_pacientes') || '[]'); } catch(e){}
-  try { consultas_vet = JSON.parse(localStorage.getItem('uv_consultas_vet') || '[]'); } catch(e){}
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -1895,7 +1755,6 @@ function toast(msg) {
 
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 const pageTitles = {
-  'cv-dashboard':['Consultas — Visão geral','Métricas'],'pacientes':['Pacientes','Animais e tutores'],'consultas':['Atendimentos','Histórico'],'nova-consulta':['Nova consulta','Registrar atendimento'],'receituario':['Receituário','Prescrições'],
   dashboard: ['Dashboard', 'Visão geral do sistema'],
   laudos: ['Laudos', 'Todos os exames registrados'],
   'novo-laudo': ['Novo laudo', 'Preencher relatório ultrassonográfico'],
@@ -1912,7 +1771,6 @@ function goPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
-  var btnNL = document.getElementById('btn-novo-laudo'); if(btnNL) btnNL.style.display = '';
   const [title, sub] = pageTitles[name] || [name, ''];
   document.getElementById('topbar-title').textContent = title;
   document.getElementById('topbar-sub').textContent = sub;
@@ -1959,613 +1817,6 @@ document.getElementById('sb-logo').src = LOGO_B64;
   if (name === 'relatorios') strp(curRpSec);
   if (name === 'painel') renderPainel();
 }
-
-
-// ═══════════════════════════════════════════════════════════════════════════
-// MÓDULO CONSULTAS VETERINÁRIAS — isolado do módulo de laudos
-// ═══════════════════════════════════════════════════════════════════════════
-let pacientes = [];
-let consultas_vet = [];
-let editPacId = null;
-let editCvId = null;
-let voltarParaConsulta = false; // flag: abriu form paciente a partir da consulta
-let cvMedCount = 0; // contador de medicamentos na receita
-
-// pageTitles do módulo de consultas
-const cvTitles = {
-  'cv-dashboard':   ['Consultas — Visão geral',  'Métricas e resumo'],
-  'pacientes':      ['Pacientes',                 'Animais e tutores cadastrados'],
-  'consultas':      ['Atendimentos',              'Histórico de consultas'],
-  'nova-consulta':  ['Nova consulta',             'Registrar atendimento veterinário'],
-  'receituario':    ['Receituário',               'Prescrições emitidas'],
-};
-
-function navConsulta(name) {
-  // Navegação exclusiva do módulo de consultas — não toca em goPage/laudos
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  var btnNL = document.getElementById('btn-novo-laudo'); if(btnNL) btnNL.style.display = 'none';
-  const page = document.getElementById('page-' + name);
-  if (!page) return;
-  page.classList.add('active');
-  const [title, sub] = cvTitles[name] || [name, ''];
-  const t = document.getElementById('topbar-title');
-  const s = document.getElementById('topbar-sub');
-  if (t) t.textContent = title;
-  if (s) s.textContent = sub;
-  if (name === 'cv-dashboard') renderCvDashboard();
-  if (name === 'pacientes')    renderPacientes();
-  if (name === 'consultas')    renderConsultas();
-  if (name === 'receituario')  renderReceituario();
-}
-
-// ─── PACIENTES ───────────────────────────────────────────────────────────────
-function abrirNovoPaciente(fromConsulta) {
-  voltarParaConsulta = !!fromConsulta;
-  editPacId = null;
-  ['pac-nome','pac-raca','pac-obs-p','pac-tutor','pac-tel','pac-email','pac-end','pac-cep','pac-chip','pac-pelagem'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  const peso = document.getElementById('pac-peso'); if (peso) peso.value = '';
-  const nasc = document.getElementById('pac-nasc'); if (nasc) nasc.value = '';
-  document.getElementById('pac-especie').selectedIndex = 0;
-  document.getElementById('pac-sexo-p').selectedIndex = 0;
-  document.getElementById('pac-form-titulo').textContent = 'Novo paciente';
-  if (!fromConsulta) {
-    document.getElementById('pac-form-container').style.display = 'block';
-    navConsulta('pacientes');
-  } else {
-    navConsulta('pacientes');
-    document.getElementById('pac-form-container').style.display = 'block';
-  }
-}
-
-function fecharFormPaciente() {
-  document.getElementById('pac-form-container').style.display = 'none';
-  if (voltarParaConsulta) { navConsulta('nova-consulta'); voltarParaConsulta = false; }
-}
-
-function salvarPaciente() {
-  const nome = document.getElementById('pac-nome').value.trim();
-  const tutor = document.getElementById('pac-tutor').value.trim();
-  if (!nome) { alert('Informe o nome do animal.'); return; }
-  if (!tutor) { alert('Informe o nome do tutor.'); return; }
-  const p = {
-    id: editPacId || Date.now(),
-    nome, especie: document.getElementById('pac-especie').value,
-    raca: document.getElementById('pac-raca').value,
-    sexo: document.getElementById('pac-sexo-p').value,
-    dataNasc: document.getElementById('pac-nasc').value,
-    peso: parseFloat(document.getElementById('pac-peso').value) || 0,
-    pelagem: document.getElementById('pac-pelagem').value,
-    chip: document.getElementById('pac-chip').value,
-    obs: document.getElementById('pac-obs-p').value,
-    tutor, telefone: document.getElementById('pac-tel').value,
-    email: document.getElementById('pac-email').value,
-    endereco: document.getElementById('pac-end').value,
-    cep: document.getElementById('pac-cep').value,
-  };
-  if (editPacId) {
-    const idx = pacientes.findIndex(x => x.id === editPacId);
-    if (idx >= 0) pacientes[idx] = p;
-    toast('Paciente atualizado!');
-  } else {
-    pacientes.push(p);
-    toast('Paciente cadastrado!');
-  }
-  editPacId = null;
-  save();
-  document.getElementById('pac-form-container').style.display = 'none';
-  if (voltarParaConsulta) {
-    popularSelectPaciente(p.id);
-    navConsulta('nova-consulta');
-    voltarParaConsulta = false;
-  } else {
-    renderPacientes();
-  }
-}
-
-function editarPaciente(id) {
-  const p = pacientes.find(x => x.id === id);
-  if (!p) return;
-  editPacId = id;
-  document.getElementById('pac-nome').value    = p.nome || '';
-  document.getElementById('pac-especie').value = p.especie || 'Canino';
-  document.getElementById('pac-raca').value    = p.raca || '';
-  document.getElementById('pac-sexo-p').value  = p.sexo || 'Macho';
-  document.getElementById('pac-nasc').value    = p.dataNasc || '';
-  document.getElementById('pac-peso').value    = p.peso || '';
-  document.getElementById('pac-pelagem').value = p.pelagem || '';
-  document.getElementById('pac-chip').value    = p.chip || '';
-  document.getElementById('pac-obs-p').value   = p.obs || '';
-  document.getElementById('pac-tutor').value   = p.tutor || '';
-  document.getElementById('pac-tel').value     = p.telefone || '';
-  document.getElementById('pac-email').value   = p.email || '';
-  document.getElementById('pac-end').value     = p.endereco || '';
-  document.getElementById('pac-cep').value     = p.cep || '';
-  document.getElementById('pac-form-titulo').textContent = 'Editar paciente';
-  document.getElementById('pac-form-container').style.display = 'block';
-  document.getElementById('pac-form-container').scrollIntoView({behavior:'smooth'});
-}
-
-function excluirPaciente(id) {
-  confirmarAcao('Excluir paciente', 'Deseja excluir este paciente e todo seu histórico?', 'Excluir', function() {
-    pacientes = pacientes.filter(x => x.id !== id);
-    consultas_vet = consultas_vet.filter(x => x.pacienteId !== id);
-    save(); renderPacientes(); toast('Paciente excluído.');
-  });
-}
-
-function renderPacientes() {
-  const q = (document.getElementById('pac-busca')?.value || '').toLowerCase();
-  const el = document.getElementById('pac-list');
-  const lista = pacientes.filter(p =>
-    !q || p.nome.toLowerCase().includes(q) || (p.tutor||'').toLowerCase().includes(q)
-  );
-  if (!lista.length) { el.innerHTML = '<div class="empty-state"><p>Nenhum paciente encontrado.</p></div>'; return; }
-  el.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr><th>Animal</th><th>Espécie / Raça</th><th>Tutor</th><th>Telefone</th><th>Consultas</th><th></th></tr></thead><tbody>'
-    + lista.map(p => {
-        const nConsultas = consultas_vet.filter(c => c.pacienteId === p.id).length;
-        const idade = p.dataNasc ? calcIdade(p.dataNasc) : '—';
-        return `<tr>
-          <td><strong>${p.nome}</strong><div style="font-size:11px;color:var(--text3)">${p.sexo} · ${idade}</div></td>
-          <td>${p.especie}${p.raca?' · '+p.raca:''}</td>
-          <td>${p.tutor||'—'}</td>
-          <td style="white-space:nowrap">${p.telefone||'—'}</td>
-          <td style="text-align:center">${nConsultas}</td>
-          <td style="white-space:nowrap">
-            <button class="btn btn-sm" onclick="novaConsultaPaciente(${p.id})" title="Nova consulta">🩺</button>
-            <button class="btn btn-sm" onclick="editarPaciente(${p.id})" title="Editar">✏️</button>
-            <button class="btn btn-sm btn-danger" onclick="excluirPaciente(${p.id})" title="Excluir">🗑</button>
-          </td>
-        </tr>`;
-      }).join('')
-    + '</tbody></table></div>';
-}
-
-function calcIdade(dataNasc) {
-  if (!dataNasc) return '—';
-  const nasc = new Date(dataNasc);
-  const hoje = new Date();
-  const meses = (hoje.getFullYear() - nasc.getFullYear()) * 12 + (hoje.getMonth() - nasc.getMonth());
-  if (meses < 12) return meses + ' m';
-  return Math.floor(meses/12) + ' a' + (meses%12 ? ' '+meses%12+'m' : '');
-}
-
-// ─── CONSULTAS ───────────────────────────────────────────────────────────────
-function novaConsulta() {
-  editCvId = null;
-  cvMedCount = 0;
-  document.getElementById('cv-prescricoes-lista').innerHTML = '';
-  ['cv-local','cv-km-perc','cv-vlr-desl','cv-vlr-total','cv-ef-obs','cv-queixa','cv-diag','cv-trat'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  ['cv-peso-at','cv-temp','cv-fc','cv-fr'].forEach(id => {
-    const el = document.getElementById(id); if (el) el.value = '';
-  });
-  document.getElementById('cv-vlr-km').value = '1.50';
-  document.getElementById('cv-vlr-cons').value = '';
-  document.getElementById('cv-retorno').value = '';
-  document.getElementById('cv-data').value = today();
-  document.getElementById('cv-hora').value = new Date().toTimeString().slice(0,5);
-  document.getElementById('cv-tipo-at').selectedIndex = 0;
-  document.getElementById('cv-status-p').selectedIndex = 0;
-  document.getElementById('cv-tpc').selectedIndex = 0;
-  document.getElementById('cv-mucosas').selectedIndex = 0;
-  document.getElementById('cv-hidrat').selectedIndex = 0;
-  document.getElementById('cv-pac-info').textContent = '';
-  popularSelectPaciente(null);
-  document.getElementById('cv-form-titulo').textContent = 'Nova consulta';
-  navConsulta('nova-consulta');
-}
-
-function novaConsultaPaciente(pacId) {
-  novaConsulta();
-  popularSelectPaciente(pacId);
-  preencherDadosPaciente();
-}
-
-function popularSelectPaciente(selectedId) {
-  const sel = document.getElementById('cv-paciente-sel');
-  sel.innerHTML = '<option value="">— Selecione o paciente —</option>';
-  pacientes.forEach(p => {
-    const opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.nome + ' (' + (p.especie||'') + ') — ' + (p.tutor||'');
-    if (p.id === selectedId) opt.selected = true;
-    sel.appendChild(opt);
-  });
-}
-
-function preencherDadosPaciente() {
-  const id = parseInt(document.getElementById('cv-paciente-sel').value);
-  const info = document.getElementById('cv-pac-info');
-  const p = pacientes.find(x => x.id === id);
-  if (!p) { info.textContent = ''; return; }
-  info.textContent = p.especie + ' · ' + p.raca + ' · ' + p.sexo + ' · Tutor: ' + p.tutor + (p.telefone?' · '+p.telefone:'');
-  // Preenche endereço se domicílio
-  if (document.getElementById('cv-tipo-at').value === 'Domicílio' && p.endereco) {
-    document.getElementById('cv-local').value = p.endereco;
-  }
-}
-
-function toggleLocalConsulta() {
-  preencherDadosPaciente();
-}
-
-function calcularDeslocamento() {
-  const km = parseFloat(document.getElementById('cv-km-perc').value) || 0;
-  const vlrKm = parseFloat(document.getElementById('cv-vlr-km').value) || 0;
-  const total = km * vlrKm;
-  document.getElementById('cv-vlr-desl').value = fmt(total).replace('R$ ', '');
-  atualizarTotalConsulta();
-}
-
-function atualizarTotalConsulta() {
-  const cons = parseCurrency('cv-vlr-cons') || 0;
-  const km = parseFloat(document.getElementById('cv-km-perc').value) || 0;
-  const vlrKm = parseFloat(document.getElementById('cv-vlr-km').value) || 0;
-  const desl = km * vlrKm;
-  const total = cons + desl;
-  document.getElementById('cv-vlr-total').value = fmt(total).replace('R$ ', '');
-}
-
-function adicionarMedicamento() {
-  cvMedCount++;
-  const id = cvMedCount;
-  const div = document.createElement('div');
-  div.id = 'med-' + id;
-  div.style.cssText = 'border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;background:var(--surface2)';
-  div.innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-    <strong style="font-size:13px">Medicamento ${id}</strong>
-    <button class="btn btn-sm btn-danger" onclick="document.getElementById('med-${id}').remove()">✕</button>
-  </div>
-  <div class="form-grid fg-3" style="gap:10px">
-    <div class="form-field"><label>Medicamento *</label><input id="med-nome-${id}" placeholder="Ex: Amoxicilina"></div>
-    <div class="form-field"><label>Concentração</label><input id="med-conc-${id}" placeholder="Ex: 500mg"></div>
-    <div class="form-field"><label>Via</label>
-      <select id="med-via-${id}"><option>Oral</option><option>Subcutânea</option><option>Intramuscular</option><option>Intravenosa</option><option>Tópica</option><option>Ocular</option><option>Otológica</option></select>
-    </div>
-    <div class="form-field"><label>Dose</label><input id="med-dose-${id}" placeholder="Ex: 1 comprimido"></div>
-    <div class="form-field"><label>Frequência</label><input id="med-freq-${id}" placeholder="Ex: 12/12h"></div>
-    <div class="form-field"><label>Duração</label><input id="med-dur-${id}" placeholder="Ex: 7 dias"></div>
-    <div class="form-field" style="grid-column:span 3"><label>Instruções adicionais</label><input id="med-inst-${id}" placeholder="Ex: Administrar com alimento"></div>
-    <div class="form-field"><label>Tipo</label>
-      <select id="med-tipo-${id}"><option value="comum">Comum</option><option value="especial">Especial (controlada)</option></select>
-    </div>
-  </div>`;
-  document.getElementById('cv-prescricoes-lista').appendChild(div);
-}
-
-function coletarMedicamentos() {
-  const meds = [];
-  document.querySelectorAll('[id^="med-nome-"]').forEach(el => {
-    const n = el.id.replace('med-nome-','');
-    if (!el.closest('[id^="med-"]')?.isConnected) return;
-    const nome = el.value.trim();
-    if (!nome) return;
-    meds.push({
-      nome,
-      conc: document.getElementById('med-conc-'+n)?.value || '',
-      via: document.getElementById('med-via-'+n)?.value || '',
-      dose: document.getElementById('med-dose-'+n)?.value || '',
-      freq: document.getElementById('med-freq-'+n)?.value || '',
-      dur: document.getElementById('med-dur-'+n)?.value || '',
-      inst: document.getElementById('med-inst-'+n)?.value || '',
-      tipo: document.getElementById('med-tipo-'+n)?.value || 'comum',
-    });
-  });
-  return meds;
-}
-
-function salvarConsulta() {
-  const pacId = parseInt(document.getElementById('cv-paciente-sel').value);
-  if (!pacId) { alert('Selecione o paciente.'); return; }
-  const meds = coletarMedicamentos();
-  const km = parseFloat(document.getElementById('cv-km-perc').value) || 0;
-  const vlrKm = parseFloat(document.getElementById('cv-vlr-km').value) || 1.5;
-  const vlrDesl = km * vlrKm;
-  const vlrCons = parseCurrency('cv-vlr-cons') || 0;
-  const c = {
-    id: editCvId || Date.now(),
-    pacienteId: pacId,
-    data: document.getElementById('cv-data').value,
-    hora: document.getElementById('cv-hora').value,
-    tipoAt: document.getElementById('cv-tipo-at').value,
-    local: document.getElementById('cv-local').value,
-    desl: { km, vlrKm, valor: vlrDesl },
-    ef: {
-      peso: parseFloat(document.getElementById('cv-peso-at').value) || 0,
-      temp: parseFloat(document.getElementById('cv-temp').value) || 0,
-      fc: parseInt(document.getElementById('cv-fc').value) || 0,
-      fr: parseInt(document.getElementById('cv-fr').value) || 0,
-      tpc: document.getElementById('cv-tpc').value,
-      mucosas: document.getElementById('cv-mucosas').value,
-      hidrat: document.getElementById('cv-hidrat').value,
-      obs: document.getElementById('cv-ef-obs').value,
-    },
-    queixa: document.getElementById('cv-queixa').value,
-    diagnostico: document.getElementById('cv-diag').value,
-    tratamento: document.getElementById('cv-trat').value,
-    medicamentos: meds,
-    retorno: document.getElementById('cv-retorno').value,
-    vlrConsulta: vlrCons,
-    vlrTotal: vlrCons + vlrDesl,
-    forma: document.getElementById('cv-forma-p').value,
-    status: document.getElementById('cv-status-p').value,
-  };
-  if (editCvId) {
-    const idx = consultas_vet.findIndex(x => x.id === editCvId);
-    if (idx >= 0) consultas_vet[idx] = c;
-    toast('Consulta atualizada!');
-  } else {
-    consultas_vet.push(c);
-    toast('Consulta salva!');
-  }
-  editCvId = null;
-  save();
-}
-
-function editarConsulta(id) {
-  const c = consultas_vet.find(x => x.id === id);
-  if (!c) return;
-  editCvId = id;
-  cvMedCount = 0;
-  document.getElementById('cv-prescricoes-lista').innerHTML = '';
-  popularSelectPaciente(c.pacienteId);
-  preencherDadosPaciente();
-  document.getElementById('cv-data').value     = c.data || '';
-  document.getElementById('cv-hora').value     = c.hora || '';
-  document.getElementById('cv-tipo-at').value  = c.tipoAt || 'Domicílio';
-  document.getElementById('cv-local').value    = c.local || '';
-  document.getElementById('cv-km-perc').value  = c.desl?.km || '';
-  document.getElementById('cv-vlr-km').value   = c.desl?.vlrKm || 1.5;
-  document.getElementById('cv-vlr-desl').value = c.desl?.valor ? fmt(c.desl.valor).replace('R$ ','') : '';
-  document.getElementById('cv-peso-at').value  = c.ef?.peso || '';
-  document.getElementById('cv-temp').value     = c.ef?.temp || '';
-  document.getElementById('cv-fc').value       = c.ef?.fc || '';
-  document.getElementById('cv-fr').value       = c.ef?.fr || '';
-  document.getElementById('cv-tpc').value      = c.ef?.tpc || '';
-  document.getElementById('cv-mucosas').value  = c.ef?.mucosas || '';
-  document.getElementById('cv-hidrat').value   = c.ef?.hidrat || '';
-  document.getElementById('cv-ef-obs').value   = c.ef?.obs || '';
-  document.getElementById('cv-queixa').value   = c.queixa || '';
-  document.getElementById('cv-diag').value     = c.diagnostico || '';
-  document.getElementById('cv-trat').value     = c.tratamento || '';
-  document.getElementById('cv-retorno').value  = c.retorno || '';
-  setCurrency('cv-vlr-cons', c.vlrConsulta || 0);
-  document.getElementById('cv-vlr-total').value = c.vlrTotal ? fmt(c.vlrTotal).replace('R$ ','') : '';
-  document.getElementById('cv-forma-p').value  = c.forma || 'Pix';
-  document.getElementById('cv-status-p').value = c.status || 'Pago';
-  (c.medicamentos || []).forEach(m => {
-    adicionarMedicamento();
-    document.getElementById('med-nome-'+cvMedCount).value = m.nome || '';
-    document.getElementById('med-conc-'+cvMedCount).value = m.conc || '';
-    document.getElementById('med-via-'+cvMedCount).value  = m.via  || 'Oral';
-    document.getElementById('med-dose-'+cvMedCount).value = m.dose || '';
-    document.getElementById('med-freq-'+cvMedCount).value = m.freq || '';
-    document.getElementById('med-dur-'+cvMedCount).value  = m.dur  || '';
-    document.getElementById('med-inst-'+cvMedCount).value = m.inst || '';
-    document.getElementById('med-tipo-'+cvMedCount).value = m.tipo || 'comum';
-  });
-  document.getElementById('cv-form-titulo').textContent = 'Editar consulta';
-  navConsulta('nova-consulta');
-}
-
-function excluirConsulta(id) {
-  confirmarAcao('Excluir consulta', 'Deseja excluir este registro?', 'Excluir', function() {
-    consultas_vet = consultas_vet.filter(x => x.id !== id);
-    save(); renderConsultas(); toast('Consulta excluída.');
-  });
-}
-
-function renderConsultas() {
-  const q = (document.getElementById('cv-busca')?.value || '').toLowerCase();
-  const el = document.getElementById('cv-list');
-  const lista = consultas_vet.filter(c => {
-    const p = pacientes.find(x => x.id === c.pacienteId);
-    return !q || (p?.nome||'').toLowerCase().includes(q) || (p?.tutor||'').toLowerCase().includes(q);
-  }).sort((a,b) => b.data.localeCompare(a.data));
-  if (!lista.length) { el.innerHTML = '<div class="empty-state"><p>Nenhuma consulta registrada.</p></div>'; return; }
-  el.innerHTML = '<div class="list-container"><div class="table-wrap"><table class="data-table">'
-    + '<thead><tr>'
-    + '<th style="width:90px">Data</th>'
-    + '<th>Paciente</th>'
-    + '<th>Tutor</th>'
-    + '<th style="width:120px">Tipo</th>'
-    + '<th>Diagnóstico</th>'
-    + '<th style="width:100px">Total</th>'
-    + '<th style="width:90px">Status</th>'
-    + '<th style="width:110px"></th>'
-    + '</tr></thead><tbody>'
-    + lista.map(c => {
-        const p = pacientes.find(x => x.id === c.pacienteId) || {};
-        const pagoCls = c.status === 'Pago' ? 'color:var(--teal);background:var(--teal-bg)' : 'color:var(--amber);background:#fff3e0';
-        return '<tr>'
-          + '<td style="white-space:nowrap;color:var(--text3);font-size:12px">' + fmtDP(c.data) + (c.hora?' <span style="font-size:11px">'+c.hora+'</span>':'') + '</td>'
-          + '<td><strong style="color:var(--text)">' + (p.nome||'—') + '</strong> <span style="color:var(--text3);font-size:11px">' + (p.especie||'') + '</span></td>'
-          + '<td style="color:var(--text2)">' + (p.tutor||'—') + '</td>'
-          + '<td><span style="font-size:11px;padding:3px 8px;border-radius:20px;background:var(--surface2);color:var(--text2)">' + (c.tipoAt||'—') + '</span></td>'
-          + '<td style="color:var(--text2);font-size:12px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + (c.diagnostico||'—') + '</td>'
-          + '<td style="font-weight:600;color:var(--text)">' + fmt(c.vlrTotal||0) + '</td>'
-          + '<td><span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;' + pagoCls + '">' + (c.status||'—') + '</span></td>'
-          + '<td style="white-space:nowrap;text-align:right">'
-            + '<button class="btn btn-sm" onclick="imprimirReceitaById(' + c.id + ')" title="Receita">🖨</button> '
-            + '<button class="btn btn-sm" onclick="editarConsulta(' + c.id + ')" title="Editar">✏️</button> '
-            + '<button class="btn btn-sm btn-danger" onclick="excluirConsulta(' + c.id + ')" title="Excluir">🗑</button>'
-          + '</td>'
-        + '</tr>';
-      }).join('')
-    + '</tbody></table></div></div>';
-}
-
-
-function renderReceituario() {
-  const q = (document.getElementById('rx-busca')?.value || '').toLowerCase();
-  const el = document.getElementById('rx-list');
-  const comMed = consultas_vet.filter(c => c.medicamentos?.length > 0).filter(c => {
-    const p = pacientes.find(x => x.id === c.pacienteId);
-    return !q || (p?.nome||'').toLowerCase().includes(q);
-  }).sort((a,b) => b.data.localeCompare(a.data));
-  if (!comMed.length) { el.innerHTML = '<div class="empty-state"><p>Nenhuma receita emitida.</p></div>'; return; }
-  el.innerHTML = '<div class="table-wrap"><table class="data-table"><thead><tr><th>Data</th><th>Paciente</th><th>Medicamentos</th><th>Tipo</th><th></th></tr></thead><tbody>'
-    + comMed.map(c => {
-        const p = pacientes.find(x => x.id === c.pacienteId) || {};
-        const temControlada = c.medicamentos.some(m => m.tipo === 'especial');
-        return `<tr>
-          <td>${fmtDP(c.data)}</td>
-          <td><strong>${p.nome||'—'}</strong> — ${p.tutor||'—'}</td>
-          <td>${c.medicamentos.map(m=>m.nome).join(', ')}</td>
-          <td>${temControlada ? '⚠️ Especial' : 'Comum'}</td>
-          <td><button class="btn btn-sm" onclick="imprimirReceitaById(${c.id})">🖨 Imprimir</button></td>
-        </tr>`;
-      }).join('')
-    + '</tbody></table></div>';
-}
-
-function imprimirReceita() {
-  const meds = coletarMedicamentos();
-  if (!meds.length) { toast('Adicione ao menos um medicamento antes de imprimir.'); return; }
-  const pacId = parseInt(document.getElementById('cv-paciente-sel').value);
-  const p = pacientes.find(x => x.id === pacId) || {};
-  const data = document.getElementById('cv-data').value;
-  const diag = document.getElementById('cv-diag').value;
-  abrirJanelaReceita(p, meds, data, diag);
-}
-
-function imprimirReceitaById(consultaId) {
-  const c = consultas_vet.find(x => x.id === consultaId);
-  if (!c || !c.medicamentos?.length) { toast('Sem medicamentos nesta consulta.'); return; }
-  const p = pacientes.find(x => x.id === c.pacienteId) || {};
-  abrirJanelaReceita(p, c.medicamentos, c.data, c.diagnostico);
-}
-
-function abrirJanelaReceita(p, meds, data, diag) {
-  const cfg = getConfig();
-  const nomeVet = cfg.nome || 'Patrine Cagnini';
-  const crmv    = cfg.crmv || 'CRMV-SC 09377';
-  const esp     = cfg.esp  || 'Médica Veterinária';
-  const logoSrc = getLogo();
-  const dataFmt = data ? data.split('-').reverse().join('/') : new Date().toLocaleDateString('pt-BR');
-  const temControlada = meds.some(m => m.tipo === 'especial');
-
-  const medicamentosHTML = meds.map((m, i) => `
-    <div style="margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #e8e8e8">
-      <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px">
-        <span style="font-size:13px;font-weight:700;color:#1a1a18">${i+1}.</span>
-        <span style="font-size:14px;font-weight:700;color:#1a1a18">${m.nome}${m.conc?' '+m.conc:''}</span>
-        ${m.tipo==='especial'?'<span style="font-size:10px;background:#fff3cd;color:#856404;padding:1px 6px;border-radius:10px;font-weight:600">ESPECIAL</span>':''}
-      </div>
-      <div style="font-size:13px;color:#444;margin-left:22px;line-height:1.6">
-        <div>Via: <strong>${m.via}</strong></div>
-        ${m.dose?`<div>Dose: <strong>${m.dose}</strong></div>`:''}
-        ${m.freq?`<div>Frequência: <strong>${m.freq}</strong></div>`:''}
-        ${m.dur?`<div>Duração: <strong>${m.dur}</strong></div>`:''}
-        ${m.inst?`<div style="margin-top:4px;font-style:italic;color:#666">${m.inst}</div>`:''}
-      </div>
-    </div>`).join('');
-
-  const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
-  <title>Receituário — ${p.nome||'Paciente'}</title>
-  <style>
-    * { box-sizing:border-box; margin:0; padding:0; }
-    body { font-family: Arial, sans-serif; font-size: 13px; color: #222; padding: 20mm; }
-    @page { size: A4; margin: 0; }
-    @media print { body { padding: 20mm; } }
-    .header { display:flex; align-items:center; justify-content:space-between; padding-bottom:12px; border-bottom:3px solid #0f7a5a; margin-bottom:16px; }
-    .vet-info { text-align:right; }
-    .vet-nome { font-size:16px; font-weight:700; color:#0f7a5a; letter-spacing:.5px; }
-    .vet-sub { font-size:11px; color:#666; margin-top:2px; }
-    .titulo-receita { font-size:18px; font-weight:700; text-align:center; letter-spacing:2px; text-transform:uppercase; color:#333; margin:16px 0 12px; padding:8px; border:2px solid #0f7a5a; border-radius:4px; }
-    ${temControlada ? '.titulo-receita { border-color:#dc3545; color:#dc3545; }' : ''}
-    .paciente-box { background:#f8f9fa; border:1px solid #dee2e6; border-radius:6px; padding:12px 16px; margin-bottom:20px; display:grid; grid-template-columns:1fr 1fr; gap:6px; }
-    .pac-campo { font-size:12px; } .pac-campo span { font-size:10px; color:#888; display:block; }
-    .medicamentos { margin-bottom:24px; }
-    .diag-box { background:#f0f7f4; border-left:4px solid #0f7a5a; padding:10px 14px; margin-bottom:24px; font-size:12px; }
-    .assinatura { margin-top:40px; text-align:center; }
-    .linha-ass { width:260px; border-top:1.5px solid #333; margin:0 auto 8px; }
-    .data-local { font-size:12px; color:#666; text-align:right; margin-bottom:20px; }
-    .aviso-especial { background:#fff3cd; border:1px solid #ffc107; border-radius:4px; padding:8px 12px; font-size:11px; color:#856404; margin-bottom:16px; }
-  </style></head><body>
-  <div class="header">
-    ${logoSrc?`<img src="${logoSrc}" style="max-height:60px;max-width:160px;object-fit:contain">`:'<div></div>'}
-    <div class="vet-info">
-      <div class="vet-nome">${nomeVet}</div>
-      <div class="vet-sub">${esp}</div>
-      <div class="vet-sub">${crmv}</div>
-    </div>
-  </div>
-  <div class="titulo-receita">${temControlada?'⚠️ Receituário Especial':'Receituário Comum'}</div>
-  ${temControlada?'<div class="aviso-especial">⚠️ Receituário Especial — sujeito a retenção. Válido por 30 dias. Medicamento de uso veterinário exclusivo.</div>':''}
-  <div class="paciente-box">
-    <div class="pac-campo"><span>Paciente</span><strong>${p.nome||'—'}</strong></div>
-    <div class="pac-campo"><span>Espécie / Raça</span>${(p.especie||'')} ${p.raca?'· '+p.raca:''}</div>
-    <div class="pac-campo"><span>Tutor</span>${p.tutor||'—'}</div>
-    <div class="pac-campo"><span>Telefone</span>${p.telefone||'—'}</div>
-    <div class="pac-campo"><span>Data</span>${dataFmt}</div>
-    ${p.endereco?`<div class="pac-campo"><span>Endereço</span>${p.endereco}</div>`:''}
-  </div>
-  ${diag?`<div class="diag-box"><strong>Diagnóstico:</strong> ${diag}</div>`:''}
-  <div class="medicamentos">${medicamentosHTML}</div>
-  <div class="data-local">Data: ${dataFmt}</div>
-  <div class="assinatura">
-    <div class="linha-ass"></div>
-    <div style="font-size:13px;font-weight:700">${nomeVet}</div>
-    <div style="font-size:11px;color:#666">${esp}</div>
-    <div style="font-size:11px;color:#666">${crmv}</div>
-  </div>
-  <script>window.onload=function(){window.print()}<\/script>
-  </body></html>`;
-
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-}
-
-// ─── DASHBOARD CONSULTAS ─────────────────────────────────────────────────────
-function renderCvDashboard() {
-  const hoje = new Date();
-  const mesAtual = hoje.getFullYear() + '-' + String(hoje.getMonth()+1).padStart(2,'0');
-  const doMes = consultas_vet.filter(c => c.data && c.data.startsWith(mesAtual));
-  const receita = doMes.reduce((s,c) => s + (c.vlrTotal||0), 0);
-  const aReceber = consultas_vet.filter(c => c.status === 'Pendente').reduce((s,c) => s + (c.vlrTotal||0), 0);
-  const km = doMes.reduce((s,c) => s + (c.desl?.km||0), 0);
-  document.getElementById('cv-mes').textContent     = doMes.length;
-  document.getElementById('cv-receita').textContent = fmt(receita);
-  document.getElementById('cv-receber').textContent = fmt(aReceber);
-  document.getElementById('cv-km').textContent      = km.toFixed(1) + ' km';
-
-  // Próximos retornos (7 dias)
-  const emSete = new Date(); emSete.setDate(emSete.getDate()+7);
-  const retornos = consultas_vet
-    .filter(c => c.retorno && c.retorno >= hoje.toISOString().split('T')[0] && c.retorno <= emSete.toISOString().split('T')[0])
-    .sort((a,b) => a.retorno.localeCompare(b.retorno));
-  const elRet = document.getElementById('cv-retornos');
-  if (!retornos.length) { elRet.innerHTML = '<div class="empty-state"><p>Nenhum retorno nos próximos 7 dias.</p></div>'; }
-  else { elRet.innerHTML = retornos.map(c => {
-    const p = pacientes.find(x => x.id === c.pacienteId) || {};
-    return `<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <div><strong>${p.nome||'—'}</strong> <span style="font-size:12px;color:var(--text3)">${p.tutor||''}</span></div>
-      <div style="font-size:12px;color:var(--teal);font-weight:600">${fmtDP(c.retorno)}</div>
-    </div>`;
-  }).join(''); }
-
-  // Últimas consultas
-  const elUlt = document.getElementById('cv-ultimos');
-  const ultimas = [...consultas_vet].sort((a,b)=>b.data.localeCompare(a.data)).slice(0,5);
-  if (!ultimas.length) { elUlt.innerHTML = '<div class="empty-state"><p>Nenhum atendimento.</p></div>'; }
-  else { elUlt.innerHTML = ultimas.map(c => {
-    const p = pacientes.find(x => x.id === c.pacienteId) || {};
-    const statusCls = c.status === 'Pago' ? 'color:var(--teal)' : 'color:var(--amber)';
-    return `<div style="padding:8px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
-      <div><strong>${p.nome||'—'}</strong> <span style="font-size:12px;color:var(--text3)">${fmtDP(c.data)}</span></div>
-      <div style="font-size:12px;font-weight:600;${statusCls}">${fmt(c.vlrTotal||0)}</div>
-    </div>`;
-  }).join(''); }
-}
-// ═══ FIM MÓDULO CONSULTAS ══════════════════════════════════════════════════
-
-
 
 function strp(name) {
   curRpSec = name;
@@ -2805,6 +2056,7 @@ function salvarLaudo() {
     }
     toast('Laudo salvo! Receita lançada automaticamente.');
   }
+  localSaveTs = Date.now();
   save();
 }
 
@@ -2905,10 +2157,10 @@ function buildLaudoHTML(l) {
   const orgs   = isGest ? l.orgGest   : l.orgAbdom;
   const nomes  = isGest ? orgNomesGest : orgNomesAbdom;
   const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
-    return '<div style="display:grid;grid-template-columns:155px 1fr;border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
-      + '<div style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;font-family:' + fonte + '">' + (nomes[k]||k) + '</div>'
-      + '<div style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</div>'
-      + '</div>';
+    return '<tr style="border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
+      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</td>'
+      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</td>'
+      + '</tr>';
   }).join('') : '';
   // cabeçalho (3 estilos)
   const logoSrc = getLogo();
@@ -2966,7 +2218,7 @@ function buildLaudoHTML(l) {
     /* ACHADOS */
     + (secAchados ? '<div style="padding:10px 28px 14px">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
-      + '<div style="width:100%;font-family:' + fonte + '">' + orgRows + '</div>'
+      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">' + orgRows + '</table>'
     + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
@@ -3052,9 +2304,8 @@ function imprimirLaudo() {
     + 'body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}'
     + 'table,td,th,span,div{font-family:inherit}'
     + 'tr{page-break-inside:avoid;break-inside:avoid}'
-    + 'div[style*='display:grid']{page-break-inside:avoid!important;break-inside:avoid!important}'
     + 'img{page-break-inside:avoid;break-inside:avoid;max-width:100%}'
-    + 'p,td,li{orphans:4;widows:4}'
+    + 'p,div,td,li{orphans:4;widows:4}'
     + '.organ-row,section{page-break-inside:avoid;break-inside:avoid}'
     + '@page{size:' + papel + ';margin:0}'
     + '@media print{body{padding:' + margens + '}}'
@@ -3392,39 +2643,26 @@ function renderLaudos() {
   );
   const el = document.getElementById('laudos-card');
   if (!f.length) { el.innerHTML = '<div class="empty-state"><p>Nenhum laudo encontrado.</p></div>'; return; }
-  const sorted = [...f].sort((a,b) => b.id - a.id);
-  el.innerHTML = '<div class="list-container"><div class="table-wrap"><table class="data-table">'
-    + '<thead><tr>'
-    + '<th style="width:90px">Data</th>'
-    + '<th>Paciente</th>'
-    + '<th style="width:140px">Tipo</th>'
-    + '<th>Tutor</th>'
-    + '<th>Veterinário</th>'
-    + '<th>Clínica</th>'
-    + '<th style="width:90px">Resultado</th>'
-    + '<th style="width:100px"></th>'
-    + '</tr></thead><tbody>'
-    + sorted.map(l => {
-        const resCls = l.resultado === 'Normal' ? 'color:var(--teal);background:var(--teal-bg)' : l.resultado === 'Alterado' ? 'color:var(--red);background:#fdecea' : 'color:var(--amber);background:#fff3e0';
-        return '<tr>'
-          + '<td style="white-space:nowrap;color:var(--text3);font-size:12px">' + fmtD(l.data) + '</td>'
-          + '<td><strong style="color:var(--text)">' + (l.paciente||'—') + '</strong> <span style="color:var(--text3);font-size:11px">' + (l.especie||'') + '</span></td>'
-          + '<td><span style="font-size:11px;font-weight:600;padding:3px 8px;border-radius:20px;background:var(--teal-bg);color:var(--teal-text)">' + (l.tipo||'—') + '</span></td>'
-          + '<td style="color:var(--text2)">' + (l.tutor||'—') + '</td>'
-          + '<td style="color:var(--text2)">' + (l.vet||'—') + '</td>'
-          + '<td style="color:var(--text2);font-size:12px">' + (l.clinica||'—') + '</td>'
-          + '<td><span style="font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;' + resCls + '">' + (l.resultado||'—') + '</span></td>'
-          + '<td style="white-space:nowrap;text-align:right">'
-            + '<button class="btn btn-sm" onclick="viewLaudo(' + l.id + ')" title="Visualizar">👁</button> '
-            + '<button class="btn btn-sm" onclick="editLaudo(' + l.id + ')" title="Editar">✏️</button> '
-            + '<button class="btn btn-sm btn-danger" onclick="delLaudo(' + l.id + ')" title="Excluir">🗑</button>'
-          + '</td>'
-        + '</tr>';
-      }).join('')
-    + '</tbody></table></div></div>';
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Paciente</th><th>Tipo</th><th>Tutor</th><th>Veterinário</th><th>Clínica</th><th>Resultado</th><th></th></tr></thead>
+    <tbody>${[...f].sort((a,b)=>b.id-a.id).map(l => `<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(l.data)}</td>
+      <td><strong>${l.paciente||'—'}</strong> <span style="color:var(--text3);font-size:12px">${l.especie||''}</span></td>
+      <td><span class="pill">${l.tipo||'—'}</span></td>
+      <td style="color:var(--text2)">${l.tutor||'—'}</td>
+      <td style="color:var(--text2)">${l.vet||'—'}</td>
+      <td style="color:var(--text2)">${l.clinica||'—'}</td>
+      <td><span class="badge badge-${(l.resultado||'Normal').toLowerCase().replace('ã','a').replace('ç','c')}">${l.resultado}</span></td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm" onclick="viewLaudo(${l.id})" title="Ver">👁</button>
+        <button class="btn btn-sm" onclick="editLaudo(${l.id})" title="Editar">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="delLaudo(${l.id})" title="Excluir">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
 }
 
-
+// ─── DASHBOARD ────────────────────────────────────────────────────────────────
 function updateDashboard() {
   const laudosMes = laudos.filter(l => isMes(l.data)).length;
   const recMes = receitas.filter(r => isMes(r.data)).reduce((s,r)=>s+r.valor,0);
@@ -5129,10 +4367,13 @@ let fotoPanelOpen = false;
 
 function toggleFotoPanel() {
   fotoPanelOpen = !fotoPanelOpen;
-  const panel = document.getElementById('foto-panel-lateral');
-  const btn   = document.getElementById('foto-panel-btn');
-  const largura = Math.max(300, Math.round(window.innerWidth * 0.30));
+  const panel    = document.getElementById('foto-panel-lateral');
+  const btn      = document.getElementById('foto-panel-btn');
+  const backdrop = document.getElementById('foto-panel-backdrop');
+  const isMobile = window.innerWidth <= 900;
+  const largura  = isMobile ? Math.round(window.innerWidth * 0.85) : Math.max(300, Math.round(window.innerWidth * 0.30));
   panel.style.width = fotoPanelOpen ? largura + 'px' : '0';
+  if (backdrop) backdrop.style.display = fotoPanelOpen && isMobile ? 'block' : 'none';
   if (btn) btn.style.display = fotoPanelOpen ? 'none' : (fotosTmp.length ? 'block' : 'none');
   if (fotoPanelOpen) renderFotoPanelLateral();
 }
@@ -5213,6 +4454,8 @@ function atualizarBotaoFotoPanel() {
 </div>
 
 <!-- ═══ PAINEL LATERAL DE IMAGENS ══════════════════════════════════════════ -->
+<div id="foto-panel-backdrop" onclick="toggleFotoPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:209"></div>
+
 <div id="foto-panel-lateral" style="
   position:fixed;right:0;top:0;bottom:0;width:0;
   background:#fff;border-left:2px solid var(--teal);
