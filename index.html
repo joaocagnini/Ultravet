@@ -1358,6 +1358,34 @@
   <div class="modal-box">
     <div class="modal-title" id="ag-modal-title">Novo agendamento</div>
     <div class="form-grid fg-2">
+      <div class="form-field" style="grid-column:span 2">
+        <label>Tipo de agendamento</label>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border:2px solid var(--border);border-radius:8px;transition:.15s" id="at-btn-laudo">
+            <input type="radio" name="ag-tipo-agenda" value="Laudo" onchange="toggleTipoAgenda()" style="display:none">
+            <span style="font-size:18px">🔬</span><span style="font-size:12px;font-weight:600">Laudo</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border:2px solid var(--border);border-radius:8px;transition:.15s" id="at-btn-consulta">
+            <input type="radio" name="ag-tipo-agenda" value="Consulta" onchange="toggleTipoAgenda()" style="display:none">
+            <span style="font-size:18px">🩺</span><span style="font-size:12px;font-weight:600">Consulta</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border:2px solid var(--border);border-radius:8px;transition:.15s" id="at-btn-ambos">
+            <input type="radio" name="ag-tipo-agenda" value="Ambos" onchange="toggleTipoAgenda()" style="display:none">
+            <span style="font-size:18px">📋</span><span style="font-size:12px;font-weight:600">Laudo + Consulta</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:6px;cursor:pointer;padding:8px 10px;border:2px solid var(--border);border-radius:8px;transition:.15s" id="at-btn-geral">
+            <input type="radio" name="ag-tipo-agenda" value="Geral" checked onchange="toggleTipoAgenda()" style="display:none">
+            <span style="font-size:18px">📅</span><span style="font-size:12px;font-weight:600">Geral</span>
+          </label>
+        </div>
+      </div>
+      <div class="form-field" style="grid-column:span 2" id="ag-pac-sistema-row">
+        <label>Paciente cadastrado (opcional)</label>
+        <select id="ag-pac-id" onchange="preencherAgendaFromPaciente()">
+          <option value="">— Selecionar da lista de pacientes —</option>
+        </select>
+      </div>
+    <div class="form-grid fg-2" style="grid-column:span 2;gap:14px;padding:0">
       <div class="form-field"><label>Paciente</label><input id="ag-pac" placeholder="Nome do animal" oninput="atualizarGcalLink()"></div>
       <div class="form-field"><label>Tutor</label><input id="ag-tutor" placeholder="Nome do tutor"></div>
       <div class="form-field"><label>Espécie</label><select id="ag-esp"><option>Canino</option><option>Felino</option><option>Outro</option></select></div>
@@ -1827,7 +1855,17 @@ let agenda = [];
 let agendaViewDate = new Date();
 let agendaViewMode = 'mes';
 let agendaEditId = null;
-const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95' };
+const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95', 'Faltou':'#c0392b' };
+const AGENDA_TIPO_CORES = { 'Laudo':'#0f7a5a', 'Consulta':'#1a5fa8', 'Ambos':'#5b4fd4', 'Geral':'#6b6a65' };
+function corEvento(ev) {
+  if (ev.status === 'Realizado') return '#27ae60';
+  if (ev.status === 'Cancelado') return '#9b9a95';
+  if (ev.status === 'Faltou') return '#c0392b';
+  return AGENDA_TIPO_CORES[ev.tipoAgenda] || AGENDA_CORES[ev.status] || '#1a5fa8';
+}
+function iconeEvento(ev) {
+  return { 'Laudo':'🔬', 'Consulta':'🩺', 'Ambos':'📋', 'Geral':'📅' }[ev.tipoAgenda] || '📅';
+}
 let editId = null, viewId = null, curFSec = 'f-overview', curPSec = 'pc-layout', editClId = null;
 let fotosTmp = []; // fotos do laudo em edição (base64)
 
@@ -1919,6 +1957,147 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') 
+
+// ─── AGENDA HUB — Ações rápidas por evento ────────────────────────────────
+function verEventoAgenda(id) {
+  const ev = agenda.find(a => a.id === id);
+  if (!ev) return;
+  const p = (typeof pacientes !== 'undefined' && ev.pacienteId)
+    ? pacientes.find(x => x.id === ev.pacienteId) : null;
+  const ico = iconeEvento(ev);
+  const cor = corEvento(ev);
+
+  const podeIniciarLaudo   = ['Laudo','Ambos'].includes(ev.tipoAgenda) && !ev.laudoId;
+  const podeIniciarConsulta = ['Consulta','Ambos'].includes(ev.tipoAgenda) && !ev.consultaId;
+  const laudoVinculado = ev.laudoId ? (typeof laudos !== 'undefined' ? laudos.find(l => l.id === ev.laudoId) : null) : null;
+  const consultaVinculada = ev.consultaId ? (typeof consultas_vet !== 'undefined' ? consultas_vet.find(c => c.id === ev.consultaId) : null) : null;
+
+  const html = '<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;display:flex;align-items:center;justify-content:center" id="ev-overlay" onclick="if(event.target.id=='ev-overlay')fecharEventoAgenda()">'
+    + '<div style="background:#fff;border-radius:12px;width:420px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2)">'
+      + '<div style="background:' + cor + ';padding:16px 20px;color:#fff">'
+        + '<div style="display:flex;align-items:center;justify-content:space-between">'
+          + '<div style="font-size:22px">' + ico + '</div>'
+          + '<button onclick="fecharEventoAgenda()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px">✕</button>'
+        + '</div>'
+        + '<div style="font-size:18px;font-weight:700;margin-top:6px">' + (ev.paciente||'Agendamento') + '</div>'
+        + '<div style="font-size:13px;opacity:.85">' + (fmtDP(ev.data)) + (ev.hora?' às '+ev.hora:'') + ' · ' + (ev.tipoAgenda||'') + '</div>'
+      + '</div>'
+      + '<div style="padding:16px 20px">'
+        + (ev.tutor ? '<div style="margin-bottom:6px;font-size:13px"><span style="color:var(--text3)">Tutor:</span> ' + ev.tutor + '</div>' : '')
+        + (ev.vet ? '<div style="margin-bottom:6px;font-size:13px"><span style="color:var(--text3)">Veterinário:</span> ' + ev.vet + '</div>' : '')
+        + (ev.clinica ? '<div style="margin-bottom:6px;font-size:13px"><span style="color:var(--text3)">Clínica:</span> ' + ev.clinica + '</div>' : '')
+        + (ev.local ? '<div style="margin-bottom:6px;font-size:13px"><span style="color:var(--text3)">Local:</span> ' + ev.local + '</div>' : '')
+        + (ev.obs ? '<div style="margin-bottom:10px;font-size:13px;color:var(--text2);font-style:italic">' + ev.obs + '</div>' : '')
+        // Vínculos
+        + (laudoVinculado ? '<div style="padding:8px;background:var(--teal-bg);border-radius:6px;margin-bottom:6px;font-size:12px;color:var(--teal)">🔬 Laudo criado: ' + (laudoVinculado.paciente||'') + ' — <a href="#" onclick="fecharEventoAgenda();viewLaudo(' + ev.laudoId + ')" style="color:var(--teal);font-weight:600">Ver laudo</a></div>' : '')
+        + (consultaVinculada ? '<div style="padding:8px;background:var(--teal-bg);border-radius:6px;margin-bottom:6px;font-size:12px;color:var(--teal)">🩺 Consulta registrada — <a href="#" onclick="fecharEventoAgenda();navConsulta('consultas')" style="color:var(--teal);font-weight:600">Ver consulta</a></div>' : '')
+        // Ações rápidas
+        + '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'
+          + (podeIniciarLaudo ? '<button class="btn btn-primary" style="width:100%" onclick="fecharEventoAgenda();iniciarLaudoFromAgenda(' + id + ')">🔬 Iniciar laudo</button>' : '')
+          + (podeIniciarConsulta ? '<button class="btn btn-primary" style="width:100%;background:var(--blue,#1a5fa8)" onclick="fecharEventoAgenda();iniciarConsultaFromAgenda(' + id + ')">🩺 Iniciar consulta</button>' : '')
+          + (ev.status !== 'Realizado' ? '<button class="btn" style="width:100%;color:var(--teal);border-color:var(--teal)" onclick="marcarEventoRealizado(' + id + ')">✅ Marcar como realizado</button>' : '')
+          + '<div style="display:flex;gap:8px">'
+            + '<button class="btn" style="flex:1" onclick="fecharEventoAgenda();abrirEditAgenda(' + id + ')">✏️ Editar</button>'
+            + '<button class="btn btn-danger" style="flex:1" onclick="fecharEventoAgenda();excluirEventoAgenda(' + id + ')">🗑 Excluir</button>'
+          + '</div>'
+        + '</div>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+
+  const div = document.createElement('div');
+  div.id = 'ev-detalhe';
+  div.innerHTML = html;
+  document.body.appendChild(div);
+}
+
+function fecharEventoAgenda() {
+  const el = document.getElementById('ev-detalhe');
+  if (el) el.remove();
+}
+
+function marcarEventoRealizado(id) {
+  const idx = agenda.findIndex(a => a.id === id);
+  if (idx >= 0) agenda[idx].status = 'Realizado';
+  saveAgenda(); renderAgenda(); fecharEventoAgenda();
+  toast('Evento marcado como realizado!');
+}
+
+function excluirEventoAgenda(id) {
+  confirmarAcao('Excluir agendamento', 'Deseja excluir este agendamento?', 'Excluir', function() {
+    agenda = agenda.filter(a => a.id !== id);
+    saveAgenda(); renderAgenda(); toast('Agendamento excluído.');
+  });
+}
+
+function iniciarLaudoFromAgenda(agendaId) {
+  const ev = agenda.find(a => a.id === agendaId);
+  if (!ev) return;
+  novoLaudo();
+  setTimeout(function() {
+    if (ev.paciente) document.getElementById('f-pac').value = ev.paciente;
+    if (ev.tutor)    document.getElementById('f-tutor').value = ev.tutor;
+    if (ev.especie)  document.getElementById('f-esp').value = ev.especie;
+    if (ev.data)     document.getElementById('f-data').value = ev.data;
+    if (ev.vet)      document.getElementById('f-vet').value = ev.vet;
+    if (ev.clinica)  { document.getElementById('f-clinica').value = ev.clinica; }
+    if (ev.tipo && ev.tipo !== 'Geral') document.getElementById('f-tipo').value = ev.tipo;
+    toggleGest();
+    filtrarOrgaosPorSexo();
+    // Salvar referência ao agendaId para vincular após salvar
+    window._agendaIdPendente = agendaId;
+    toast('Formulário pré-preenchido com dados do agendamento!');
+  }, 100);
+}
+
+function iniciarConsultaFromAgenda(agendaId) {
+  const ev = agenda.find(a => a.id === agendaId);
+  if (!ev) return;
+  novaConsulta();
+  setTimeout(function() {
+    if (ev.data) document.getElementById('cv-data').value = ev.data;
+    if (ev.hora) document.getElementById('cv-hora').value = ev.hora;
+    if (ev.local) document.getElementById('cv-local').value = ev.local;
+    // Tentar encontrar paciente pelo nome
+    if (ev.pacienteId) {
+      document.getElementById('cv-paciente-sel').value = ev.pacienteId;
+      preencherDadosPaciente();
+    }
+    window._agendaIdPendente = agendaId;
+    navConsulta('nova-consulta');
+    toast('Formulário pré-preenchido com dados do agendamento!');
+  }, 100);
+}
+
+// Vincular laudo/consulta ao evento após salvar
+const _origSalvarLaudo = salvarLaudo;
+salvarLaudo = function() {
+  _origSalvarLaudo();
+  if (window._agendaIdPendente) {
+    const idx = agenda.findIndex(a => a.id === window._agendaIdPendente);
+    if (idx >= 0) {
+      agenda[idx].laudoId = laudos[laudos.length-1]?.id;
+      agenda[idx].status = 'Realizado';
+      saveAgenda();
+    }
+    window._agendaIdPendente = null;
+  }
+};
+
+const _origSalvarConsulta = salvarConsulta;
+salvarConsulta = function() {
+  _origSalvarConsulta();
+  if (window._agendaIdPendente) {
+    const idx = agenda.findIndex(a => a.id === window._agendaIdPendente);
+    if (idx >= 0) {
+      agenda[idx].consultaId = consultas_vet[consultas_vet.length-1]?.id;
+      agenda[idx].status = 'Realizado';
+      saveAgenda();
+    }
+    window._agendaIdPendente = null;
+  }
+};
+
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
 function toggleSidebar() {
   const sb = document.querySelector('.sidebar');
@@ -4319,8 +4498,9 @@ function renderCalDia() {
     html += '<div class="wg-slot' + (isToday ? ' today-col' : '') + '" style="min-height:56px" onclick="abrirNovaAgenda(\'' + ds + '\',\'' + hora.slice(0,5) + '\')">';
     evs.forEach(ev => {
       const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
-      html += '<div style="background:' + cor + ';color:#fff;border-radius:6px;padding:6px 10px;margin-bottom:4px;cursor:pointer" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')">'
-        + '<div style="font-weight:600;font-size:13px">' + (ev.hora||'') + ' · ' + (ev.paciente || 'Agendamento') + '</div>'
+      const cor = corEvento(ev);
+      html += '<div style="background:' + cor + ';color:#fff;border-radius:6px;padding:6px 10px;margin-bottom:4px;cursor:pointer;border-left:4px solid rgba(255,255,255,.4)" onclick="event.stopPropagation();verEventoAgenda(' + ev.id + ')">'
+        + '<div style="font-weight:600;font-size:13px">' + iconeEvento(ev) + ' ' + (ev.hora||'') + ' · ' + (ev.paciente || 'Agendamento') + '</div>'
         + '<div style="font-size:11px;opacity:.85">' + [ev.tipo, ev.vet].filter(Boolean).join(' · ') + '</div>'
         + '</div>';
     });
@@ -4330,12 +4510,53 @@ function renderCalDia() {
   document.getElementById('ag-cal').innerHTML = html;
 }
 
+function toggleTipoAgenda() {
+  const val = document.querySelector('input[name="ag-tipo-agenda"]:checked')?.value || 'Geral';
+  ['Laudo','Consulta','Ambos','Geral'].forEach(t => {
+    const btn = document.getElementById('at-btn-' + t.toLowerCase());
+    if (!btn) return;
+    btn.style.borderColor = val === t ? 'var(--teal)' : 'var(--border)';
+    btn.style.background = val === t ? 'var(--teal-bg)' : '';
+    btn.querySelector('input').checked = val === t;
+  });
+}
+
+function preencherAgendaFromPaciente() {
+  const id = parseInt(document.getElementById('ag-pac-id').value);
+  if (!id) return;
+  const p = (typeof pacientes !== 'undefined') ? pacientes.find(x => x.id === id) : null;
+  if (!p) return;
+  document.getElementById('ag-pac').value = p.nome;
+  document.getElementById('ag-tutor').value = p.tutor;
+  document.getElementById('ag-esp').value = p.especie || 'Canino';
+  if (p.endereco) document.getElementById('ag-local').value = p.endereco;
+}
+
+function popularPacientesAgenda() {
+  const sel = document.getElementById('ag-pac-id');
+  if (!sel) return;
+  sel.innerHTML = '<option value="">— Selecionar da lista de pacientes —</option>';
+  if (typeof pacientes === 'undefined') return;
+  pacientes.forEach(p => {
+    const opt = document.createElement('option');
+    opt.value = p.id;
+    opt.textContent = p.nome + ' (' + (p.especie||'') + ') — ' + (p.tutor||'');
+    sel.appendChild(opt);
+  });
+}
+
 function abrirNovaAgenda(data, hora) {
   agendaEditId = null;
   document.getElementById('ag-pac').value = '';
   document.getElementById('ag-tutor').value = '';
   document.getElementById('ag-esp').value = 'Canino';
   document.getElementById('ag-data').value = data || today();
+  document.getElementById('ag-pac-id').value = '';
+  // Reset tipo agenda para Geral
+  const radios = document.querySelectorAll('input[name="ag-tipo-agenda"]');
+  radios.forEach(r => { r.checked = r.value === 'Geral'; });
+  toggleTipoAgenda();
+  popularPacientesAgenda();
   document.getElementById('ag-hora').value = hora || '09:00';
   document.getElementById('ag-tipo').value = 'Abdominal total';
   document.getElementById('ag-clinica-modal').value = '';
@@ -4383,8 +4604,12 @@ function fecharAgenda() {
 }
 
 function salvarAgenda() {
+  const tipoAgenda = document.querySelector('input[name="ag-tipo-agenda"]:checked')?.value || 'Geral';
+  const existing = agendaEditId ? agenda.find(a => a.id === agendaEditId) : null;
   const ev = {
     id: agendaEditId || Date.now(),
+    tipoAgenda,
+    pacienteId: parseInt(document.getElementById('ag-pac-id').value) || null,
     paciente: document.getElementById('ag-pac').value,
     tutor: document.getElementById('ag-tutor').value,
     especie: document.getElementById('ag-esp').value,
@@ -4396,6 +4621,8 @@ function salvarAgenda() {
     vet: document.getElementById('ag-vet').value,
     obs: document.getElementById('ag-obs').value,
     status: document.getElementById('ag-status').value,
+    laudoId: existing?.laudoId || null,
+    consultaId: existing?.consultaId || null,
   };
   if (!ev.data) { toast('Informe a data do agendamento.'); return; }
   if (agendaEditId) {
