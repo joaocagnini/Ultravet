@@ -1972,6 +1972,14 @@ function goPage(name) {
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') 
 
+  if (name === 'dashboard') updateDashboard();
+  if (name === 'laudos') renderLaudos();
+  if (name === 'agenda') { renderAgenda(); }
+  if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
+  if (name === 'relatorios') strp(curRpSec);
+  if (name === 'painel') abrirPainel();
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // MÓDULO CONSULTAS VETERINÁRIAS — isolado do módulo de laudos
 // ═══════════════════════════════════════════════════════════════════════════
