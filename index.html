@@ -1703,6 +1703,7 @@ function save() {
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  localSaveTs = Date.now();
   syncCloud();
 }
 function load() {
@@ -2056,7 +2057,6 @@ function salvarLaudo() {
     }
     toast('Laudo salvo! Receita lançada automaticamente.');
   }
-  localSaveTs = Date.now();
   save();
 }
 
