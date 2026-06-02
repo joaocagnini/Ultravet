@@ -1205,66 +1205,48 @@
       </div>
 
     </div><!-- /content -->
-
-
-      <!-- ═══ MÓDULO CONSULTAS VETERINÁRIAS ═══════════════════════════════════ -->
-
-      <!-- DASHBOARD CONSULTAS -->
+  
+      <!-- MÓDULO CONSULTAS -->
       <div class="page" id="page-cv-dashboard">
-        <div class="metrics" id="cv-metrics" style="margin-bottom:20px">
+        <div class="metrics" style="margin-bottom:20px">
           <div class="metric-card"><div class="metric-label">Consultas este mês</div><div class="metric-value" id="cv-mes">0</div></div>
           <div class="metric-card"><div class="metric-label">Receita consultas</div><div class="metric-value green" id="cv-receita">R$ 0,00</div></div>
           <div class="metric-card"><div class="metric-label">A receber</div><div class="metric-value amber" id="cv-receber">R$ 0,00</div></div>
           <div class="metric-card"><div class="metric-label">Km este mês</div><div class="metric-value" id="cv-km">0 km</div></div>
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-          <div class="card">
-            <div class="card-header"><div class="card-title">📅 Próximos retornos</div><button class="btn btn-sm" onclick="navConsulta('consultas')">Ver todos →</button></div>
-            <div id="cv-retornos"><div class="empty-state"><p>Nenhum retorno agendado.</p></div></div>
-          </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">🩺 Últimos atendimentos</div><button class="btn btn-sm" onclick="navConsulta('consultas')">Ver todos →</button></div>
-            <div id="cv-ultimos"><div class="empty-state"><p>Nenhum atendimento registrado.</p></div></div>
-          </div>
+          <div class="card"><div class="card-header"><div class="card-title">📅 Próximos retornos</div><button class="btn btn-sm" onclick="navConsulta('consultas')">Ver todos →</button></div><div id="cv-retornos"><div class="empty-state"><p>Nenhum retorno agendado.</p></div></div></div>
+          <div class="card"><div class="card-header"><div class="card-title">🩺 Últimos atendimentos</div><button class="btn btn-sm" onclick="navConsulta('consultas')">Ver todos →</button></div><div id="cv-ultimos"><div class="empty-state"><p>Nenhum atendimento.</p></div></div></div>
         </div>
       </div>
 
-      <!-- LISTA DE PACIENTES -->
       <div class="page" id="page-pacientes">
         <div class="actions-bar" style="margin-bottom:16px">
-          <input class="search-box" id="pac-busca" placeholder="🔍 Buscar por nome do animal ou tutor..." oninput="renderPacientes()" style="flex:1;max-width:400px">
+          <input class="search-box" id="pac-busca" placeholder="🔍 Buscar por animal ou tutor..." oninput="renderPacientes()" style="flex:1;max-width:400px">
           <button class="btn btn-primary" onclick="abrirNovoPaciente()">+ Novo paciente</button>
         </div>
         <div id="pac-list"><div class="empty-state"><p>Nenhum paciente cadastrado.</p></div></div>
-
-        <!-- FORM PACIENTE (inline) -->
         <div id="pac-form-container" style="display:none">
           <div class="card">
             <div class="card-header"><div class="card-title" id="pac-form-titulo">Novo paciente</div></div>
             <div class="form-section">Dados do animal</div>
             <div class="form-grid fg-3">
-              <div class="form-field"><label>Nome do animal *</label><input id="pac-nome" placeholder="Ex: Rex"></div>
-              <div class="form-field"><label>Espécie</label>
-                <select id="pac-especie">
-                  <option>Canino</option><option>Felino</option><option>Ave</option><option>Roedor</option><option>Réptil</option><option>Outro</option>
-                </select>
-              </div>
-              <div class="form-field"><label>Raça</label><input id="pac-raca" placeholder="Ex: Labrador"></div>
-              <div class="form-field"><label>Sexo</label>
-                <select id="pac-sexo-p"><option>Macho</option><option>Fêmea</option><option>Macho castrado</option><option>Fêmea castrada</option></select>
-              </div>
+              <div class="form-field"><label>Nome do animal *</label><input id="pac-nome" spellcheck="true" lang="pt"></div>
+              <div class="form-field"><label>Espécie</label><select id="pac-especie"><option>Canino</option><option>Felino</option><option>Ave</option><option>Roedor</option><option>Réptil</option><option>Outro</option></select></div>
+              <div class="form-field"><label>Raça</label><input id="pac-raca"></div>
+              <div class="form-field"><label>Sexo</label><select id="pac-sexo-p"><option>Macho</option><option>Fêmea</option><option>Macho castrado</option><option>Fêmea castrada</option></select></div>
               <div class="form-field"><label>Data de nascimento</label><input type="date" id="pac-nasc"></div>
-              <div class="form-field"><label>Peso (kg)</label><input type="number" id="pac-peso" placeholder="0,0" step="0.1" min="0"></div>
-              <div class="form-field"><label>Pelagem / Cor</label><input id="pac-pelagem" placeholder="Ex: Caramelo"></div>
-              <div class="form-field"><label>Microchip</label><input id="pac-chip" placeholder="Número do chip"></div>
-              <div class="form-field"><label>Alergias / Observações</label><input id="pac-obs-p" placeholder="Alergias, condições especiais..."></div>
+              <div class="form-field"><label>Peso (kg)</label><input type="number" id="pac-peso" step="0.1" min="0"></div>
+              <div class="form-field"><label>Pelagem / Cor</label><input id="pac-pelagem"></div>
+              <div class="form-field"><label>Microchip</label><input id="pac-chip"></div>
+              <div class="form-field"><label>Alergias / Obs.</label><input id="pac-obs-p"></div>
             </div>
             <div class="form-section">Dados do tutor</div>
             <div class="form-grid fg-3">
-              <div class="form-field"><label>Nome do tutor *</label><input id="pac-tutor" placeholder="Nome completo"></div>
+              <div class="form-field"><label>Nome do tutor *</label><input id="pac-tutor" spellcheck="true" lang="pt"></div>
               <div class="form-field"><label>Telefone / WhatsApp</label><input id="pac-tel" placeholder="(XX) XXXXX-XXXX"></div>
-              <div class="form-field"><label>E-mail</label><input type="email" id="pac-email" placeholder="email@exemplo.com"></div>
-              <div class="form-field" style="grid-column:span 2"><label>Endereço (para domicílios)</label><input id="pac-end" placeholder="Rua, número — Bairro, Cidade"></div>
+              <div class="form-field"><label>E-mail</label><input type="email" id="pac-email"></div>
+              <div class="form-field" style="grid-column:span 2"><label>Endereço</label><input id="pac-end"></div>
               <div class="form-field"><label>CEP</label><input id="pac-cep" placeholder="00000-000"></div>
             </div>
             <div class="actions-bar">
@@ -1275,7 +1257,6 @@
         </div>
       </div>
 
-      <!-- LISTA DE CONSULTAS -->
       <div class="page" id="page-consultas">
         <div class="actions-bar" style="margin-bottom:16px">
           <input class="search-box" id="cv-busca" placeholder="🔍 Buscar por paciente ou tutor..." oninput="renderConsultas()" style="flex:1;max-width:400px">
@@ -1284,80 +1265,50 @@
         <div id="cv-list"><div class="empty-state"><p>Nenhuma consulta registrada.</p></div></div>
       </div>
 
-      <!-- FORMULÁRIO DE CONSULTA -->
       <div class="page" id="page-nova-consulta">
         <div class="card">
           <div class="card-header"><div class="card-title" id="cv-form-titulo">Nova consulta</div></div>
-
           <div class="form-section">Paciente e data</div>
           <div class="form-grid fg-3">
-            <div class="form-field" style="grid-column:span 2">
-              <label>Paciente *</label>
-              <div style="display:flex;gap:8px;align-items:center">
-                <select id="cv-paciente-sel" style="flex:1" onchange="preencherDadosPaciente()">
-                  <option value="">— Selecione o paciente —</option>
-                </select>
-                <button class="btn btn-sm" onclick="abrirNovoPaciente(true)" title="Cadastrar novo paciente">+</button>
-              </div>
-              <div id="cv-pac-info" style="font-size:12px;color:var(--text2);margin-top:4px"></div>
-            </div>
+            <div class="form-field" style="grid-column:span 2"><label>Paciente *</label><div style="display:flex;gap:8px"><select id="cv-paciente-sel" style="flex:1" onchange="preencherDadosPaciente()"><option value="">— Selecione —</option></select><button class="btn btn-sm" onclick="abrirNovoPaciente(true)">+</button></div><div id="cv-pac-info" style="font-size:12px;color:var(--text2);margin-top:4px"></div></div>
             <div class="form-field"><label>Data *</label><input type="date" id="cv-data"></div>
             <div class="form-field"><label>Hora</label><input type="time" id="cv-hora"></div>
-            <div class="form-field"><label>Tipo de atendimento</label>
-              <select id="cv-tipo-at" onchange="toggleLocalConsulta()">
-                <option>Domicílio</option><option>Clínica parceira</option><option>Consultório próprio</option><option>Outro</option>
-              </select>
-            </div>
-            <div class="form-field" style="grid-column:span 1"><label>Local / Endereço</label><input id="cv-local" placeholder="Endereço do atendimento"></div>
+            <div class="form-field"><label>Tipo</label><select id="cv-tipo-at" onchange="preencherDadosPaciente()"><option>Domicílio</option><option>Clínica parceira</option><option>Consultório próprio</option><option>Outro</option></select></div>
+            <div class="form-field" style="grid-column:span 3"><label>Local / Endereço</label><input id="cv-local"></div>
           </div>
-
           <div class="form-section">Deslocamento</div>
-          <div class="form-grid fg-3" id="cv-desl-section">
+          <div class="form-grid fg-3">
             <div class="form-field"><label>Km percorridos</label><input type="number" id="cv-km-perc" placeholder="0" min="0" step="0.1" oninput="calcularDeslocamento()"></div>
-            <div class="form-field"><label>Valor por km (R$)</label><input type="number" id="cv-vlr-km" value="1.50" step="0.10" min="0" oninput="calcularDeslocamento()"></div>
-            <div class="form-field"><label>Valor deslocamento (R$)</label><input type="text" id="cv-vlr-desl" placeholder="0,00" readonly style="background:var(--surface2)"></div>
+            <div class="form-field"><label>R$ por km</label><input type="number" id="cv-vlr-km" value="1.50" step="0.10" oninput="calcularDeslocamento()"></div>
+            <div class="form-field"><label>Valor deslocamento</label><input type="text" id="cv-vlr-desl" readonly style="background:var(--surface2)"></div>
           </div>
-
           <div class="form-section">Exame físico</div>
           <div class="form-grid fg-3">
-            <div class="form-field"><label>Peso atual (kg)</label><input type="number" id="cv-peso-at" placeholder="0,0" step="0.1" min="0"></div>
-            <div class="form-field"><label>Temperatura (°C)</label><input type="number" id="cv-temp" placeholder="38,5" step="0.1"></div>
-            <div class="form-field"><label>FC (bpm)</label><input type="number" id="cv-fc" placeholder="80" min="0"></div>
-            <div class="form-field"><label>FR (rpm)</label><input type="number" id="cv-fr" placeholder="20" min="0"></div>
-            <div class="form-field"><label>TPC</label>
-              <select id="cv-tpc"><option value="">—</option><option>< 2s (normal)</option><option>2-3s (limítrofe)</option><option>> 3s (alterado)</option></select>
-            </div>
-            <div class="form-field"><label>Mucosas</label>
-              <select id="cv-mucosas"><option value="">—</option><option>Róseas (normal)</option><option>Pálidas</option><option>Ictéricas</option><option>Cianóticas</option><option>Congestas</option></select>
-            </div>
-            <div class="form-field"><label>Hidratação</label>
-              <select id="cv-hidrat"><option value="">—</option><option>Normal (< 5%)</option><option>5-7% (leve)</option><option>8-10% (moderada)</option><option>> 10% (grave)</option></select>
-            </div>
-            <div class="form-field" style="grid-column:span 2"><label>Observações do exame físico</label><textarea id="cv-ef-obs" rows="2" placeholder="Achados relevantes no exame físico..."></textarea></div>
+            <div class="form-field"><label>Peso atual (kg)</label><input type="number" id="cv-peso-at" step="0.1"></div>
+            <div class="form-field"><label>Temperatura (°C)</label><input type="number" id="cv-temp" step="0.1"></div>
+            <div class="form-field"><label>FC (bpm)</label><input type="number" id="cv-fc"></div>
+            <div class="form-field"><label>FR (rpm)</label><input type="number" id="cv-fr"></div>
+            <div class="form-field"><label>TPC</label><select id="cv-tpc"><option value="">—</option><option>&lt; 2s (normal)</option><option>2-3s (limítrofe)</option><option>&gt; 3s (alterado)</option></select></div>
+            <div class="form-field"><label>Mucosas</label><select id="cv-mucosas"><option value="">—</option><option>Róseas (normal)</option><option>Pálidas</option><option>Ictéricas</option><option>Cianóticas</option><option>Congestas</option></select></div>
+            <div class="form-field"><label>Hidratação</label><select id="cv-hidrat"><option value="">—</option><option>Normal (&lt; 5%)</option><option>5-7% (leve)</option><option>8-10% (moderada)</option><option>&gt; 10% (grave)</option></select></div>
+            <div class="form-field" style="grid-column:span 2"><label>Obs. exame físico</label><textarea id="cv-ef-obs" rows="2" spellcheck="true" lang="pt"></textarea></div>
           </div>
-
           <div class="form-section">Clínica</div>
           <div class="form-grid fg-2">
-            <div class="form-field"><label>Queixa principal</label><textarea id="cv-queixa" rows="3" placeholder="Motivo da consulta relatado pelo tutor..."></textarea></div>
-            <div class="form-field"><label>Diagnóstico / Hipótese diagnóstica</label><textarea id="cv-diag" rows="3" placeholder="Diagnóstico clínico ou hipótese..."></textarea></div>
-            <div class="form-field" style="grid-column:span 2"><label>Plano terapêutico</label><textarea id="cv-trat" rows="3" placeholder="Tratamento prescrito, orientações ao tutor..."></textarea></div>
+            <div class="form-field"><label>Queixa principal</label><textarea id="cv-queixa" rows="3" spellcheck="true" lang="pt"></textarea></div>
+            <div class="form-field"><label>Diagnóstico / Hipótese</label><textarea id="cv-diag" rows="3" spellcheck="true" lang="pt"></textarea></div>
+            <div class="form-field" style="grid-column:span 2"><label>Plano terapêutico</label><textarea id="cv-trat" rows="3" spellcheck="true" lang="pt"></textarea></div>
           </div>
-
           <div class="form-section">Prescrições</div>
           <div id="cv-prescricoes-lista" style="margin-bottom:10px"></div>
           <button class="btn btn-sm" onclick="adicionarMedicamento()" style="margin-bottom:16px">+ Adicionar medicamento</button>
-
           <div class="form-section">Retorno e financeiro</div>
           <div class="form-grid fg-3">
             <div class="form-field"><label>Retorno agendado</label><input type="date" id="cv-retorno"></div>
-            <div class="form-field"><label>Valor da consulta (R$)</label><input type="text" id="cv-vlr-cons" placeholder="0,00" oninput="maskCurrency(this)"></div>
-            <div class="form-field"><label>Valor total (R$)</label><input type="text" id="cv-vlr-total" placeholder="0,00" readonly style="background:var(--surface2);font-weight:700"></div>
-            <div class="form-field"><label>Forma de pagamento</label>
-              <select id="cv-forma-p"><option>Pix</option><option>Dinheiro</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Transferência</option></select>
-            </div>
-            <div class="form-field"><label>Status</label>
-              <select id="cv-status-p"><option>Pago</option><option>Pendente</option></select>
-            </div>
+            <div class="form-field"><label>Valor consulta (R$)</label><input type="text" id="cv-vlr-cons" placeholder="0,00" oninput="maskCurrency(this);atualizarTotalConsulta()"></div>
+            <div class="form-field"><label>Total (R$)</label><input type="text" id="cv-vlr-total" readonly style="background:var(--surface2);font-weight:700"></div>
+            <div class="form-field"><label>Forma de pagamento</label><select id="cv-forma-p"><option>Pix</option><option>Dinheiro</option><option>Cartão de crédito</option><option>Cartão de débito</option><option>Transferência</option></select></div>
+            <div class="form-field"><label>Status</label><select id="cv-status-p"><option>Pago</option><option>Pendente</option></select></div>
           </div>
           <div class="actions-bar">
             <button class="btn" onclick="navConsulta('consultas')">Cancelar</button>
@@ -1367,14 +1318,14 @@
         </div>
       </div>
 
-      <!-- RECEITUÁRIO -->
       <div class="page" id="page-receituario">
         <div class="actions-bar" style="margin-bottom:16px">
           <input class="search-box" id="rx-busca" placeholder="🔍 Buscar por paciente..." oninput="renderReceituario()" style="flex:1;max-width:400px">
         </div>
         <div id="rx-list"><div class="empty-state"><p>Nenhuma receita emitida.</p></div></div>
       </div>
-      <!-- ═══ FIM MÓDULO CONSULTAS ══════════════════════════════════════════════ -->
+      <!-- FIM MÓDULO CONSULTAS -->
+
   </main>
 </div>
 
@@ -1863,8 +1814,8 @@ function save() {
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
-  localStorage.setItem('uv_pacientes', JSON.stringify(typeof pacientes !== 'undefined' ? pacientes : []));
-  localStorage.setItem('uv_consultas_vet', JSON.stringify(typeof consultas_vet !== 'undefined' ? consultas_vet : []));
+  if(typeof pacientes!=='undefined')localStorage.setItem('uv_pacientes',JSON.stringify(pacientes));
+  if(typeof consultas_vet!=='undefined')localStorage.setItem('uv_consultas_vet',JSON.stringify(consultas_vet));
   syncCloud();
 }
 function load() {
@@ -1873,8 +1824,8 @@ function load() {
   try { despesas = JSON.parse(localStorage.getItem('uv_despesas') || '[]'); } catch(e){despesas=[];}
   try { clinicas = JSON.parse(localStorage.getItem('uv_clinicas') || '[]'); } catch(e){clinicas=[];}
   try { agenda = JSON.parse(localStorage.getItem('uv_agenda') || '[]'); } catch(e){agenda=[];}
-  try { pacientes = JSON.parse(localStorage.getItem('uv_pacientes') || '[]'); } catch(e){pacientes=[];}
-  try { consultas_vet = JSON.parse(localStorage.getItem('uv_consultas_vet') || '[]'); } catch(e){consultas_vet=[];}
+  try { pacientes = JSON.parse(localStorage.getItem('uv_pacientes') || '[]'); } catch(e){}
+  try { consultas_vet = JSON.parse(localStorage.getItem('uv_consultas_vet') || '[]'); } catch(e){}
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -1919,11 +1870,7 @@ function toast(msg) {
 
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 const pageTitles = {
-  'cv-dashboard': ['Consultas — Visão geral','Métricas e resumo'],
-  'pacientes': ['Pacientes','Animais e tutores'],
-  'consultas': ['Atendimentos','Histórico de consultas'],
-  'nova-consulta': ['Nova consulta','Registrar atendimento'],
-  'receituario': ['Receituário','Prescrições emitidas'],
+  'cv-dashboard':['Consultas — Visão geral','Métricas'],'pacientes':['Pacientes','Animais e tutores'],'consultas':['Atendimentos','Histórico'],'nova-consulta':['Nova consulta','Registrar atendimento'],'receituario':['Receituário','Prescrições'],
   dashboard: ['Dashboard', 'Visão geral do sistema'],
   laudos: ['Laudos', 'Todos os exames registrados'],
   'novo-laudo': ['Novo laudo', 'Preencher relatório ultrassonográfico'],
@@ -1946,6 +1893,47 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
+document.getElementById('sb-logo').src = LOGO_B64;
+  if (name === 'laudos') renderLaudos();
+  if (name === 'agenda') { renderAgenda(); }
+  if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
+  if (name === 'relatorios') strp(curRpSec);
+  if (name === 'painel') renderPainel();
+}
+
 
 // ═══════════════════════════════════════════════════════════════════════════
 // MÓDULO CONSULTAS VETERINÁRIAS — isolado do módulo de laudos
@@ -2540,46 +2528,7 @@ function renderCvDashboard() {
 }
 // ═══ FIM MÓDULO CONSULTAS ══════════════════════════════════════════════════
 
-// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
-function toggleSidebar() {
-  const sb = document.querySelector('.sidebar');
-  const main = document.querySelector('.main');
-  const collapsed = sb.classList.toggle('sb-col');
-  if (main) main.classList.toggle('sb-col', collapsed);
-  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
-}
-function initSidebar() {
-  const isMobile = window.innerWidth <= 900;
-  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
-  if (isMobile || savedCol) {
-    const sb   = document.querySelector('.sidebar');
-    const main = document.querySelector('.main');
-    if (sb)   sb.classList.add('sb-col');
-    if (main) main.classList.add('sb-col');
-  }
-}
-window.addEventListener('resize', function() {
-  const sb   = document.querySelector('.sidebar');
-  const main = document.querySelector('.main');
-  if (!sb || !main) return;
-  if (window.innerWidth <= 900) {
-    sb.classList.add('sb-col');
-    main.classList.add('sb-col');
-  } else if (localStorage.getItem('uv_sb_col') !== '1') {
-    sb.classList.remove('sb-col');
-    main.classList.remove('sb-col');
-  }
-});
 
-updateDashboard();
-initSidebar();
-document.getElementById('sb-logo').src = LOGO_B64;
-  if (name === 'laudos') renderLaudos();
-  if (name === 'agenda') { renderAgenda(); }
-  if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
-  if (name === 'relatorios') strp(curRpSec);
-  if (name === 'painel') renderPainel();
-}
 
 function strp(name) {
   curRpSec = name;
