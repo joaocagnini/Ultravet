@@ -1827,10 +1827,7 @@ let agenda = [];
 let agendaViewDate = new Date();
 let agendaViewMode = 'mes';
 let agendaEditId = null;
-const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95', 'Faltou':'#c0392b' };
-const AGENDA_TIPO_CORES = { 'Laudo':'#0f7a5a', 'Consulta':'#1a5fa8', 'Ambos':'#5b4fd4', 'Geral':'#6b6a65' };
-function corEvento(ev) { if(ev.status==='Realizado') return '#27ae60'; if(ev.status==='Cancelado') return '#9b9a95'; if(ev.status==='Faltou') return '#c0392b'; return AGENDA_TIPO_CORES[ev.tipoAgenda]||AGENDA_CORES[ev.status]||'#1a5fa8'; }
-function iconeEvento(ev) { return {'Laudo':'🔬','Consulta':'🩺','Ambos':'📋','Geral':'📅'}[ev.tipoAgenda]||'📅'; }
+const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95' };
 let editId = null, viewId = null, curFSec = 'f-overview', curPSec = 'pc-layout', editClId = null;
 let fotosTmp = []; // fotos do laudo em edição (base64)
 
@@ -3516,6 +3513,37 @@ function addReceita() {
 function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -3526,6 +3554,37 @@ function delRec(id) {
   receitas = receitas.filter(r => r.id!==id);
   cloudDelete('uv_receitas', id);
   save(); renderReceitas(); updateFinOverview(); 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -3784,6 +3843,37 @@ function importarBackup(input) {
       save();
       populateClinicaSelects();
       
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -4164,7 +4254,7 @@ function renderCalMes() {
       html += '<div class="day-num">' + cur.getDate() + '</div>';
       dayEvs.slice(0, 3).forEach(ev => {
         const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
-        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();verEventoAgenda(' + ev.id + ')" title="' + (ev.hora||'') + ' · ' + (ev.paciente||'') + '">'
+        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')" title="' + (ev.hora||'') + ' · ' + (ev.paciente||'') + '">'
           + (ev.hora ? ev.hora.slice(0,5) + ' ' : '') + (ev.paciente || 'Agendamento') + '</div>';
       });
       if (dayEvs.length > 3) html += '<div class="ev-more" onclick="event.stopPropagation();agendaViewDate=new Date(\'' + ds + 'T12:00:00\');setAgendaMode(\'dia\')">+' + (dayEvs.length - 3) + ' mais</div>';
@@ -4293,14 +4383,8 @@ function fecharAgenda() {
 }
 
 function salvarAgenda() {
-  const tipoAgenda = (document.querySelector('input[name="ag-tipo-agenda"]:checked')||{value:'Geral'}).value;
-  const existing = agendaEditId ? agenda.find(function(a){return a.id===agendaEditId;}) : null;
   const ev = {
     id: agendaEditId || Date.now(),
-    tipoAgenda: tipoAgenda,
-    pacienteId: parseInt((document.getElementById('ag-pac-id')||{}).value)||null,
-    laudoId: existing ? existing.laudoId||null : null,
-    consultaId: existing ? existing.consultaId||null : null,
     paciente: document.getElementById('ag-pac').value,
     tutor: document.getElementById('ag-tutor').value,
     especie: document.getElementById('ag-esp').value,
@@ -4511,160 +4595,6 @@ function atualizarMapsBtn() {
     btn.style.display = 'none';
   }
 }
-
-
-
-// ─── AGENDA HUB ───────────────────────────────────────────────────────────
-function toggleTipoAgenda() {
-  var val = (document.querySelector('input[name="ag-tipo-agenda"]:checked') || {}).value || 'Geral';
-  ['laudo','consulta','ambos','geral'].forEach(function(t) {
-    var btn = document.getElementById('at-btn-' + t);
-    if (!btn) return;
-    var isActive = val.toLowerCase() === t;
-    btn.style.borderColor = isActive ? 'var(--teal)' : 'var(--border)';
-    btn.style.background  = isActive ? 'var(--teal-bg)' : '';
-    btn.style.fontWeight  = isActive ? '700' : '';
-  });
-}
-
-function popularPacientesAgenda() {
-  var sel = document.getElementById('ag-pac-id');
-  if (!sel) return;
-  sel.innerHTML = '<option value="">— Selecionar da lista de pacientes —</option>';
-  if (typeof pacientes === 'undefined' || !pacientes) return;
-  pacientes.forEach(function(p) {
-    var opt = document.createElement('option');
-    opt.value = p.id;
-    opt.textContent = p.nome + ' (' + (p.especie||'') + ') — ' + (p.tutor||'');
-    sel.appendChild(opt);
-  });
-}
-
-function preencherAgendaFromPaciente() {
-  var id = parseInt((document.getElementById('ag-pac-id') || {}).value);
-  if (!id || typeof pacientes === 'undefined') return;
-  var p = pacientes.find(function(x){ return x.id === id; });
-  if (!p) return;
-  document.getElementById('ag-pac').value = p.nome || '';
-  document.getElementById('ag-tutor').value = p.tutor || '';
-  document.getElementById('ag-esp').value = p.especie || 'Canino';
-  if (p.endereco) document.getElementById('ag-local').value = p.endereco;
-}
-
-function verEventoAgenda(id) {
-  var ev = agenda.find(function(a){ return a.id === id; });
-  if (!ev) return;
-  var p = (typeof pacientes !== 'undefined' && ev.pacienteId) ? pacientes.find(function(x){ return x.id === ev.pacienteId; }) : null;
-  var ico = iconeEvento(ev);
-  var cor = corEvento(ev);
-  var podeIniciarLaudo    = ['Laudo','Ambos'].indexOf(ev.tipoAgenda) >= 0 && !ev.laudoId;
-  var podeIniciarConsulta = ['Consulta','Ambos'].indexOf(ev.tipoAgenda) >= 0 && !ev.consultaId;
-  var laudoVinc = ev.laudoId && typeof laudos !== 'undefined' ? laudos.find(function(l){ return l.id === ev.laudoId; }) : null;
-  var consultaVinc = ev.consultaId && typeof consultas_vet !== 'undefined' ? consultas_vet.find(function(c){ return c.id === ev.consultaId; }) : null;
-
-  var el = document.createElement('div');
-  el.id = 'ev-detalhe';
-  el.innerHTML = '<div style="position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:600;display:flex;align-items:center;justify-content:center" onclick="if(event.target===this)fecharEventoAgenda()">'
-    + '<div style="background:#fff;border-radius:12px;width:420px;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2)">'
-      + '<div style="background:' + cor + ';padding:16px 20px;color:#fff;display:flex;align-items:flex-start;justify-content:space-between">'
-        + '<div>'
-          + '<div style="font-size:22px;margin-bottom:4px">' + ico + '</div>'
-          + '<div style="font-size:17px;font-weight:700">' + (ev.paciente||'Agendamento') + '</div>'
-          + '<div style="font-size:12px;opacity:.85">' + fmtDP(ev.data) + (ev.hora?' às '+ev.hora:'') + (ev.tipoAgenda?' · '+ev.tipoAgenda:'') + '</div>'
-        + '</div>'
-        + '<button onclick="fecharEventoAgenda()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-size:16px;flex-shrink:0">✕</button>'
-      + '</div>'
-      + '<div style="padding:16px 20px">'
-        + (ev.tutor ? '<p style="font-size:13px;margin-bottom:6px"><span style="color:var(--text3)">Tutor:</span> ' + ev.tutor + '</p>' : '')
-        + (ev.vet   ? '<p style="font-size:13px;margin-bottom:6px"><span style="color:var(--text3)">Veterinário:</span> ' + ev.vet + '</p>' : '')
-        + (ev.clinica ? '<p style="font-size:13px;margin-bottom:6px"><span style="color:var(--text3)">Clínica:</span> ' + ev.clinica + '</p>' : '')
-        + (ev.local ? '<p style="font-size:13px;margin-bottom:10px"><span style="color:var(--text3)">Local:</span> ' + ev.local + '</p>' : '')
-        + (laudoVinc ? '<div style="padding:8px;background:var(--teal-bg);border-radius:6px;margin-bottom:6px;font-size:12px">🔬 Laudo criado — <a href="#" onclick="fecharEventoAgenda();viewLaudo(' + ev.laudoId + ')" style="color:var(--teal);font-weight:600">Ver laudo</a></div>' : '')
-        + (consultaVinc ? '<div style="padding:8px;background:var(--teal-bg);border-radius:6px;margin-bottom:6px;font-size:12px">🩺 Consulta registrada — <a href="#" onclick="fecharEventoAgenda();navConsulta(\'consultas\')" style="color:var(--teal);font-weight:600">Ver consulta</a></div>' : '')
-        + '<div style="display:flex;flex-direction:column;gap:8px;margin-top:12px">'
-          + (podeIniciarLaudo ? '<button class="btn btn-primary" onclick="fecharEventoAgenda();iniciarLaudoFromAgenda(' + id + ')">🔬 Iniciar laudo</button>' : '')
-          + (podeIniciarConsulta ? '<button class="btn" style="background:#1a5fa8;color:#fff" onclick="fecharEventoAgenda();iniciarConsultaFromAgenda(' + id + ')">🩺 Iniciar consulta</button>' : '')
-          + (ev.status !== 'Realizado' ? '<button class="btn" style="color:var(--teal);border-color:var(--teal)" onclick="marcarRealizado(' + id + ')">✅ Marcar como realizado</button>' : '')
-          + '<div style="display:flex;gap:8px">'
-            + '<button class="btn" style="flex:1" onclick="fecharEventoAgenda();abrirEditAgenda(' + id + ')">✏️ Editar</button>'
-            + '<button class="btn btn-danger" style="flex:1" onclick="fecharEventoAgenda();excluirEvento(' + id + ')">🗑 Excluir</button>'
-          + '</div>'
-        + '</div>'
-      + '</div>'
-    + '</div>'
-  + '</div>';
-  document.body.appendChild(el);
-}
-
-function fecharEventoAgenda() {
-  var el = document.getElementById('ev-detalhe');
-  if (el) el.remove();
-}
-
-function marcarRealizado(id) {
-  var idx = agenda.findIndex(function(a){ return a.id === id; });
-  if (idx >= 0) agenda[idx].status = 'Realizado';
-  saveAgenda(); renderAgenda(); fecharEventoAgenda();
-  toast('Marcado como realizado!');
-}
-
-function excluirEvento(id) {
-  confirmarAcao('Excluir agendamento', 'Deseja excluir este agendamento?', 'Excluir', function() {
-    agenda = agenda.filter(function(a){ return a.id !== id; });
-    saveAgenda(); renderAgenda(); toast('Agendamento excluído.');
-  });
-}
-
-function iniciarLaudoFromAgenda(agendaId) {
-  var ev = agenda.find(function(a){ return a.id === agendaId; });
-  if (!ev) return;
-  window._agendaIdPendente = agendaId;
-  novoLaudo();
-  setTimeout(function() {
-    if (ev.paciente) { var el = document.getElementById('f-pac'); if(el) el.value = ev.paciente; }
-    if (ev.tutor)    { var el = document.getElementById('f-tutor'); if(el) el.value = ev.tutor; }
-    if (ev.especie)  { var el = document.getElementById('f-esp'); if(el) el.value = ev.especie; }
-    if (ev.data)     { var el = document.getElementById('f-data'); if(el) el.value = ev.data; }
-    if (ev.vet)      { var el = document.getElementById('f-vet'); if(el) el.value = ev.vet; }
-    if (ev.clinica)  { var el = document.getElementById('f-clinica'); if(el) el.value = ev.clinica; }
-    if (ev.tipo && ev.tipo !== 'Geral') { var el = document.getElementById('f-tipo'); if(el) el.value = ev.tipo; }
-    if (typeof toggleGest === 'function') toggleGest();
-    if (typeof filtrarOrgaosPorSexo === 'function') filtrarOrgaosPorSexo();
-    toast('Formulário pré-preenchido!');
-  }, 150);
-}
-
-function iniciarConsultaFromAgenda(agendaId) {
-  var ev = agenda.find(function(a){ return a.id === agendaId; });
-  if (!ev) return;
-  window._agendaIdPendente = agendaId;
-  if (typeof novaConsulta === 'function') novaConsulta();
-  setTimeout(function() {
-    if (ev.data)      { var el = document.getElementById('cv-data'); if(el) el.value = ev.data; }
-    if (ev.hora)      { var el = document.getElementById('cv-hora'); if(el) el.value = ev.hora; }
-    if (ev.local)     { var el = document.getElementById('cv-local'); if(el) el.value = ev.local; }
-    if (ev.pacienteId){ var sel = document.getElementById('cv-paciente-sel'); if(sel){ sel.value = ev.pacienteId; if(typeof preencherDadosPaciente==='function') preencherDadosPaciente(); } }
-    if (typeof navConsulta === 'function') navConsulta('nova-consulta');
-    toast('Formulário pré-preenchido!');
-  }, 150);
-}
-
-// Vínculo automático: após salvar laudo/consulta iniciado pela agenda
-document.addEventListener('DOMContentLoaded', function() {
-  var _origSL = window.salvarLaudo;
-  if (typeof _origSL === 'function') {
-    window.salvarLaudo = function() {
-      _origSL.call(this);
-      if (window._agendaIdPendente && typeof laudos !== 'undefined' && laudos.length) {
-        var idx = agenda.findIndex(function(a){ return a.id === window._agendaIdPendente; });
-        if (idx >= 0) { agenda[idx].laudoId = laudos[laudos.length-1].id; agenda[idx].status = 'Realizado'; saveAgenda(); }
-        window._agendaIdPendente = null;
-      }
-    };
-  }
-});
-// ─── FIM AGENDA HUB ───────────────────────────────────────────────────────
-
 
 function saveAgenda() {
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
@@ -4879,6 +4809,37 @@ async function initCloud() {
     save();
     populateClinicaSelects();
     
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
@@ -4900,6 +4861,37 @@ load();
 document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
+
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
 
 updateDashboard();
 initSidebar();
