@@ -380,7 +380,7 @@
         <div class="topbar-title" id="topbar-title">Dashboard</div>
         <div class="topbar-sub" id="topbar-sub">Visão geral do sistema</div>
       </div>
-      <button class="btn btn-primary" onclick="novoLaudo()">
+      <button id="btn-novo-laudo" class="btn btn-primary" onclick="novoLaudo()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
         Novo laudo
       </button>
@@ -1905,6 +1905,7 @@ function goPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.getElementById('page-' + name).classList.add('active');
+  var btnNL = document.getElementById('btn-novo-laudo'); if(btnNL) btnNL.style.display = '';
   const [title, sub] = pageTitles[name] || [name, ''];
   document.getElementById('topbar-title').textContent = title;
   document.getElementById('topbar-sub').textContent = sub;
@@ -1976,6 +1977,7 @@ function navConsulta(name) {
   // Navegação exclusiva do módulo de consultas — não toca em goPage/laudos
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  var btnNL = document.getElementById('btn-novo-laudo'); if(btnNL) btnNL.style.display = 'none';
   const page = document.getElementById('page-' + name);
   if (!page) return;
   page.classList.add('active');
@@ -2886,10 +2888,10 @@ function buildLaudoHTML(l) {
   const orgs   = isGest ? l.orgGest   : l.orgAbdom;
   const nomes  = isGest ? orgNomesGest : orgNomesAbdom;
   const orgRows = orgs ? Object.keys(orgs).filter(function(k){ return orgs[k] && orgs[k].texto; }).map(function(k){
-    return '<tr style="border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
-      + '<td style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;width:155px;vertical-align:top;font-family:' + fonte + '">' + (nomes[k]||k) + '</td>'
-      + '<td style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</td>'
-      + '</tr>';
+    return '<div style="display:grid;grid-template-columns:155px 1fr;border-bottom:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
+      + '<div style="padding:7px 10px;font-size:' + szSm + 'px;font-weight:700;color:#1e1e1c;font-family:' + fonte + '">' + (nomes[k]||k) + '</div>'
+      + '<div style="padding:7px 10px;font-size:' + sz + 'px;color:#2a2a28;line-height:' + lh + ';white-space:pre-wrap;font-family:' + fonte + '">' + orgs[k].texto + '</div>'
+      + '</div>';
   }).join('') : '';
   // cabeçalho (3 estilos)
   const logoSrc = getLogo();
@@ -2947,7 +2949,7 @@ function buildLaudoHTML(l) {
     /* ACHADOS */
     + (secAchados ? '<div style="padding:10px 28px 14px">'
       + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
-      + '<table style="width:100%;border-collapse:collapse;font-family:' + fonte + '">' + orgRows + '</table>'
+      + '<div style="width:100%;font-family:' + fonte + '">' + orgRows + '</div>'
     + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
