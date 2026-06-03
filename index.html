@@ -4975,6 +4975,22 @@ function atualizarBotaoFotoPanel() {
   btn.style.display = (fotosTmp.length > 0 && !fotoPanelOpen) ? 'block' : 'none';
   if (fotoPanelOpen) renderFotoPanelLateral();
 }
+
+
+// ─── INIT SEGURO ─────────────────────────────────────────────────────────────
+// Garante inicializacao correta independente da estrutura do arquivo
+document.addEventListener('DOMContentLoaded', function() {
+  try { load(); } catch(e) {}
+  try { if(document.getElementById('r-data')) document.getElementById('r-data').value = today(); } catch(e) {}
+  try { if(document.getElementById('d-data')) document.getElementById('d-data').value = today(); } catch(e) {}
+  try { populateClinicaSelects(); } catch(e) {}
+  try { if(typeof loadPacientesConsultas==='function') loadPacientesConsultas(); } catch(e) {}
+  try { updateDashboard(); } catch(e) {}
+  try { initSidebar(); } catch(e) {}
+  try { var sb = document.getElementById('sb-logo'); if(sb) sb.src = LOGO_B64; } catch(e) {}
+  try { initCloud(); } catch(e) {}
+});
+// ─────────────────────────────────────────────────────────────────────────────
 </script>
 
 <!-- ═══ MODAL CONFIRMAÇÃO ═══════════════════════════════════════════════════ -->
