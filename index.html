@@ -2353,12 +2353,12 @@ function buildLaudoHTML(l) {
     + '<div style="height:2px;background:' + cor + ';margin:6px 28px 0"></div>'
     /* ACHADOS */
     + (secAchados ? '<div style="padding:10px 28px 14px">'
-      + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelAchados + '</div>'
+      + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px;padding-bottom:4px;border-bottom:1px solid #e0e0dc;page-break-after:avoid;break-after:avoid">' + labelAchados + '</div>'
       + '<div style="width:100%;font-family:' + fonte + '">' + orgRows + '</div>'
     + '</div>' : '')
     /* DIAGNÓSTICO */
     + (secConclusao ? '<div style="padding:10px 28px 14px;border-top:1px solid #edf2ef;page-break-inside:avoid;break-inside:avoid">'
-      + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e0e0dc">' + labelConclusao + '</div>'
+      + '<div style="font-size:9px;font-weight:700;color:' + cor + ';text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid #e0e0dc;page-break-after:avoid;break-after:avoid">' + labelConclusao + '</div>'
       + '<div style="font-size:' + sz + 'px;color:#1e1e1c;line-height:' + lh + ';white-space:pre-wrap">' + (l.conclusao||'') + '</div>'
       + (l.obs ? '<div style="margin-top:8px;font-size:' + szSm + 'px;color:#6b6a65;font-style:italic;line-height:' + lh + '">' + l.obs + '</div>' : '')
     + '</div>' : '')
