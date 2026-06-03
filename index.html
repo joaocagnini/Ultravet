@@ -763,6 +763,7 @@
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn" onclick="goPage('laudos')">← Voltar</button>
+            <button class="btn" onclick="compartilharLaudo()" title="Copiar link para compartilhar">📎 Compartilhar</button>
             <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir</button>
             <button class="btn btn-primary" onclick="baixarLaudoPDF()">📥 Baixar PDF</button>
           </div>
@@ -3835,6 +3836,79 @@ function atualizarMapsBtn() {
     btn.style.display = 'none';
   }
 }
+
+
+// ─── LINK COMPARTILHÁVEL DE LAUDO ────────────────────────────────────────────
+function compartilharLaudo() {
+  var id = viewId || (laudos.length ? laudos[laudos.length-1].id : null);
+  if (!id) { toast('Salve o laudo antes de compartilhar.'); return; }
+  var url = window.location.origin + window.location.pathname + '?laudo=' + id;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url).then(function() {
+      toast('Link copiado! Cole para compartilhar o laudo.');
+    });
+  } else {
+    var inp = document.createElement('input');
+    inp.value = url;
+    document.body.appendChild(inp);
+    inp.select();
+    document.execCommand('copy');
+    document.body.removeChild(inp);
+    toast('Link copiado: ' + url);
+  }
+}
+
+function abrirModoVisualizacaoPublica(id) {
+  // Modo leitura publica: esconde tudo, mostra so o laudo
+  document.querySelector('.sidebar').style.display = 'none';
+  document.querySelector('.main').style.marginLeft = '0';
+  document.querySelector('.topbar').style.display = 'none';
+
+  var container = document.createElement('div');
+  container.style.cssText = 'max-width:860px;margin:0 auto;padding:20px';
+
+  var toolbar = document.createElement('div');
+  toolbar.style.cssText = 'display:flex;gap:10px;margin-bottom:16px;align-items:center';
+  toolbar.innerHTML = '<span style="font-size:14px;color:#666;flex:1">Laudo Ultrassonográfico — VetRoutine</span>'
+    + '<button onclick="window.print()" style="padding:8px 18px;background:#0f7a5a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600">🖨 Imprimir / Salvar PDF</button>';
+
+  var content = document.createElement('div');
+  content.id = 'pub-laudo';
+
+  container.appendChild(toolbar);
+  container.appendChild(content);
+  document.body.innerHTML = '';
+  document.body.appendChild(container);
+
+  // Buscar laudo do Supabase
+  fetch(SB_URL + '/rest/v1/uv_laudos?id=eq.' + id, { headers: SB_H })
+    .then(function(r){ return r.json(); })
+    .then(function(rows) {
+      if (!rows || !rows.length) {
+        content.innerHTML = '<div style="padding:40px;text-align:center;color:#999">Laudo não encontrado ou acesso negado.</div>';
+        return;
+      }
+      var l = rows[0].payload;
+      // buildLaudoHTML precisa de algumas variaveis globais
+      laudos = [l];
+      content.innerHTML = '<div class="card" style="padding:0;overflow:hidden">' + buildLaudoHTML(l) + '</div>';
+    })
+    .catch(function(e) {
+      content.innerHTML = '<div style="padding:40px;text-align:center;color:#c00">Erro ao carregar laudo.</div>';
+    });
+}
+
+// Detecta ?laudo=ID na URL ao carregar
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var laudoId = params.get('laudo');
+  if (laudoId) {
+    document.addEventListener('DOMContentLoaded', function() {
+      abrirModoVisualizacaoPublica(parseInt(laudoId));
+    });
+  }
+})();
+// ─────────────────────────────────────────────────────────────────────────────
 
 function saveAgenda() {
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
