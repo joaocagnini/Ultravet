@@ -2904,6 +2904,8 @@ function renderReceber() {
 
 // ─── CLÍNICAS ─────────────────────────────────────────────────────────────────
 function addClinica() {
+  var _btn = document.getElementById('cl-btn-salvar');
+  if (_btn && (_btn.textContent||'').indexOf('Cadastrar') >= 0) editClId = null;
   if (!document.getElementById('cl-nome').value) { alert('Informe o nome da clínica.'); return; }
   const dados = {nome:document.getElementById('cl-nome').value, sigla:document.getElementById('cl-sigla').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, endereco:document.getElementById('cl-endereco').value, obs:document.getElementById('cl-obs').value};
   if (editClId) {
