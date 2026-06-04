@@ -4077,7 +4077,7 @@ async function syncCloud() {
 
 async function initCloud() {
   // Se houve um save local nos últimos 90s, apenas envia para nuvem — não sobrescreve dados locais frescos
-  if (Date.now() - localSaveTs < 90000) {
+  if (Date.now() - localSaveTs < 600000) {
     try { await syncCloud(); } catch(e) {}
     setSyncStatus('ok');
     return;
