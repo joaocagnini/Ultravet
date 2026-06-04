@@ -1012,155 +1012,286 @@
 
         <!-- ABA: Layout do Laudo -->
         <div class="ssec active" id="pc-layout">
+        <div style="display:grid;grid-template-columns:380px 1fr;gap:0;min-height:600px">
 
-          <!-- Identidade visual -->
-          <div class="card">
-            <div class="card-header"><div><div class="card-title">🎨 Identidade visual</div><div class="card-sub">Logo e nome exibidos no cabeçalho dos laudos impressos</div></div></div>
-            <div class="form-grid fg-2" style="align-items:start">
-              <div class="form-field">
-                <label>Nome da veterinária</label>
-                <input id="cfg-nome" placeholder="Ex: Patrine Cagnini">
-                <label style="margin-top:8px">Especialidade</label>
-                <input id="cfg-esp" placeholder="Ex: Médica Veterinária | Ultrassonografista">
-                <label style="margin-top:8px">CRMV</label>
-                <input id="cfg-crmv" placeholder="Ex: CRMV-SC 09377">
-                <div class="actions-bar" style="justify-content:flex-start;padding-top:12px;margin-top:4px">
-                  <button class="btn btn-primary" onclick="salvarConfig()">💾 Salvar configurações</button>
+          <!-- ─── PAINEL ESQUERDO: CONTROLES ─── -->
+          <div style="border-right:1px solid var(--border);overflow-y:auto;max-height:80vh">
+
+            <!-- Presets -->
+            <div style="padding:14px 16px;border-bottom:1px solid var(--border);background:var(--surface2)">
+              <div style="font-size:11px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px">Preset de Layout</div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <select id="le-preset-sel" style="flex:1;font-size:13px" onchange="aplicarPreset()">
+                  <option value="">— Padrão atual —</option>
+                </select>
+                <button class="btn btn-sm btn-primary" onclick="salvarNovoPreset()" title="Salvar como novo preset">＋</button>
+                <button class="btn btn-sm btn-danger" onclick="excluirPreset()" title="Excluir preset">🗑</button>
+              </div>
+              <button class="btn btn-sm" style="width:100%;margin-top:8px" onclick="salvarLayoutAtual()">💾 Salvar alterações no preset</button>
+            </div>
+
+            <!-- Abas de configuração -->
+            <div style="display:flex;border-bottom:1px solid var(--border);background:var(--surface2)">
+              <button class="le-tab active" id="le-tab-cores"    onclick="leTab('cores')"    style="flex:1;padding:9px 4px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--teal);border-bottom:2px solid var(--teal)">🎨 Cores</button>
+              <button class="le-tab"        id="le-tab-tipo"     onclick="leTab('tipo')"     style="flex:1;padding:9px 4px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text2);border-bottom:2px solid transparent">✏️ Tipo</button>
+              <button class="le-tab"        id="le-tab-cabec"    onclick="leTab('cabec')"    style="flex:1;padding:9px 4px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text2);border-bottom:2px solid transparent">📄 Cabeç.</button>
+              <button class="le-tab"        id="le-tab-secoes"   onclick="leTab('secoes')"   style="flex:1;padding:9px 4px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text2);border-bottom:2px solid transparent">☰ Seções</button>
+              <button class="le-tab"        id="le-tab-conteudo" onclick="leTab('conteudo')" style="flex:1;padding:9px 4px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text2);border-bottom:2px solid transparent">📝 Texto</button>
+              <button class="le-tab"        id="le-tab-pagina"   onclick="leTab('pagina')"   style="flex:1;padding:9px 4px;border:none;background:none;cursor:pointer;font-size:11px;font-weight:600;color:var(--text2);border-bottom:2px solid transparent">📐 Página</button>
+            </div>
+
+            <div style="padding:16px">
+
+              <!-- ABA: CORES -->
+              <div id="le-sec-cores">
+                <div class="form-grid fg-2" style="gap:12px">
+                  <div class="form-field">
+                    <label>Cor principal</label>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <input type="color" id="le-cor" value="#3d7a52" oninput="lePreview()" style="width:44px;height:36px;padding:2px;border:1px solid var(--border);border-radius:6px;cursor:pointer">
+                      <input id="le-cor-hex" value="#3d7a52" oninput="sincHex('le-cor','le-cor-hex')" style="flex:1;font-family:monospace;font-size:12px" maxlength="7" placeholder="#3d7a52">
+                    </div>
+                    <div style="display:flex;gap:4px;margin-top:6px;flex-wrap:wrap">
+                      <button onclick="setCor('#3d7a52')" style="width:24px;height:24px;background:#3d7a52;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Verde padrão"></button>
+                      <button onclick="setCor('#1a5fa8')" style="width:24px;height:24px;background:#1a5fa8;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Azul"></button>
+                      <button onclick="setCor('#5b4fd4')" style="width:24px;height:24px;background:#5b4fd4;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Roxo"></button>
+                      <button onclick="setCor('#b35c00')" style="width:24px;height:24px;background:#b35c00;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Âmbar"></button>
+                      <button onclick="setCor('#c0392b')" style="width:24px;height:24px;background:#c0392b;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Vermelho"></button>
+                      <button onclick="setCor('#1a3a5c')" style="width:24px;height:24px;background:#1a3a5c;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Marinho"></button>
+                      <button onclick="setCor('#2c3e50')" style="width:24px;height:24px;background:#2c3e50;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Grafite"></button>
+                      <button onclick="setCor('#000000')" style="width:24px;height:24px;background:#000;border:2px solid transparent;border-radius:4px;cursor:pointer" title="Preto"></button>
+                    </div>
+                  </div>
+                  <div class="form-field">
+                    <label>Cor do fundo do cabeçalho</label>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <input type="color" id="le-cor-cabec-bg" value="#f0f7f4" oninput="lePreview()" style="width:44px;height:36px;padding:2px;border:1px solid var(--border);border-radius:6px;cursor:pointer">
+                      <input id="le-cor-cabec-hex" value="#f0f7f4" oninput="sincHex('le-cor-cabec-bg','le-cor-cabec-hex')" style="flex:1;font-family:monospace;font-size:12px" maxlength="7">
+                    </div>
+                  </div>
+                  <div class="form-field">
+                    <label>Cor do texto principal</label>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <input type="color" id="le-cor-texto" value="#1e1e1c" oninput="lePreview()" style="width:44px;height:36px;padding:2px;border:1px solid var(--border);border-radius:6px;cursor:pointer">
+                      <input id="le-cor-texto-hex" value="#1e1e1c" oninput="sincHex('le-cor-texto','le-cor-texto-hex')" style="flex:1;font-family:monospace;font-size:12px" maxlength="7">
+                    </div>
+                  </div>
+                  <div class="form-field">
+                    <label>Cor dos separadores</label>
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <input type="color" id="le-cor-sep" value="#e0e0dc" oninput="lePreview()" style="width:44px;height:36px;padding:2px;border:1px solid var(--border);border-radius:6px;cursor:pointer">
+                      <input id="le-cor-sep-hex" value="#e0e0dc" oninput="sincHex('le-cor-sep','le-cor-sep-hex')" style="flex:1;font-family:monospace;font-size:12px" maxlength="7">
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div class="form-field">
-                <label>Logo do laudo impresso</label>
-                <div id="logo-preview" style="border:1px solid var(--border);border-radius:var(--radius);padding:12px;background:var(--surface2);min-height:100px;display:flex;align-items:center;justify-content:center;margin-bottom:10px">
-                  <span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>
+
+              <!-- ABA: TIPOGRAFIA -->
+              <div id="le-sec-tipo" style="display:none">
+                <div class="form-grid fg-2" style="gap:12px">
+                  <div class="form-field" style="grid-column:span 2">
+                    <label>Fonte</label>
+                    <select id="le-fonte" onchange="lePreview()">
+                      <option value="Arial, sans-serif">Arial</option>
+                      <option value="'Times New Roman', serif">Times New Roman</option>
+                      <option value="Georgia, serif">Georgia</option>
+                      <option value="'Helvetica Neue', sans-serif">Helvetica Neue</option>
+                      <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                      <option value="Verdana, sans-serif">Verdana</option>
+                      <option value="'Courier New', monospace">Courier New</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label>Tamanho (px)</label>
+                    <select id="le-fontsize" onchange="lePreview()">
+                      <option value="10">10px — Muito pequeno</option>
+                      <option value="11">11px — Pequeno</option>
+                      <option value="12" selected>12px — Normal</option>
+                      <option value="13">13px — Levemente maior</option>
+                      <option value="14">14px — Grande</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label>Espaçamento de linha</label>
+                    <select id="le-lineh" onchange="lePreview()">
+                      <option value="1.3">1,3 — Compacto</option>
+                      <option value="1.5">1,5 — Moderado</option>
+                      <option value="1.6" selected>1,6 — Padrão</option>
+                      <option value="1.8">1,8 — Aberto</option>
+                      <option value="2.0">2,0 — Duplo</option>
+                    </select>
+                  </div>
                 </div>
-                <label class="btn" style="cursor:pointer;justify-content:center">
-                  📁 Carregar logo
-                  <input type="file" accept="image/*" style="display:none" onchange="carregarLogo(this)">
-                </label>
-                <button class="btn btn-danger btn-sm" onclick="removerLogo()" style="margin-top:6px">Remover logo</button>
+              </div>
+
+              <!-- ABA: CABEÇALHO -->
+              <div id="le-sec-cabec" style="display:none">
+                <div class="form-grid fg-1" style="gap:12px">
+                  <div class="form-field">
+                    <label>Estilo do cabeçalho</label>
+                    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px">
+                      <label id="le-hs-gray" onclick="setHeaderStyle('gray')" style="cursor:pointer;border:2px solid var(--teal);border-radius:8px;padding:8px;text-align:center;font-size:11px;background:var(--teal-bg)">
+                        <div style="background:#f5f5f0;height:30px;border-radius:4px;margin-bottom:4px;border-bottom:3px solid #3d7a52"></div>
+                        Tinted
+                      </label>
+                      <label id="le-hs-white" onclick="setHeaderStyle('white')" style="cursor:pointer;border:2px solid var(--border);border-radius:8px;padding:8px;text-align:center;font-size:11px">
+                        <div style="background:#fff;height:30px;border-radius:4px;margin-bottom:4px;border-bottom:3px solid #3d7a52"></div>
+                        Branco
+                      </label>
+                      <label id="le-hs-minimal" onclick="setHeaderStyle('minimal')" style="cursor:pointer;border:2px solid var(--border);border-radius:8px;padding:8px;text-align:center;font-size:11px">
+                        <div style="background:#fff;height:30px;border-radius:4px;margin-bottom:4px;display:flex;align-items:center;padding-left:6px;font-size:9px;color:#555">Logo | Nome</div>
+                        Minimal
+                      </label>
+                    </div>
+                    <input type="hidden" id="le-header-style" value="gray">
+                  </div>
+                  <div class="form-field">
+                    <label>Posição da logo</label>
+                    <select id="le-logo-pos" onchange="lePreview()">
+                      <option value="center">Centralizada</option>
+                      <option value="left">Esquerda</option>
+                      <option value="right">Direita</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label>Tamanho da logo</label>
+                    <select id="le-logo-altura" onchange="lePreview()">
+                      <option value="40">Pequena (40px)</option>
+                      <option value="60">Média (60px)</option>
+                      <option value="80" selected>Normal (80px)</option>
+                      <option value="100">Grande (100px)</option>
+                      <option value="130">Muito grande (130px)</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label>Nome da veterinária</label>
+                    <input id="le-nome" placeholder="Patrine Cagnini" oninput="lePreview()">
+                  </div>
+                  <div class="form-field">
+                    <label>Especialidade</label>
+                    <input id="le-esp" placeholder="Médica Veterinária | Ultrassonografista" oninput="lePreview()">
+                  </div>
+                  <div class="form-field">
+                    <label>CRMV</label>
+                    <input id="le-crmv" placeholder="CRMV-SC 09377" oninput="lePreview()">
+                  </div>
+                  <div class="form-field">
+                    <label>Telefone (opcional)</label>
+                    <input id="le-telefone" placeholder="(XX) XXXXX-XXXX" oninput="lePreview()">
+                  </div>
+                  <div class="form-field">
+                    <label>E-mail (opcional)</label>
+                    <input id="le-email" placeholder="vet@email.com" oninput="lePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ABA: SEÇÕES -->
+              <div id="le-sec-secoes" style="display:none">
+                <div style="display:flex;flex-direction:column;gap:10px">
+                  <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                    <input type="checkbox" id="le-sec-achados" checked onchange="lePreview()">
+                    <div><div style="font-weight:600;font-size:13px">Achados Ultrassonográficos</div><div style="font-size:11px;color:var(--text3)">Tabela com todos os órgãos avaliados</div></div>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                    <input type="checkbox" id="le-sec-conclusao" checked onchange="lePreview()">
+                    <div><div style="font-weight:600;font-size:13px">Impressão Diagnóstica</div><div style="font-size:11px;color:var(--text3)">Conclusão e observações</div></div>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                    <input type="checkbox" id="le-sec-assinatura" checked onchange="lePreview()">
+                    <div><div style="font-weight:600;font-size:13px">Assinatura</div><div style="font-size:11px;color:var(--text3)">Nome, especialidade e CRMV no rodapé</div></div>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                    <input type="checkbox" id="le-sec-fotos" checked onchange="lePreview()">
+                    <div><div style="font-weight:600;font-size:13px">Imagens do Exame</div><div style="font-size:11px;color:var(--text3)">Fotos anexadas ao laudo</div></div>
+                  </label>
+                  <label style="display:flex;align-items:center;gap:10px;padding:10px;border:1px solid var(--border);border-radius:8px;cursor:pointer">
+                    <input type="checkbox" id="le-sec-footer" checked onchange="lePreview()">
+                    <div><div style="font-weight:600;font-size:13px">Rodapé do documento</div><div style="font-size:11px;color:var(--text3)">Logo e nome repetidos no rodapé</div></div>
+                  </label>
+                </div>
+                <div class="form-section" style="margin-top:16px">Labels das seções</div>
+                <div class="form-grid fg-1" style="gap:10px">
+                  <div class="form-field">
+                    <label>Título do documento</label>
+                    <input id="le-titulo" placeholder="Relatório Ultrassonográfico" oninput="lePreview()">
+                  </div>
+                  <div class="form-field">
+                    <label>Label da seção de achados</label>
+                    <input id="le-label-achados" placeholder="Achados Ultrassonográficos" oninput="lePreview()">
+                  </div>
+                  <div class="form-field">
+                    <label>Label da seção de conclusão</label>
+                    <input id="le-label-conclusao" placeholder="Impressão Diagnóstica" oninput="lePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ABA: CONTEÚDO -->
+              <div id="le-sec-conteudo" style="display:none">
+                <div class="form-grid fg-1" style="gap:12px">
+                  <div class="form-field">
+                    <label>Texto padrão da Conclusão (novos laudos)</label>
+                    <textarea id="le-modelo-conclusao" rows="4" spellcheck="true" lang="pt" style="font-size:12px" placeholder="Ex: Exame dentro dos padrões de normalidade..." oninput="lePreview()"></textarea>
+                  </div>
+                  <div class="form-field">
+                    <label>Texto padrão das Observações (novos laudos)</label>
+                    <textarea id="le-modelo-obs" rows="4" spellcheck="true" lang="pt" style="font-size:12px" placeholder="Ex: A interposição de barreiras físicas..." oninput="lePreview()"></textarea>
+                  </div>
+                  <div class="form-field">
+                    <label>Texto do rodapé personalizado (opcional)</label>
+                    <input id="le-footer-texto" placeholder="Ex: Atendimento domiciliar — SC" oninput="lePreview()">
+                  </div>
+                </div>
+              </div>
+
+              <!-- ABA: PÁGINA -->
+              <div id="le-sec-pagina" style="display:none">
+                <div class="form-grid fg-2" style="gap:12px">
+                  <div class="form-field">
+                    <label>Margens de impressão</label>
+                    <select id="le-margens" onchange="lePreview()">
+                      <option value="0">Sem margens</option>
+                      <option value="8mm">Estreitas (8mm)</option>
+                      <option value="12mm" selected>Normais (12mm)</option>
+                      <option value="18mm">Largas (18mm)</option>
+                      <option value="25mm">Extra largas (25mm)</option>
+                    </select>
+                  </div>
+                  <div class="form-field">
+                    <label>Formato do papel</label>
+                    <select id="le-papel" onchange="lePreview()">
+                      <option value="A4" selected>A4 (210×297mm)</option>
+                      <option value="letter">Carta / Letter</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+            </div><!-- /padding -->
+
+            <!-- Botão salvar configuração global -->
+            <div style="padding:14px 16px;border-top:1px solid var(--border);background:var(--surface2)">
+              <button class="btn btn-primary" style="width:100%" onclick="aplicarLayoutGlobal()">✅ Aplicar como configuração padrão</button>
+            </div>
+
+          </div><!-- /painel esquerdo -->
+
+          <!-- ─── PAINEL DIREITO: PREVIEW ─── -->
+          <div style="background:#e8e7e3;overflow-y:auto;max-height:80vh;display:flex;flex-direction:column">
+            <div style="padding:10px 16px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+              <span style="font-size:12px;font-weight:600;color:var(--text2)">Preview do laudo</span>
+              <span style="font-size:11px;color:var(--text3)">Atualiza em tempo real</span>
+            </div>
+            <div style="flex:1;padding:20px;overflow-y:auto">
+              <div id="le-preview-area" style="background:#fff;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.15);overflow:hidden;transform:scale(0.75);transform-origin:top center;min-height:400px">
+                <div style="padding:40px;color:var(--text3);text-align:center;font-size:13px">Carregando preview...</div>
               </div>
             </div>
           </div>
 
-          <!-- Configuração do Laudo -->
-          <div class="card">
-            <div class="card-header"><div><div class="card-title">📄 Configuração do Laudo</div><div class="card-sub">Personaliza estrutura e textos do laudo impresso</div></div></div>
-            <div class="form-section" style="margin-top:0">Estrutura</div>
-            <div class="form-grid fg-2">
-              <div class="form-field">
-                <label>Título do documento</label>
-                <input id="cfg-titulo" placeholder="Relatório Ultrassonográfico">
-              </div>
-              <div class="form-field">
-                <label>Cor principal do laudo</label>
-                <input type="color" id="cfg-cor" value="#3d7a52" style="height:36px;padding:3px 6px;width:100%">
-              </div>
-              <div class="form-field">
-                <label>Label — seção de achados</label>
-                <input id="cfg-label-achados" placeholder="Achados Ultrassonográficos">
-              </div>
-              <div class="form-field">
-                <label>Label — seção de conclusão</label>
-                <input id="cfg-label-conclusao" placeholder="Impressão Diagnóstica">
-              </div>
-            </div>
-            <div class="form-section">Seções visíveis no laudo</div>
-            <div style="display:flex;gap:20px;flex-wrap:wrap;margin-bottom:4px">
-              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-achados"> Achados</label>
-              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-conclusao"> Conclusão</label>
-              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-assinatura"> Assinatura</label>
-              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-fotos"> Fotos</label>
-              <label style="display:flex;align-items:center;gap:7px;font-size:13px;cursor:pointer"><input type="checkbox" id="cfg-sec-footer"> Rodapé</label>
-            </div>
-            <div class="form-section">Modelo de conclusão</div>
-            <div class="form-field">
-              <label>Texto padrão da Impressão Diagnóstica (pré-preenchido em novos laudos)</label>
-              <textarea id="cfg-modelo-conclusao" rows="4" style="font-size:13px" placeholder="Ex: Exame dentro dos padrões de normalidade..."></textarea>
-            </div>
-            <div class="form-section">Modelo de observações</div>
-            <div class="form-field">
-              <label>Texto padrão das Observações (pré-preenchido em novos laudos)</label>
-              <textarea id="cfg-modelo-obs" rows="4" style="font-size:13px" placeholder="Ex: A interposição de barreiras físicas pode interferir..."></textarea>
-            </div>
-            <div class="form-section">Tipografia</div>
-            <div class="form-grid fg-3">
-              <div class="form-field">
-                <label>Fonte principal</label>
-                <select id="cfg-fonte">
-                  <option value="Arial, sans-serif">Arial</option>
-                  <option value="'Calibri', 'Segoe UI', sans-serif">Calibri</option>
-                  <option value="'Cambria', Georgia, serif">Cambria</option>
-                  <option value="'Times New Roman', Times, serif">Times New Roman</option>
-                  <option value="Georgia, serif">Georgia</option>
-                  <option value="Verdana, sans-serif">Verdana</option>
-                  <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-                  <option value="Garamond, serif">Garamond</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Tamanho do corpo (pt)</label>
-                <select id="cfg-fontsize">
-                  <option value="10">10 pt — Compacto</option>
-                  <option value="11">11 pt — Pequeno</option>
-                  <option value="12">12 pt — Padrão</option>
-                  <option value="13">13 pt — Confortável</option>
-                  <option value="14">14 pt — Grande</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Espaçamento entre linhas</label>
-                <select id="cfg-lineh">
-                  <option value="1.2">1,2 — Compacto</option>
-                  <option value="1.4">1,4 — Próximo</option>
-                  <option value="1.6">1,6 — Padrão Word</option>
-                  <option value="1.8">1,8 — Aberto</option>
-                  <option value="2.0">2,0 — Duplo</option>
-                </select>
-              </div>
-            </div>
-            <div class="form-section">Página</div>
-            <div class="form-grid fg-3">
-              <div class="form-field">
-                <label>Margens de impressão</label>
-                <select id="cfg-margens">
-                  <option value="0">Sem margens (página toda)</option>
-                  <option value="8mm">Estreitas (8 mm)</option>
-                  <option value="12mm">Normais (12 mm)</option>
-                  <option value="18mm">Largas (18 mm)</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Formato do papel</label>
-                <select id="cfg-papel">
-                  <option value="A4">A4 (210 × 297 mm)</option>
-                  <option value="letter">Carta / Letter</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Estilo do cabeçalho</label>
-                <select id="cfg-header-style">
-                  <option value="gray">Tint da cor principal (centralizado)</option>
-                  <option value="white">Branco com borda colorida</option>
-                  <option value="minimal">Minimalista (logo + texto lado a lado)</option>
-                </select>
-              </div>
-              <div class="form-field">
-                <label>Tamanho da logomarca</label>
-                <select id="cfg-logo-altura">
-                  <option value="50">Pequena (50 px)</option>
-                  <option value="70">Média (70 px) — padrão</option>
-                  <option value="100">Grande (100 px)</option>
-                  <option value="130">Maior (130 px)</option>
-                  <option value="170">Máxima (170 px)</option>
-                </select>
-              </div>
-            </div>
-            <div class="actions-bar" style="justify-content:flex-start;padding-top:12px">
-              <button class="btn btn-primary" onclick="salvarConfigLaudo()">💾 Salvar configuração do laudo</button>
-            </div>
-          </div>
-
-        </div><!-- /pc-layout -->
+        </div><!-- /grid -->
+      </div><!-- /pc-layout -->
 
         <!-- ABA: Dados -->
         <div class="ssec" id="pc-dados">
@@ -1859,6 +1990,7 @@ function stpc(name) {
   const btns = document.getElementById('painel-previa-btns');
   if (btns) btns.style.display = name === 'pc-previa' ? 'flex' : 'none';
   if (name === 'pc-previa') renderPrevia();
+  if (name === 'pc-layout') { carregarEditorComConfig(); }
 }
 
 // ─── LAUDO FORM ───────────────────────────────────────────────────────────────
@@ -3909,6 +4041,256 @@ function abrirModoVisualizacaoPublica(id) {
   }
 })();
 // ─────────────────────────────────────────────────────────────────────────────
+
+
+// ═══ EDITOR VISUAL DE LAYOUTS ════════════════════════════════════════════════
+var _lePreviewTimer = null;
+
+function leTab(name) {
+  ['cores','tipo','cabec','secoes','conteudo','pagina'].forEach(function(t) {
+    var sec = document.getElementById('le-sec-' + t);
+    var tab = document.getElementById('le-tab-' + t);
+    if (!sec || !tab) return;
+    sec.style.display = t === name ? 'block' : 'none';
+    tab.style.color = t === name ? 'var(--teal)' : 'var(--text2)';
+    tab.style.borderBottomColor = t === name ? 'var(--teal)' : 'transparent';
+  });
+}
+
+function sincHex(colorId, hexId) {
+  var hex = document.getElementById(hexId).value;
+  if (/^#[0-9A-Fa-f]{6}$/.test(hex)) {
+    document.getElementById(colorId).value = hex;
+    lePreview();
+  }
+}
+
+function setCor(hex) {
+  var el = document.getElementById('le-cor'); if(el) el.value = hex;
+  var eh = document.getElementById('le-cor-hex'); if(eh) eh.value = hex;
+  lePreview();
+}
+
+function setHeaderStyle(style) {
+  document.getElementById('le-header-style').value = style;
+  ['gray','white','minimal'].forEach(function(s) {
+    var btn = document.getElementById('le-hs-' + s);
+    if (!btn) return;
+    btn.style.borderColor = s === style ? 'var(--teal)' : 'var(--border)';
+    btn.style.background = s === style ? 'var(--teal-bg)' : '';
+  });
+  lePreview();
+}
+
+function leGetConfig() {
+  return {
+    cor:            (document.getElementById('le-cor') || {value:'#3d7a52'}).value,
+    corCabecBg:     (document.getElementById('le-cor-cabec-bg') || {value:'#f0f7f4'}).value,
+    corTexto:       (document.getElementById('le-cor-texto') || {value:'#1e1e1c'}).value,
+    corSep:         (document.getElementById('le-cor-sep') || {value:'#e0e0dc'}).value,
+    fonte:          (document.getElementById('le-fonte') || {value:'Arial, sans-serif'}).value,
+    fontsize:       (document.getElementById('le-fontsize') || {value:'12'}).value,
+    lineh:          (document.getElementById('le-lineh') || {value:'1.6'}).value,
+    headerStyle:    (document.getElementById('le-header-style') || {value:'gray'}).value,
+    logoPos:        (document.getElementById('le-logo-pos') || {value:'center'}).value,
+    logoAltura:     (document.getElementById('le-logo-altura') || {value:'80'}).value,
+    nome:           (document.getElementById('le-nome') || {value:''}).value || getConfig().nome || 'Patrine Cagnini',
+    esp:            (document.getElementById('le-esp') || {value:''}).value || getConfig().esp || 'Médica Veterinária | Ultrassonografista',
+    crmv:           (document.getElementById('le-crmv') || {value:''}).value || getConfig().crmv || 'CRMV-SC 09377',
+    telefone:       (document.getElementById('le-telefone') || {value:''}).value,
+    email:          (document.getElementById('le-email') || {value:''}).value,
+    titulo:         (document.getElementById('le-titulo') || {value:''}).value || 'Relatório Ultrassonográfico',
+    labelAchados:   (document.getElementById('le-label-achados') || {value:''}).value || 'Achados Ultrassonográficos',
+    labelConclusao: (document.getElementById('le-label-conclusao') || {value:''}).value || 'Impressão Diagnóstica',
+    secAchados:     (document.getElementById('le-sec-achados') || {checked:true}).checked,
+    secConclusao:   (document.getElementById('le-sec-conclusao') || {checked:true}).checked,
+    secAssinatura:  (document.getElementById('le-sec-assinatura') || {checked:true}).checked,
+    secFotos:       (document.getElementById('le-sec-fotos') || {checked:true}).checked,
+    secFooter:      (document.getElementById('le-sec-footer') || {checked:true}).checked,
+    modeloConclusao:(document.getElementById('le-modelo-conclusao') || {value:''}).value,
+    modeloObs:      (document.getElementById('le-modelo-obs') || {value:''}).value,
+    footerTexto:    (document.getElementById('le-footer-texto') || {value:''}).value,
+    margens:        (document.getElementById('le-margens') || {value:'12mm'}).value,
+    papel:          (document.getElementById('le-papel') || {value:'A4'}).value,
+  };
+}
+
+function lePreview() {
+  clearTimeout(_lePreviewTimer);
+  _lePreviewTimer = setTimeout(function() {
+    var area = document.getElementById('le-preview-area');
+    if (!area) return;
+    var cfg = leGetConfig();
+    // Gerar laudo de exemplo com o config atual
+    var laudoEx = {
+      tipo: 'Abdominal total', resultado: 'Normal',
+      paciente: 'Rex', especie: 'Canino', raca: 'Labrador', sexo: 'Macho',
+      idade: '5 anos', data: new Date().toISOString().split('T')[0],
+      tutor: 'João Silva', vet: cfg.nome, clinica: 'Clínica VetVida',
+      conclusao: cfg.modeloConclusao || '- Exame ultrassonográfico abdominal dentro dos padrões de normalidade.
+- Sem evidências de alterações estruturais significativas.',
+      obs: cfg.modeloObs || '',
+      orgAbdom: {
+        bexiga: { texto: 'Repleção líquida adequada, formato habitual, paredes finas e ecogênicas.' },
+        rins:   { texto: 'Formato mantido, localizados em topografia habitual, dimensões simétricas.' },
+        figado: { texto: 'Dimensões dentro dos limites do gradil costal, superfície lisa, margens afiladas.' },
+      },
+      fotos: []
+    };
+    // Aplicar config temporariamente
+    var cfgOrig = JSON.parse(localStorage.getItem('uv_config') || '{}');
+    var tmpCfg = JSON.parse(JSON.stringify(cfgOrig));
+    tmpCfg.laudo = Object.assign(tmpCfg.laudo || {}, cfg);
+    localStorage.setItem('uv_config', JSON.stringify(tmpCfg));
+    area.innerHTML = '<div class="card" style="padding:0;overflow:hidden">' + buildLaudoHTML(laudoEx) + '</div>';
+    localStorage.setItem('uv_config', JSON.stringify(cfgOrig)); // restaura
+  }, 300);
+}
+
+function carregarEditorComConfig() {
+  var lc = getConfig().laudo || {};
+  var cfg = getConfig();
+  var set = function(id, val) { var el = document.getElementById(id); if(el && val !== undefined) el.value = val; };
+  var chk = function(id, val) { var el = document.getElementById(id); if(el) el.checked = val !== false; };
+  set('le-cor', lc.cor || '#3d7a52'); set('le-cor-hex', lc.cor || '#3d7a52');
+  set('le-cor-cabec-bg', lc.corCabecBg || '#f0f7f4'); set('le-cor-cabec-hex', lc.corCabecBg || '#f0f7f4');
+  set('le-cor-texto', lc.corTexto || '#1e1e1c'); set('le-cor-texto-hex', lc.corTexto || '#1e1e1c');
+  set('le-cor-sep', lc.corSep || '#e0e0dc'); set('le-cor-sep-hex', lc.corSep || '#e0e0dc');
+  set('le-fonte', lc.fonte || 'Arial, sans-serif');
+  set('le-fontsize', lc.fontsize || '12');
+  set('le-lineh', lc.lineh || '1.6');
+  set('le-header-style', lc.headerStyle || 'gray'); setHeaderStyle(lc.headerStyle || 'gray');
+  set('le-logo-pos', lc.logoPos || 'center');
+  set('le-logo-altura', lc.logoAltura || '80');
+  set('le-nome', cfg.nome || 'Patrine Cagnini');
+  set('le-esp', cfg.esp || 'Médica Veterinária | Ultrassonografista');
+  set('le-crmv', cfg.crmv || 'CRMV-SC 09377');
+  set('le-telefone', lc.telefone || '');
+  set('le-email', lc.email || '');
+  set('le-titulo', lc.titulo || '');
+  set('le-label-achados', lc.labelAchados || '');
+  set('le-label-conclusao', lc.labelConclusao || '');
+  chk('le-sec-achados', lc.secAchados !== false);
+  chk('le-sec-conclusao', lc.secConclusao !== false);
+  chk('le-sec-assinatura', lc.secAssinatura !== false);
+  chk('le-sec-fotos', lc.secFotos !== false);
+  chk('le-sec-footer', lc.secFooter !== false);
+  set('le-modelo-conclusao', lc.modeloConclusao || '');
+  set('le-modelo-obs', lc.modeloObs || '');
+  set('le-footer-texto', lc.footerTexto || '');
+  set('le-margens', lc.margens || '12mm');
+  set('le-papel', lc.papel || 'A4');
+  carregarPresetsSelector();
+  lePreview();
+}
+
+function aplicarLayoutGlobal() {
+  var cfg = leGetConfig();
+  var uvcfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  uvcfg.nome = cfg.nome; uvcfg.esp = cfg.esp; uvcfg.crmv = cfg.crmv;
+  uvcfg.laudo = cfg;
+  localStorage.setItem('uv_config', JSON.stringify(uvcfg));
+  // Atualizar também os campos antigos para compatibilidade
+  var set = function(id,v){var el=document.getElementById(id);if(el)el.value=v;};
+  var chk = function(id,v){var el=document.getElementById(id);if(el)el.checked=v;};
+  set('cfg-cor', cfg.cor); set('cfg-fonte', cfg.fonte); set('cfg-fontsize', cfg.fontsize);
+  set('cfg-lineh', cfg.lineh); set('cfg-margens', cfg.margens); set('cfg-papel', cfg.papel);
+  set('cfg-header-style', cfg.headerStyle); set('cfg-logo-altura', cfg.logoAltura);
+  set('cfg-titulo', cfg.titulo); set('cfg-label-achados', cfg.labelAchados);
+  set('cfg-label-conclusao', cfg.labelConclusao);
+  chk('cfg-sec-achados', cfg.secAchados); chk('cfg-sec-conclusao', cfg.secConclusao);
+  chk('cfg-sec-assinatura', cfg.secAssinatura); chk('cfg-sec-fotos', cfg.secFotos);
+  chk('cfg-sec-footer', cfg.secFooter);
+  set('cfg-modelo-conclusao', cfg.modeloConclusao); set('cfg-modelo-obs', cfg.modeloObs);
+  set('cfg-nome', cfg.nome); set('cfg-esp', cfg.esp); set('cfg-crmv', cfg.crmv);
+  toast('Layout aplicado como padrão!');
+}
+
+// ── PRESETS ──────────────────────────────────────────────────────────────────
+function getPresets() {
+  try { return JSON.parse(localStorage.getItem('uv_layouts') || '[]'); } catch(e) { return []; }
+}
+function savePresets(presets) {
+  localStorage.setItem('uv_layouts', JSON.stringify(presets));
+}
+
+function carregarPresetsSelector() {
+  var sel = document.getElementById('le-preset-sel'); if(!sel) return;
+  var presets = getPresets();
+  sel.innerHTML = '<option value="">— Padrão atual —</option>';
+  presets.forEach(function(p, i) {
+    var opt = document.createElement('option');
+    opt.value = i; opt.textContent = p.nome;
+    sel.appendChild(opt);
+  });
+}
+
+function salvarNovoPreset() {
+  var nome = prompt('Nome do preset:', 'Meu Layout');
+  if (!nome || !nome.trim()) return;
+  var presets = getPresets();
+  presets.push({ nome: nome.trim(), config: leGetConfig() });
+  savePresets(presets);
+  carregarPresetsSelector();
+  document.getElementById('le-preset-sel').value = presets.length - 1;
+  toast('Preset "' + nome + '" salvo!');
+}
+
+function salvarLayoutAtual() {
+  var sel = document.getElementById('le-preset-sel');
+  var idx = parseInt(sel.value);
+  if (isNaN(idx)) { toast('Selecione um preset para atualizar.'); return; }
+  var presets = getPresets();
+  if (!presets[idx]) return;
+  presets[idx].config = leGetConfig();
+  savePresets(presets);
+  toast('Preset "' + presets[idx].nome + '" atualizado!');
+}
+
+function aplicarPreset() {
+  var sel = document.getElementById('le-preset-sel');
+  var idx = parseInt(sel.value);
+  if (isNaN(idx)) { carregarEditorComConfig(); return; }
+  var presets = getPresets();
+  if (!presets[idx]) return;
+  var cfg = presets[idx].config;
+  var set = function(id,v){var el=document.getElementById(id);if(el&&v!==undefined)el.value=v;};
+  var chk = function(id,v){var el=document.getElementById(id);if(el)el.checked=v!==false;};
+  set('le-cor',cfg.cor); set('le-cor-hex',cfg.cor);
+  set('le-cor-cabec-bg',cfg.corCabecBg||'#f0f7f4'); set('le-cor-cabec-hex',cfg.corCabecBg||'#f0f7f4');
+  set('le-cor-texto',cfg.corTexto||'#1e1e1c'); set('le-cor-texto-hex',cfg.corTexto||'#1e1e1c');
+  set('le-cor-sep',cfg.corSep||'#e0e0dc'); set('le-cor-sep-hex',cfg.corSep||'#e0e0dc');
+  set('le-fonte',cfg.fonte); set('le-fontsize',cfg.fontsize); set('le-lineh',cfg.lineh);
+  set('le-header-style',cfg.headerStyle||'gray'); setHeaderStyle(cfg.headerStyle||'gray');
+  set('le-logo-pos',cfg.logoPos||'center'); set('le-logo-altura',cfg.logoAltura||'80');
+  set('le-nome',cfg.nome); set('le-esp',cfg.esp); set('le-crmv',cfg.crmv);
+  set('le-telefone',cfg.telefone||''); set('le-email',cfg.email||'');
+  set('le-titulo',cfg.titulo||''); set('le-label-achados',cfg.labelAchados||'');
+  set('le-label-conclusao',cfg.labelConclusao||'');
+  chk('le-sec-achados',cfg.secAchados); chk('le-sec-conclusao',cfg.secConclusao);
+  chk('le-sec-assinatura',cfg.secAssinatura); chk('le-sec-fotos',cfg.secFotos);
+  chk('le-sec-footer',cfg.secFooter);
+  set('le-modelo-conclusao',cfg.modeloConclusao||''); set('le-modelo-obs',cfg.modeloObs||'');
+  set('le-footer-texto',cfg.footerTexto||'');
+  set('le-margens',cfg.margens||'12mm'); set('le-papel',cfg.papel||'A4');
+  lePreview();
+  toast('Preset "' + presets[idx].nome + '" carregado!');
+}
+
+function excluirPreset() {
+  var sel = document.getElementById('le-preset-sel');
+  var idx = parseInt(sel.value);
+  if (isNaN(idx)) { toast('Selecione um preset para excluir.'); return; }
+  var presets = getPresets();
+  if (!presets[idx]) return;
+  var nome = presets[idx].nome;
+  if (!confirm('Excluir preset "' + nome + '"?')) return;
+  presets.splice(idx, 1);
+  savePresets(presets);
+  carregarPresetsSelector();
+  toast('Preset excluído.');
+}
+// ═══ FIM EDITOR VISUAL DE LAYOUTS ════════════════════════════════════════════
 
 function saveAgenda() {
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
