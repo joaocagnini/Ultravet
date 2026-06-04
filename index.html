@@ -2793,9 +2793,12 @@ document.getElementById('sb-logo').src = LOGO_B64;
 }
 
 function delRec(id) {
-  receitas = receitas.filter(r => r.id!==id);
-  cloudDelete('uv_receitas', id);
-  save(); renderReceitas(); updateFinOverview(); 
+  confirmarAcao('Excluir receita', 'Deseja excluir este registro de receita permanentemente?', 'Excluir', function() {
+    receitas = receitas.filter(r => r.id!==id);
+    cloudDelete('uv_receitas', id);
+    save(); renderReceitas(); updateFinOverview();
+    toast('Receita excluída.');
+  }); 
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
 function toggleSidebar() {
   const sb = document.querySelector('.sidebar');
@@ -2864,9 +2867,12 @@ function addDespesa() {
 }
 
 function delDesp(id) {
-  despesas = despesas.filter(d => d.id!==id);
-  cloudDelete('uv_despesas', id);
-  save(); renderDespesas(); updateFinOverview();
+  confirmarAcao('Excluir despesa', 'Deseja excluir este registro de despesa permanentemente?', 'Excluir', function() {
+    despesas = despesas.filter(d => d.id!==id);
+    cloudDelete('uv_despesas', id);
+    save(); renderDespesas(); updateFinOverview();
+    toast('Despesa excluída.');
+  });
 }
 
 function renderDespesas() {
@@ -2952,10 +2958,13 @@ function cancelEditCl() {
 }
 
 function delCl(id) {
-  if (editClId === id) cancelEditCl();
-  clinicas = clinicas.filter(c => c.id!==id);
-  cloudDelete('uv_clinicas', id);
-  save(); renderClinicas(); populateClinicaSelects();
+  confirmarAcao('Excluir clínica', 'Deseja excluir esta clínica permanentemente? Esta ação não pode ser desfeita.', 'Excluir', function() {
+    if (editClId === id) cancelEditCl();
+    clinicas = clinicas.filter(c => c.id!==id);
+    cloudDelete('uv_clinicas', id);
+    save(); renderClinicas(); populateClinicaSelects();
+    toast('Clínica excluída.');
+  });
 }
 
 function renderClinicas() {
