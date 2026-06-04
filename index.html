@@ -1846,7 +1846,7 @@ function stf(name) {
   if (name === 'f-receitas') { renderReceitas(); populateClinicaSelects(); }
   if (name === 'f-despesas') renderDespesas();
   if (name === 'f-receber') renderReceber();
-  if (name === 'f-clinicas') renderClinicas();
+  if (name === 'f-clinicas') { editClId = null; var bc = document.getElementById('cl-btn-cancelar'); if(bc) bc.style.display='none'; var bs = document.getElementById('cl-btn-salvar'); if(bs) bs.textContent='+ Cadastrar clínica'; renderClinicas(); }
 }
 
 function stpc(name) {
