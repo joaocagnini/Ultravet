@@ -2305,14 +2305,14 @@ function imprimirLaudo() {
   const win = window.open('', '_blank');
   win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>' + nomeArquivoLaudo(l) + '</title><style>'
     + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
-    + 'body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}'
+    + 'body{background:#fff;padding:20mm;font-family:' + fonte + '}'
     + 'table,td,th,span,div{font-family:inherit}'
     + 'tr{page-break-inside:avoid;break-inside:avoid}'
     + 'img{page-break-inside:avoid;break-inside:avoid;max-width:100%}'
     + 'p,div,td,li{orphans:4;widows:4}'
     + '.organ-row,section{page-break-inside:avoid;break-inside:avoid}'
-    + '@page{size:' + papel + ';margin:0}'
-    + '@media print{body{padding:' + margens + '}}'
+    + '@page{size:auto;margin:' + margens + '}'
+    + '@media print{body{padding:20mm}}'
     + '</style></head><body>' + body
     + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
   win.document.close();
@@ -3883,40 +3883,130 @@ function atualizarMapsBtn() {
 
 
 function compartilharLaudo() {
-  var id = viewId || (laudos.length ? laudos[laudos.length-1].id : null);
-  if (!id) { toast('Salve o laudo antes de compartilhar.'); return; }
-  var url = window.location.origin + window.location.pathname + '?laudo=' + id;
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function() { toast('Link copiado! Cole para compartilhar.'); });
-  } else {
-    var inp = document.createElement('input');
-    inp.value = url; document.body.appendChild(inp); inp.select(); document.execCommand('copy'); document.body.removeChild(inp);
-    toast('Link copiado: ' + url);
-  }
+  var lId = viewId || (laudos.length ? laudos[laudos.length-1].id : null);
+  if (!lId) { toast('Salve o laudo antes de compartilhar.'); return; }
+  var l = laudos.find(function(x){ return x.id === lId; });
+  if (!l) { toast('Laudo não encontrado.'); return; }
+  var url = window.location.origin + window.location.pathname + '?laudo=' + lId;
+  var cfg = getConfig();
+  var vet = cfg.nome || 'Patrine Cagnini';
+  var paciente = l.paciente || '—';
+  var tutor = l.tutor || '—';
+  var data = l.data ? l.data.split('-').reverse().join('/') : '—';
+  var msg = 'Olá!' +
+    '
+
+Seu laudo ultrassonográfico já está disponível para visualização.' +
+    '
+
+Paciente: ' + paciente +
+    '
+Tutor: ' + tutor +
+    '
+Data: ' + data +
+    '
+
+Acesse pelo link abaixo:
+' + url +
+    '
+
+Qualquer dúvida, fico à disposição.' +
+    '
+
+Atenciosamente,
+Dra. ' + vet;
+  // Mostrar modal com mensagem e link
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:flex;align-items:center;justify-content:center';
+  modal.innerHTML = '<div style="background:#fff;border-radius:12px;width:480px;max-height:80vh;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2);display:flex;flex-direction:column">'
+    + '<div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">'
+      + '<div style="font-size:15px;font-weight:700">📎 Compartilhar laudo</div>'
+      + '<button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text2)">✕</button>'
+    + '</div>'
+    + '<div style="padding:16px 20px;overflow-y:auto;flex:1">'
+      + '<div style="margin-bottom:12px">'
+        + '<label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">Link direto do laudo</label>'
+        + '<div style="display:flex;gap:8px">'
+          + '<input id="_share_url" value="' + url + '" readonly style="flex:1;font-size:12px;font-family:monospace;background:var(--surface2)">'
+          + '<button class="btn btn-sm btn-primary" onclick="var el=document.getElementById('_share_url');el.select();document.execCommand('copy');toast('Link copiado!')">Copiar</button>'
+        + '</div>'
+      + '</div>'
+      + '<div>'
+        + '<label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">Mensagem pronta para envio (WhatsApp, e-mail)</label>'
+        + '<textarea id="_share_msg" rows="10" style="width:100%;font-size:13px;line-height:1.6;resize:vertical">' + msg + '</textarea>'
+        + '<button class="btn btn-sm btn-primary" style="margin-top:8px" onclick="var el=document.getElementById('_share_msg');el.select();document.execCommand('copy');toast('Mensagem copiada!')">📋 Copiar mensagem</button>'
+      + '</div>'
+    + '</div>'
+  + '</div>';
+  document.body.appendChild(modal);
 }
 
 function abrirModoVisualizacaoPublica(id) {
-  document.querySelector('.sidebar').style.display = 'none';
-  document.querySelector('.main').style.marginLeft = '0';
-  document.querySelector('.topbar').style.display = 'none';
+  // Esconder interface do app
+  var sb = document.querySelector('.sidebar');
+  var mn = document.querySelector('.main');
+  var tb = document.querySelector('.topbar');
+  if (sb) sb.style.display = 'none';
+  if (mn) { mn.style.marginLeft = '0'; mn.style.width = '100%'; }
+  if (tb) tb.style.display = 'none';
+
   var container = document.createElement('div');
-  container.style.cssText = 'max-width:860px;margin:0 auto;padding:20px';
-  var toolbar = document.createElement('div');
-  toolbar.style.cssText = 'display:flex;gap:10px;margin-bottom:16px;align-items:center';
-  toolbar.innerHTML = '<span style="font-size:14px;color:#666;flex:1">Laudo Ultrassonográfico — VetRoutine</span>'
-    + '<button onclick="window.print()" style="padding:8px 18px;background:#0f7a5a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600">🖨 Imprimir / Salvar PDF</button>';
-  var content = document.createElement('div');
-  container.appendChild(toolbar); container.appendChild(content);
-  document.body.innerHTML = ''; document.body.appendChild(container);
-  fetch(SB_URL + '/rest/v1/uv_laudos?id=eq.' + id, { headers: SB_H })
-    .then(function(r){ return r.json(); })
-    .then(function(rows) {
-      if (!rows || !rows.length) { content.innerHTML = '<div style="padding:40px;text-align:center;color:#999">Laudo não encontrado.</div>'; return; }
-      var l = rows[0].payload;
-      laudos = [l];
-      content.innerHTML = '<div class="card" style="padding:0;overflow:hidden">' + buildLaudoHTML(l) + '</div>';
-    })
-    .catch(function() { content.innerHTML = '<div style="padding:40px;text-align:center;color:#c00">Erro ao carregar laudo.</div>'; });
+  container.style.cssText = 'max-width:880px;margin:0 auto;padding:20px;min-height:100vh;background:#f5f4f0';
+
+  var toolbar = '<div style="display:flex;gap:10px;margin-bottom:20px;align-items:center;background:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1)">'
+    + '<img src="logo.png" style="max-height:40px;object-fit:contain" onerror="this.style.display='none'">'
+    + '<span style="font-size:14px;color:#666;flex:1">VetRoutine — Laudo Ultrassonográfico</span>'
+    + '<button onclick="window.print()" style="padding:8px 18px;background:#0f7a5a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600">🖨 Imprimir / Salvar PDF</button>'
+    + '</div>';
+
+  var loadingMsg = '<div style="text-align:center;padding:60px;color:#999;background:#fff;border-radius:8px">'
+    + '<div style="font-size:32px;margin-bottom:12px">⏳</div>'
+    + '<div>Carregando laudo...</div>'
+    + '</div>';
+
+  container.innerHTML = toolbar + '<div id="_pub_content">' + loadingMsg + '</div>';
+
+  // Substituir body com o viewer
+  document.body.innerHTML = '';
+  document.body.style.cssText = 'margin:0;padding:0;background:#f5f4f0;font-family:Arial,sans-serif';
+  document.body.appendChild(container);
+
+  // Buscar laudo do Supabase
+  fetch(SB_URL + '/rest/v1/uv_laudos?id=eq.' + id, {
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(function(r) {
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    return r.json();
+  })
+  .then(function(rows) {
+    var el = document.getElementById('_pub_content');
+    if (!el) return;
+    if (!rows || !rows.length) {
+      el.innerHTML = '<div style="text-align:center;padding:60px;color:#999;background:#fff;border-radius:8px">'
+        + '<div style="font-size:32px;margin-bottom:12px">❌</div>'
+        + '<div>Laudo não encontrado ou link inválido.</div>'
+        + '</div>';
+      return;
+    }
+    var l = rows[0].payload || rows[0];
+    laudos = [l]; // necessário para buildLaudoHTML
+    el.innerHTML = '<div style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1)">'
+      + buildLaudoHTML(l)
+      + '</div>';
+  })
+  .catch(function(e) {
+    var el = document.getElementById('_pub_content');
+    if (el) el.innerHTML = '<div style="text-align:center;padding:60px;color:#c00;background:#fff;border-radius:8px">'
+      + '<div style="font-size:32px;margin-bottom:12px">⚠️</div>'
+      + '<div>Erro ao carregar o laudo. Verifique sua conexão.</div>'
+      + '<div style="font-size:12px;color:#999;margin-top:8px">' + e.message + '</div>'
+      + '</div>';
+  });
 }
 
 (function() {
@@ -4106,7 +4196,15 @@ async function cloudDelete(table, id) {
   } catch(e) {}
 }
 
-async function syncCloud() {
+function mergeWithLocal(cloudItems, localItems) {
+  // Mantém itens locais que ainda não chegaram na nuvem
+  var cloudIds = new Set(cloudItems.map(function(i){ return i.id; }));
+  var soLocal = localItems.filter(function(i){ return !cloudIds.has(i.id); });
+  return cloudItems.concat(soLocal);
+}
+
+async function syncCloud(tentativa) {
+  tentativa = tentativa || 0;
   setSyncStatus('sync');
   try {
     await Promise.all([
@@ -4117,7 +4215,13 @@ async function syncCloud() {
       sbUpsert('uv_agenda',   agenda),
     ]);
     setSyncStatus('ok');
-  } catch(e) { setSyncStatus('offline'); }
+  } catch(e) {
+    setSyncStatus('offline');
+    // Retry automático: 3 tentativas com 5s, 10s, 15s de espera
+    if (tentativa < 3) {
+      setTimeout(function(){ syncCloud(tentativa + 1); }, 5000 * (tentativa + 1));
+    }
+  }
 }
 
 async function initCloud() {
@@ -4135,10 +4239,11 @@ async function initCloud() {
       sbFetch('uv_despesas'),
       sbFetch('uv_clinicas'),
     ]);
-    laudos    = filtrarExcluidos('uv_laudos',   rl);
-    receitas  = filtrarExcluidos('uv_receitas', rr);
-    despesas  = filtrarExcluidos('uv_despesas', rd);
-    clinicas  = filtrarExcluidos('uv_clinicas', rc);
+    // MERGE: itens locais não sincronizados + dados da nuvem
+    laudos    = mergeWithLocal(filtrarExcluidos('uv_laudos',   rl), laudos);
+    receitas  = mergeWithLocal(filtrarExcluidos('uv_receitas', rr), receitas);
+    despesas  = mergeWithLocal(filtrarExcluidos('uv_despesas', rd), despesas);
+    clinicas  = mergeWithLocal(filtrarExcluidos('uv_clinicas', rc), clinicas);
     save();
     populateClinicaSelects();
     
