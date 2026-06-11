@@ -212,6 +212,23 @@
   .search-bar input:focus, .search-bar select:focus { border-color: var(--teal); }
   .search-bar input { flex: 1; }
 
+  /* List toolbar */
+  .list-toolbar { display:flex; align-items:center; gap:2px; padding:7px 12px; border-bottom:1px solid var(--border); background:var(--surface); flex-wrap:wrap; }
+  .ltb-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 9px; font-size:12px; font-family:'Inter',sans-serif; border:1px solid transparent; border-radius:var(--radius); cursor:pointer; background:none; color:var(--text2); white-space:nowrap; transition:background .12s,color .12s,border-color .12s; }
+  .ltb-btn:hover:not([disabled]) { background:var(--surface2); border-color:var(--border); color:var(--text); }
+  .ltb-btn[disabled] { opacity:.3; cursor:default; pointer-events:none; }
+  .ltb-btn.ltb-danger { color:var(--red); }
+  .ltb-btn.ltb-danger:hover:not([disabled]) { background:var(--red-bg); border-color:#f5c6c2; }
+  .ltb-sep { width:1px; height:18px; background:var(--border); margin:0 6px; flex-shrink:0; }
+  .ltb-right { margin-left:auto; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .ltb-right input, .ltb-right select { padding:4px 9px; border:1px solid var(--border2); border-radius:var(--radius); font-size:12px; font-family:'Inter',sans-serif; background:var(--surface); color:var(--text); outline:none; }
+  .ltb-right input:focus, .ltb-right select:focus { border-color:var(--teal); }
+  .list-footer { padding:9px 14px; font-size:12px; color:var(--text3); border-top:1px solid var(--border); }
+  table.data-table tr.row-sel td { background:#e8f7f3; }
+  table.data-table tr.row-sel:hover td { background:#d5f0e9; }
+  table.data-table td.td-check, table.data-table th.th-check { width:36px; padding-left:14px; padding-right:4px; }
+  .row-check { width:14px; height:14px; cursor:pointer; accent-color:var(--teal); }
+
   /* Sub-tabs */
   .subtabs { display: flex; align-items: center; justify-content: space-between; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
   .subtabs-left { display: flex; gap: 2px; }
@@ -444,25 +461,43 @@
 
       <!-- LAUDOS -->
       <div class="page" id="page-laudos">
-        <div class="search-bar">
-          <input id="ls-q" placeholder="Buscar por paciente, tutor ou veterinário..." oninput="renderLaudos()">
-          <select id="ls-tipo" onchange="renderLaudos()" style="width:160px">
-            <option value="">Todos os tipos</option>
-            <option value="Abdominal total">Abdominal total</option>
-            <option value="Gestacional">Gestacional</option>
-          </select>
-          <select id="ls-res" onchange="renderLaudos()" style="width:160px">
-            <option value="">Todos os resultados</option>
-            <option value="Normal">Normal</option>
-            <option value="Atenção">Atenção</option>
-            <option value="Alterado">Alterado</option>
-          </select>
-        </div>
-        <div class="card" id="laudos-card">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p>Nenhum laudo cadastrado.<br>Clique em "Novo laudo" para começar.</p>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="list-toolbar">
+            <button class="ltb-btn" onclick="novoLaudo()" title="Novo laudo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo
+            </button>
+            <div class="ltb-sep"></div>
+            <button class="ltb-btn" id="ltb-l-view" disabled onclick="laudoToolbarView()" title="Visualizar laudo selecionado">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver
+            </button>
+            <button class="ltb-btn" id="ltb-l-edit" disabled onclick="laudoToolbarEdit()" title="Editar laudo selecionado">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar
+            </button>
+            <button class="ltb-btn ltb-danger" id="ltb-l-del" disabled onclick="laudoToolbarDel()" title="Excluir selecionados">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Excluir
+            </button>
+            <div class="ltb-right">
+              <input id="ls-q" placeholder="🔍 Buscar paciente, tutor, vet..." oninput="renderLaudos()" style="width:210px">
+              <select id="ls-tipo" onchange="renderLaudos()">
+                <option value="">Todos os tipos</option>
+                <option value="Abdominal total">Abdominal total</option>
+                <option value="Gestacional">Gestacional</option>
+              </select>
+              <select id="ls-res" onchange="renderLaudos()">
+                <option value="">Todos os resultados</option>
+                <option value="Normal">Normal</option>
+                <option value="Atenção">Atenção</option>
+                <option value="Alterado">Alterado</option>
+              </select>
+            </div>
           </div>
+          <div id="laudos-card">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <p>Nenhum laudo cadastrado.<br>Clique em "+ Novo" para começar.</p>
+            </div>
+          </div>
+          <div class="list-footer" id="laudos-footer" style="display:none"></div>
         </div>
       </div>
 
@@ -899,9 +934,19 @@
               <button class="btn" id="cl-btn-cancelar" style="display:none" onclick="cancelEditCl()">Cancelar edição</button>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Clínicas cadastradas</div></div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div class="list-toolbar">
+              <span style="font-size:13px;font-weight:600;color:var(--text);padding:0 6px">Clínicas cadastradas</span>
+              <div class="ltb-sep"></div>
+              <button class="ltb-btn" id="ltb-c-edit" disabled onclick="clToolbarEdit()" title="Editar clínica selecionada">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar
+              </button>
+              <button class="ltb-btn ltb-danger" id="ltb-c-del" disabled onclick="clToolbarDel()" title="Excluir selecionadas">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Excluir
+              </button>
+            </div>
             <div id="cl-list"><div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div></div>
+            <div class="list-footer" id="cl-footer" style="display:none"></div>
           </div>
         </div>
       </div>
@@ -1691,6 +1736,7 @@ let laudos = [], receitas = [], despesas = [], clinicas = [];
 let localSaveTs = 0; // timestamp do último save local — impede initCloud de sobrescrever dados frescos
 let agenda = [];
 let agendaViewDate = new Date();
+let selectedLaudos = new Set(), selectedCl = new Set();
 let agendaViewMode = 'mes';
 let agendaEditId = null;
 const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95' };
@@ -1815,7 +1861,7 @@ window.addEventListener('resize', function() {
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
-  if (name === 'laudos') renderLaudos();
+  if (name === 'laudos') { selectedLaudos.clear(); renderLaudos(); laudoToolbarUpdate(); }
   if (name === 'agenda') { renderAgenda(); }
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
@@ -1848,7 +1894,7 @@ function stf(name) {
   if (name === 'f-receitas') { renderReceitas(); populateClinicaSelects(); }
   if (name === 'f-despesas') renderDespesas();
   if (name === 'f-receber') renderReceber();
-  if (name === 'f-clinicas') { editClId = null; var bc = document.getElementById('cl-btn-cancelar'); if(bc) bc.style.display='none'; var bs = document.getElementById('cl-btn-salvar'); if(bs) bs.textContent='+ Cadastrar clínica'; renderClinicas(); }
+  if (name === 'f-clinicas') { editClId = null; selectedCl.clear(); var bc = document.getElementById('cl-btn-cancelar'); if(bc) bc.style.display='none'; var bs = document.getElementById('cl-btn-salvar'); if(bs) bs.textContent='+ Cadastrar clínica'; renderClinicas(); }
 }
 
 function stpc(name) {
@@ -2643,29 +2689,101 @@ function renderLaudos() {
   const q = (document.getElementById('ls-q').value||'').toLowerCase();
   const tp = document.getElementById('ls-tipo').value;
   const rs = document.getElementById('ls-res').value;
-  const f = laudos.filter(l =>
+  const all = [...laudos].sort((a,b) => b.id - a.id);
+  const f = all.filter(l =>
     (!q || (l.paciente||'').toLowerCase().includes(q) || (l.tutor||'').toLowerCase().includes(q) || (l.vet||'').toLowerCase().includes(q)) &&
     (!tp || l.tipo === tp) && (!rs || l.resultado === rs)
   );
   const el = document.getElementById('laudos-card');
-  if (!f.length) { el.innerHTML = '<div class="empty-state"><p>Nenhum laudo encontrado.</p></div>'; return; }
+  const footer = document.getElementById('laudos-footer');
+  if (!f.length) {
+    el.innerHTML = '<div class="empty-state"><p>Nenhum laudo encontrado.</p></div>';
+    footer.style.display = 'none';
+    return;
+  }
   el.innerHTML = `<div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Data</th><th>Paciente</th><th>Tipo</th><th>Tutor</th><th>Veterinário</th><th>Clínica</th><th>Resultado</th><th></th></tr></thead>
-    <tbody>${[...f].sort((a,b)=>b.id-a.id).map(l => `<tr>
-      <td style="white-space:nowrap;color:var(--text2)">${fmtD(l.data)}</td>
-      <td><strong>${l.paciente||'—'}</strong> <span style="color:var(--text3);font-size:12px">${l.especie||''}</span></td>
-      <td><span class="pill">${l.tipo||'—'}</span></td>
-      <td style="color:var(--text2)">${l.tutor||'—'}</td>
-      <td style="color:var(--text2)">${l.vet||'—'}</td>
-      <td style="color:var(--text2)">${l.clinica||'—'}</td>
-      <td><span class="badge badge-${(l.resultado||'Normal').toLowerCase().replace('ã','a').replace('ç','c')}">${l.resultado}</span></td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-sm" onclick="viewLaudo(${l.id})" title="Ver">👁</button>
-        <button class="btn btn-sm" onclick="editLaudo(${l.id})" title="Editar">✏️</button>
-        <button class="btn btn-sm btn-danger" onclick="delLaudo(${l.id})" title="Excluir">🗑</button>
-      </td>
-    </tr>`).join('')}</tbody>
+    <thead><tr>
+      <th class="th-check"><input type="checkbox" class="row-check" id="chk-l-all" onchange="laudoSelAll(this)" title="Selecionar todos"></th>
+      <th>Data</th><th>Paciente</th><th>Tipo</th><th>Tutor</th><th>Veterinário</th><th>Clínica</th><th>Resultado</th>
+    </tr></thead>
+    <tbody>${f.map(l => {
+      const sel = selectedLaudos.has(l.id);
+      return `<tr class="${sel ? 'row-sel' : ''}" onclick="laudoRowClick(event,${l.id})" ondblclick="viewLaudo(${l.id})" style="cursor:pointer">
+        <td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check row-check-l" data-id="${l.id}" ${sel?'checked':''} onchange="laudoSelToggle(${l.id},this)"></td>
+        <td style="white-space:nowrap;color:var(--text2)">${fmtD(l.data)}</td>
+        <td><strong>${l.paciente||'—'}</strong> <span style="color:var(--text3);font-size:12px">${l.especie||''}</span></td>
+        <td><span class="pill">${l.tipo||'—'}</span></td>
+        <td style="color:var(--text2)">${l.tutor||'—'}</td>
+        <td style="color:var(--text2)">${l.vet||'—'}</td>
+        <td style="color:var(--text2)">${l.clinica||'—'}</td>
+        <td><span class="badge badge-${(l.resultado||'Normal').toLowerCase().replace('ã','a').replace('ç','c')}">${l.resultado}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
   </table></div>`;
+  const n = selectedLaudos.size;
+  footer.style.display = '';
+  footer.textContent = `Exibindo ${f.length} de ${laudos.length} laudo${laudos.length !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionado${n !== 1 ? 's' : ''}` : '');
+  const allChk = document.getElementById('chk-l-all');
+  if (allChk) allChk.checked = f.length > 0 && f.every(l => selectedLaudos.has(l.id));
+  laudoToolbarUpdate();
+}
+
+function laudoToolbarUpdate() {
+  const n = selectedLaudos.size;
+  const v = document.getElementById('ltb-l-view');
+  const e = document.getElementById('ltb-l-edit');
+  const d = document.getElementById('ltb-l-del');
+  if (v) v.disabled = n !== 1;
+  if (e) e.disabled = n !== 1;
+  if (d) d.disabled = n === 0;
+}
+
+function laudoSelToggle(id, cb) {
+  if (cb.checked) selectedLaudos.add(id); else selectedLaudos.delete(id);
+  cb.closest('tr').classList.toggle('row-sel', cb.checked);
+  const footer = document.getElementById('laudos-footer');
+  const n = selectedLaudos.size;
+  const total = laudos.length;
+  const vis = document.querySelectorAll('.row-check-l').length;
+  if (footer) footer.textContent = `Exibindo ${vis} de ${total} laudo${total !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionado${n !== 1 ? 's' : ''}` : '');
+  const allChk = document.getElementById('chk-l-all');
+  if (allChk) allChk.checked = vis > 0 && document.querySelectorAll('.row-check-l:not(:checked)').length === 0;
+  laudoToolbarUpdate();
+}
+
+function laudoSelAll(masterCb) {
+  document.querySelectorAll('.row-check-l').forEach(cb => {
+    const id = parseInt(cb.dataset.id);
+    cb.checked = masterCb.checked;
+    cb.closest('tr').classList.toggle('row-sel', masterCb.checked);
+    if (masterCb.checked) selectedLaudos.add(id); else selectedLaudos.delete(id);
+  });
+  renderLaudos();
+}
+
+function laudoRowClick(e, id) {
+  const cb = e.currentTarget.querySelector('.row-check-l');
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  laudoSelToggle(id, cb);
+}
+
+function laudoToolbarView() { if (selectedLaudos.size === 1) viewLaudo([...selectedLaudos][0]); }
+function laudoToolbarEdit() { if (selectedLaudos.size === 1) editLaudo([...selectedLaudos][0]); }
+function laudoToolbarDel() {
+  if (!selectedLaudos.size) return;
+  const ids = [...selectedLaudos];
+  confirmarAcao(
+    ids.length === 1 ? 'Excluir laudo' : `Excluir ${ids.length} laudos`,
+    ids.length === 1 ? 'Esta ação é permanente e não pode ser desfeita.' : `Excluir ${ids.length} laudos permanentemente. Esta ação não pode ser desfeita.`,
+    'Excluir',
+    function() {
+      ids.forEach(id => { marcarExcluido('uv_laudos', id); laudos = laudos.filter(l => l.id !== id); cloudDelete('uv_laudos', id); });
+      selectedLaudos.clear();
+      save(); renderLaudos(); updateDashboard();
+      toast(ids.length === 1 ? 'Laudo excluído.' : `${ids.length} laudos excluídos.`);
+    }
+  );
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -2971,14 +3089,24 @@ function delCl(id) {
 
 function renderClinicas() {
   const el = document.getElementById('cl-list');
-  if (!clinicas.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div>'; return; }
+  const footer = document.getElementById('cl-footer');
+  if (!clinicas.length) {
+    el.innerHTML = '<div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div>';
+    if (footer) footer.style.display = 'none';
+    return;
+  }
   el.innerHTML = `<div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Clínica</th><th>Responsável</th><th>Telefone</th><th>E-mail</th><th>Condição</th><th>Desconto</th><th>Laudos</th><th>Receita total</th><th></th></tr></thead>
+    <thead><tr>
+      <th class="th-check"><input type="checkbox" class="row-check" id="chk-c-all" onchange="clSelAll(this)" title="Selecionar todas"></th>
+      <th>Clínica</th><th>Responsável</th><th>Telefone</th><th>E-mail</th><th>Condição</th><th>Desconto</th><th>Laudos</th><th>Receita total</th>
+    </tr></thead>
     <tbody>${clinicas.map(c => {
       const tot = receitas.filter(r=>(r.clinica||'').toLowerCase()===c.nome.toLowerCase()).reduce((s,r)=>s+r.valor,0);
       const qtdLaudos = laudos.filter(l=>(l.clinica||'').toLowerCase()===c.nome.toLowerCase()).length;
-      return `<tr>
-        <td><strong>${c.nome}</strong>${c.sigla?` <span style="font-size:11px;background:var(--teal-bg);color:var(--teal-text);padding:1px 6px;border-radius:4px;vertical-align:middle">${c.sigla}</span>`:''}${c.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${c.endereco} <a href="https://maps.google.com/?q=${encodeURIComponent(c.endereco)}" target="_blank" style="color:var(--teal);text-decoration:none;white-space:nowrap">🗺 Maps</a></div>`:''}${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
+      const sel = selectedCl.has(c.id);
+      return `<tr class="${sel ? 'row-sel' : ''}" onclick="clRowClick(event,${c.id})" style="cursor:pointer">
+        <td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check row-check-c" data-id="${c.id}" ${sel?'checked':''} onchange="clSelToggle(${c.id},this)"></td>
+        <td><strong>${c.nome}</strong>${c.sigla?` <span style="font-size:11px;background:var(--teal-bg);color:var(--teal-text);padding:1px 6px;border-radius:4px;vertical-align:middle">${c.sigla}</span>`:''}${c.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${c.endereco} <a href="https://maps.google.com/?q=${encodeURIComponent(c.endereco)}" target="_blank" style="color:var(--teal);text-decoration:none;white-space:nowrap" onclick="event.stopPropagation()">🗺 Maps</a></div>`:''}${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
         <td style="color:var(--text2)">${c.responsavel||c.contato||'—'}</td>
         <td style="color:var(--text2);white-space:nowrap">${c.telefone||'—'}</td>
         <td style="color:var(--text2)">${c.email||'—'}</td>
@@ -2986,9 +3114,69 @@ function renderClinicas() {
         <td>${c.desc>0?c.desc+'%':'—'}</td>
         <td style="color:var(--text2)">${qtdLaudos}</td>
         <td style="font-weight:600;color:var(--teal)">${fmt(tot)}</td>
-        <td style="white-space:nowrap"><button class="btn btn-sm" onclick="editClinica(${c.id})" title="Editar">✏️</button> <button class="btn btn-sm btn-danger" onclick="delCl(${c.id})" title="Excluir">🗑</button></td>
       </tr>`;
     }).join('')}</tbody></table></div>`;
+  const n = selectedCl.size;
+  if (footer) {
+    footer.style.display = '';
+    footer.textContent = `${clinicas.length} clínica${clinicas.length !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionada${n !== 1 ? 's' : ''}` : '');
+  }
+  const allChk = document.getElementById('chk-c-all');
+  if (allChk) allChk.checked = clinicas.length > 0 && clinicas.every(c => selectedCl.has(c.id));
+  clToolbarUpdate();
+}
+
+function clToolbarUpdate() {
+  const n = selectedCl.size;
+  const e = document.getElementById('ltb-c-edit');
+  const d = document.getElementById('ltb-c-del');
+  if (e) e.disabled = n !== 1;
+  if (d) d.disabled = n === 0;
+}
+
+function clSelToggle(id, cb) {
+  if (cb.checked) selectedCl.add(id); else selectedCl.delete(id);
+  cb.closest('tr').classList.toggle('row-sel', cb.checked);
+  const footer = document.getElementById('cl-footer');
+  const n = selectedCl.size;
+  if (footer) footer.textContent = `${clinicas.length} clínica${clinicas.length !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionada${n !== 1 ? 's' : ''}` : '');
+  const allChk = document.getElementById('chk-c-all');
+  if (allChk) allChk.checked = clinicas.every(c => selectedCl.has(c.id));
+  clToolbarUpdate();
+}
+
+function clSelAll(masterCb) {
+  document.querySelectorAll('.row-check-c').forEach(cb => {
+    const id = parseInt(cb.dataset.id);
+    cb.checked = masterCb.checked;
+    cb.closest('tr').classList.toggle('row-sel', masterCb.checked);
+    if (masterCb.checked) selectedCl.add(id); else selectedCl.delete(id);
+  });
+  renderClinicas();
+}
+
+function clRowClick(e, id) {
+  const cb = e.currentTarget.querySelector('.row-check-c');
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  clSelToggle(id, cb);
+}
+
+function clToolbarEdit() { if (selectedCl.size === 1) editClinica([...selectedCl][0]); }
+function clToolbarDel() {
+  if (!selectedCl.size) return;
+  const ids = [...selectedCl];
+  confirmarAcao(
+    ids.length === 1 ? 'Excluir clínica' : `Excluir ${ids.length} clínicas`,
+    ids.length === 1 ? 'Esta ação é permanente.' : `Excluir ${ids.length} clínicas permanentemente.`,
+    'Excluir',
+    function() {
+      ids.forEach(id => { marcarExcluido('uv_clinicas', id); clinicas = clinicas.filter(c => c.id !== id); cloudDelete('uv_clinicas', id); });
+      selectedCl.clear();
+      save(); renderClinicas(); populateClinicaSelects();
+      toast(ids.length === 1 ? 'Clínica excluída.' : `${ids.length} clínicas excluídas.`);
+    }
+  );
 }
 
 // ─── RELATÓRIOS ───────────────────────────────────────────────────────────────
