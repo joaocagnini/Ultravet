@@ -4408,6 +4408,7 @@ load();
 document.getElementById('r-data').value = today();
 document.getElementById('d-data').value = today();
 populateClinicaSelects();
+initCloud(); // puxa Supabase imediatamente ao abrir o app
 
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
 function toggleSidebar() {
