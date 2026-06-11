@@ -2062,9 +2062,11 @@ function salvarLaudo() {
   }
   localSaveTs = Date.now();
   save();
+  editId = null;
+  goPage('laudos');
 }
 
-function cancelarLaudo() { goPage('laudos'); }
+function cancelarLaudo() { editId = null; goPage('laudos'); }
 
 function previewLaudo() {
   viewId = null;
