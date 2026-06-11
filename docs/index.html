@@ -62,7 +62,9 @@
   .nav-item.active { background: rgba(0,168,150,.2); color: #00c9a7; }
   .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
   @media (max-width: 900px) {
-    /* Sidebar: sempre colapsada no mobile/tablet */
+    /* Sidebar: sempre colapsada no mobile/tablet - sem botao de expandir */
+    .sb-toggle { display: none !important; }
+    .sb-logo-col > div:last-child { display: none !important; }
     .sidebar { width: 60px; }
     .sidebar .nav-label { display: none; }
     .sidebar .nav-section { opacity:0;height:0;padding:0;overflow:hidden; }
@@ -101,7 +103,7 @@
     #modal-confirmar > div { width: calc(100vw - 32px); margin: 0 16px; }
     #modal-revisao > div { margin: 16px 8px; }
 
-    /* Painel lateral de fotos: botao fechar maior no mobile */
+    /* Painel lateral de fotos: largura maior no mobile */
     #foto-panel-lateral button[onclick="toggleFotoPanel()"] { min-width: 44px; min-height: 44px; font-size: 22px; padding: 8px; }
 
     /* Subtabs: scroll horizontal */
@@ -210,6 +212,23 @@
   .search-bar input:focus, .search-bar select:focus { border-color: var(--teal); }
   .search-bar input { flex: 1; }
 
+  /* List toolbar */
+  .list-toolbar { display:flex; align-items:center; gap:2px; padding:7px 12px; border-bottom:1px solid var(--border); background:var(--surface); flex-wrap:wrap; }
+  .ltb-btn { display:inline-flex; align-items:center; gap:5px; padding:5px 9px; font-size:12px; font-family:'Inter',sans-serif; border:1px solid transparent; border-radius:var(--radius); cursor:pointer; background:none; color:var(--text2); white-space:nowrap; transition:background .12s,color .12s,border-color .12s; }
+  .ltb-btn:hover:not([disabled]) { background:var(--surface2); border-color:var(--border); color:var(--text); }
+  .ltb-btn[disabled] { opacity:.3; cursor:default; pointer-events:none; }
+  .ltb-btn.ltb-danger { color:var(--red); }
+  .ltb-btn.ltb-danger:hover:not([disabled]) { background:var(--red-bg); border-color:#f5c6c2; }
+  .ltb-sep { width:1px; height:18px; background:var(--border); margin:0 6px; flex-shrink:0; }
+  .ltb-right { margin-left:auto; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .ltb-right input, .ltb-right select { padding:4px 9px; border:1px solid var(--border2); border-radius:var(--radius); font-size:12px; font-family:'Inter',sans-serif; background:var(--surface); color:var(--text); outline:none; }
+  .ltb-right input:focus, .ltb-right select:focus { border-color:var(--teal); }
+  .list-footer { padding:9px 14px; font-size:12px; color:var(--text3); border-top:1px solid var(--border); }
+  table.data-table tr.row-sel td { background:#e8f7f3; }
+  table.data-table tr.row-sel:hover td { background:#d5f0e9; }
+  table.data-table td.td-check, table.data-table th.th-check { width:36px; padding-left:14px; padding-right:4px; }
+  .row-check { width:14px; height:14px; cursor:pointer; accent-color:var(--teal); }
+
   /* Sub-tabs */
   .subtabs { display: flex; align-items: center; justify-content: space-between; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
   .subtabs-left { display: flex; gap: 2px; }
@@ -295,8 +314,11 @@
         <div style="background:#fff;border-radius:8px;padding:4px;overflow:hidden;flex:1;margin-right:8px">
           <img id="sb-logo" style="width:100%;height:96px;object-fit:cover;object-position:center top;display:block" alt="VetRoutine">
         </div>
-        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Retrair menu" style="background:none;border:none;cursor:pointer;color:rgba(255,255,255,.5);padding:4px;display:flex;align-items:center;flex-shrink:0" onmouseover="this.style.color='rgba(255,255,255,.9)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;transition:transform .22s"><polyline points="15 18 9 12 15 6"/></svg>
+        <button class="sb-toggle" onclick="event.stopPropagation();toggleSidebar()" title="Recolher/expandir menu" style="background:rgba(255,255,255,.08);border:none;cursor:pointer;color:rgba(255,255,255,.7);padding:6px;display:flex;align-items:center;border-radius:6px;flex-shrink:0;transition:all .15s" onmouseover="this.style.background='rgba(255,255,255,.18)';this.style.color='#fff'" onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.7)'">
+          <svg viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5" style="width:18px;height:18px">
+            <rect x="1" y="1" width="16" height="16" rx="2"/>
+            <line x1="6" y1="1" x2="6" y2="17"/>
+          </svg>
         </button>
       </div>
       <!-- Logo colapsada: só VR + botão expandir -->
@@ -304,7 +326,12 @@
         <div class="sidebar-logo-vr" style="background:#0f7a5a;border-radius:8px;width:36px;height:36px;display:flex;align-items:center;justify-content:center">
           <span style="font-size:13px;font-weight:900;color:#fff;letter-spacing:-1px;line-height:1">VR</span>
         </div>
-        <svg viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2" style="width:14px;height:14px;transform:rotate(180deg)"><polyline points="15 18 9 12 15 6"/></svg>
+        <div style="background:rgba(255,255,255,.08);border-radius:6px;padding:5px;display:flex;align-items:center;justify-content:center">
+          <svg viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" style="width:16px;height:16px">
+            <rect x="1" y="1" width="16" height="16" rx="2"/>
+            <line x1="6" y1="1" x2="6" y2="17"/>
+          </svg>
+        </div>
       </div>
     </div>
     <nav class="sidebar-nav">
@@ -434,25 +461,43 @@
 
       <!-- LAUDOS -->
       <div class="page" id="page-laudos">
-        <div class="search-bar">
-          <input id="ls-q" placeholder="Buscar por paciente, tutor ou veterinário..." oninput="renderLaudos()">
-          <select id="ls-tipo" onchange="renderLaudos()" style="width:160px">
-            <option value="">Todos os tipos</option>
-            <option value="Abdominal total">Abdominal total</option>
-            <option value="Gestacional">Gestacional</option>
-          </select>
-          <select id="ls-res" onchange="renderLaudos()" style="width:160px">
-            <option value="">Todos os resultados</option>
-            <option value="Normal">Normal</option>
-            <option value="Atenção">Atenção</option>
-            <option value="Alterado">Alterado</option>
-          </select>
-        </div>
-        <div class="card" id="laudos-card">
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-            <p>Nenhum laudo cadastrado.<br>Clique em "Novo laudo" para começar.</p>
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="list-toolbar">
+            <button class="ltb-btn" onclick="novoLaudo()" title="Novo laudo">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Novo
+            </button>
+            <div class="ltb-sep"></div>
+            <button class="ltb-btn" id="ltb-l-view" disabled onclick="laudoToolbarView()" title="Visualizar laudo selecionado">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> Ver
+            </button>
+            <button class="ltb-btn" id="ltb-l-edit" disabled onclick="laudoToolbarEdit()" title="Editar laudo selecionado">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar
+            </button>
+            <button class="ltb-btn ltb-danger" id="ltb-l-del" disabled onclick="laudoToolbarDel()" title="Excluir selecionados">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Excluir
+            </button>
+            <div class="ltb-right">
+              <input id="ls-q" placeholder="🔍 Buscar paciente, tutor, vet..." oninput="renderLaudos()" style="width:210px">
+              <select id="ls-tipo" onchange="renderLaudos()">
+                <option value="">Todos os tipos</option>
+                <option value="Abdominal total">Abdominal total</option>
+                <option value="Gestacional">Gestacional</option>
+              </select>
+              <select id="ls-res" onchange="renderLaudos()">
+                <option value="">Todos os resultados</option>
+                <option value="Normal">Normal</option>
+                <option value="Atenção">Atenção</option>
+                <option value="Alterado">Alterado</option>
+              </select>
+            </div>
           </div>
+          <div id="laudos-card">
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+              <p>Nenhum laudo cadastrado.<br>Clique em "+ Novo" para começar.</p>
+            </div>
+          </div>
+          <div class="list-footer" id="laudos-footer" style="display:none"></div>
         </div>
       </div>
 
@@ -753,6 +798,7 @@
           </div>
           <div style="display:flex;gap:8px">
             <button class="btn" onclick="goPage('laudos')">← Voltar</button>
+            <button class="btn" onclick="compartilharLaudo()" title="Copiar link para compartilhar">📎 Compartilhar</button>
             <button class="btn btn-primary" onclick="imprimirLaudo()">🖨 Imprimir</button>
             <button class="btn btn-primary" onclick="baixarLaudoPDF()">📥 Baixar PDF</button>
           </div>
@@ -888,9 +934,19 @@
               <button class="btn" id="cl-btn-cancelar" style="display:none" onclick="cancelEditCl()">Cancelar edição</button>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header"><div class="card-title">Clínicas cadastradas</div></div>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div class="list-toolbar">
+              <span style="font-size:13px;font-weight:600;color:var(--text);padding:0 6px">Clínicas cadastradas</span>
+              <div class="ltb-sep"></div>
+              <button class="ltb-btn" id="ltb-c-edit" disabled onclick="clToolbarEdit()" title="Editar clínica selecionada">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> Editar
+              </button>
+              <button class="ltb-btn ltb-danger" id="ltb-c-del" disabled onclick="clToolbarDel()" title="Excluir selecionadas">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> Excluir
+              </button>
+            </div>
             <div id="cl-list"><div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div></div>
+            <div class="list-footer" id="cl-footer" style="display:none"></div>
           </div>
         </div>
       </div>
@@ -1680,6 +1736,7 @@ let laudos = [], receitas = [], despesas = [], clinicas = [];
 let localSaveTs = 0; // timestamp do último save local — impede initCloud de sobrescrever dados frescos
 let agenda = [];
 let agendaViewDate = new Date();
+let selectedLaudos = new Set(), selectedCl = new Set();
 let agendaViewMode = 'mes';
 let agendaEditId = null;
 const AGENDA_CORES = { 'Agendado':'#1a5fa8', 'Confirmado':'#0f7a5a', 'Realizado':'#27ae60', 'Cancelado':'#9b9a95' };
@@ -1693,6 +1750,7 @@ function save() {
   localStorage.setItem('uv_despesas', JSON.stringify(despesas));
   localStorage.setItem('uv_clinicas', JSON.stringify(clinicas));
   localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  localSaveTs = Date.now();
   syncCloud();
 }
 function load() {
@@ -1701,6 +1759,8 @@ function load() {
   try { despesas = JSON.parse(localStorage.getItem('uv_despesas') || '[]'); } catch(e){despesas=[];}
   try { clinicas = JSON.parse(localStorage.getItem('uv_clinicas') || '[]'); } catch(e){clinicas=[];}
   try { agenda = JSON.parse(localStorage.getItem('uv_agenda') || '[]'); } catch(e){agenda=[];}
+  // Se ha dados locais, proteger sync por 5 min para nao sobrescrever antes do push
+  if (clinicas.length || laudos.length) localSaveTs = Date.now() - 540000;
 }
 
 // ─── UTILS ───────────────────────────────────────────────────────────────────
@@ -1767,81 +1827,41 @@ function goPage(name) {
   const map = {dashboard:0, laudos:1, agenda:3, financeiro:4};
   if (map[name] !== undefined) document.querySelectorAll('.nav-item')[map[name]].classList.add('active');
   if (name === 'dashboard') 
-function setSyncStatus(s) {
-  const dot = document.getElementById('sync-dot');
-  const lbl = document.getElementById('sync-label');
-  if (s === 'ok')      { dot.style.background = '#0f7a5a'; lbl.textContent = 'Sincronizado'; }
-  else if (s === 'sync') { dot.style.background = '#b35c00'; lbl.textContent = 'Sincronizando…'; }
-  else                 { dot.style.background = '#c0392b'; lbl.textContent = 'Offline (local)'; }
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
 }
-
-async function sbFetch(table) {
-  const r = await fetch(SB_URL + '/rest/v1/' + table + '?select=*', { headers: SB_H });
-  if (!r.ok) throw new Error(r.status);
-  const rows = await r.json();
-  return rows.map(row => row.payload);
-}
-
-async function sbUpsert(table, items) {
-  if (!items.length) return;
-  await fetch(SB_URL + '/rest/v1/' + table, {
-    method: 'POST',
-    headers: SB_H,
-    body: JSON.stringify(items.map(item => ({ id: item.id, payload: item })))
-  });
-}
-
-async function cloudDelete(table, id) {
-  try {
-    await fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
-      method: 'DELETE',
-      headers: SB_H
-    });
-  } catch(e) {}
-}
-
-async function syncCloud() {
-  setSyncStatus('sync');
-  try {
-    await Promise.all([
-      sbUpsert('uv_laudos',   laudos),
-      sbUpsert('uv_receitas', receitas),
-      sbUpsert('uv_despesas', despesas),
-      sbUpsert('uv_clinicas', clinicas),
-      sbUpsert('uv_agenda',   agenda),
-    ]);
-    setSyncStatus('ok');
-  } catch(e) { setSyncStatus('offline'); }
-}
-
-async function initCloud() {
-  // Se houve um save local nos últimos 90s, apenas envia para nuvem — não sobrescreve dados locais frescos
-  if (Date.now() - localSaveTs < 90000) {
-    try { await syncCloud(); } catch(e) {}
-    setSyncStatus('ok');
-    return;
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
   }
-  setSyncStatus('sync');
-  try {
-    const [rl, rr, rd, rc] = await Promise.all([
-      sbFetch('uv_laudos'),
-      sbFetch('uv_receitas'),
-      sbFetch('uv_despesas'),
-      sbFetch('uv_clinicas'),
-    ]);
-    laudos    = filtrarExcluidos('uv_laudos',   rl);
-    receitas  = filtrarExcluidos('uv_receitas', rr);
-    despesas  = filtrarExcluidos('uv_despesas', rd);
-    clinicas  = filtrarExcluidos('uv_clinicas', rc);
-    save();
-    populateClinicaSelects();
-    
-
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
 
 updateDashboard();
 initSidebar();
 document.getElementById('sb-logo').src = LOGO_B64;
-  if (name === 'laudos') renderLaudos();
+  if (name === 'laudos') { selectedLaudos.clear(); renderLaudos(); laudoToolbarUpdate(); }
   if (name === 'agenda') { renderAgenda(); }
   if (name === 'financeiro') { stf(curFSec); updateFinOverview(); }
   if (name === 'relatorios') strp(curRpSec);
@@ -1874,7 +1894,7 @@ function stf(name) {
   if (name === 'f-receitas') { renderReceitas(); populateClinicaSelects(); }
   if (name === 'f-despesas') renderDespesas();
   if (name === 'f-receber') renderReceber();
-  if (name === 'f-clinicas') renderClinicas();
+  if (name === 'f-clinicas') { editClId = null; selectedCl.clear(); var bc = document.getElementById('cl-btn-cancelar'); if(bc) bc.style.display='none'; var bs = document.getElementById('cl-btn-salvar'); if(bs) bs.textContent='+ Cadastrar clínica'; renderClinicas(); }
 }
 
 function stpc(name) {
@@ -2088,9 +2108,11 @@ function salvarLaudo() {
   }
   localSaveTs = Date.now();
   save();
+  editId = null;
+  goPage('laudos');
 }
 
-function cancelarLaudo() { goPage('laudos'); }
+function cancelarLaudo() { editId = null; goPage('laudos'); }
 
 function previewLaudo() {
   viewId = null;
@@ -2337,7 +2359,7 @@ function imprimirLaudo() {
     + 'img{page-break-inside:avoid;break-inside:avoid;max-width:100%}'
     + 'p,div,td,li{orphans:4;widows:4}'
     + '.organ-row,section{page-break-inside:avoid;break-inside:avoid}'
-    + '@page{size:' + papel + ';margin:0}'
+    + '@page{size:auto;margin:20mm}'
     + '@media print{body{padding:' + margens + '}}'
     + '</style></head><body>' + body
     + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
@@ -2667,29 +2689,101 @@ function renderLaudos() {
   const q = (document.getElementById('ls-q').value||'').toLowerCase();
   const tp = document.getElementById('ls-tipo').value;
   const rs = document.getElementById('ls-res').value;
-  const f = laudos.filter(l =>
+  const all = [...laudos].sort((a,b) => b.id - a.id);
+  const f = all.filter(l =>
     (!q || (l.paciente||'').toLowerCase().includes(q) || (l.tutor||'').toLowerCase().includes(q) || (l.vet||'').toLowerCase().includes(q)) &&
     (!tp || l.tipo === tp) && (!rs || l.resultado === rs)
   );
   const el = document.getElementById('laudos-card');
-  if (!f.length) { el.innerHTML = '<div class="empty-state"><p>Nenhum laudo encontrado.</p></div>'; return; }
+  const footer = document.getElementById('laudos-footer');
+  if (!f.length) {
+    el.innerHTML = '<div class="empty-state"><p>Nenhum laudo encontrado.</p></div>';
+    footer.style.display = 'none';
+    return;
+  }
   el.innerHTML = `<div class="table-wrap"><table class="data-table">
-    <thead><tr><th>Data</th><th>Paciente</th><th>Tipo</th><th>Tutor</th><th>Veterinário</th><th>Clínica</th><th>Resultado</th><th></th></tr></thead>
-    <tbody>${[...f].sort((a,b)=>b.id-a.id).map(l => `<tr>
-      <td style="white-space:nowrap;color:var(--text2)">${fmtD(l.data)}</td>
-      <td><strong>${l.paciente||'—'}</strong> <span style="color:var(--text3);font-size:12px">${l.especie||''}</span></td>
-      <td><span class="pill">${l.tipo||'—'}</span></td>
-      <td style="color:var(--text2)">${l.tutor||'—'}</td>
-      <td style="color:var(--text2)">${l.vet||'—'}</td>
-      <td style="color:var(--text2)">${l.clinica||'—'}</td>
-      <td><span class="badge badge-${(l.resultado||'Normal').toLowerCase().replace('ã','a').replace('ç','c')}">${l.resultado}</span></td>
-      <td style="white-space:nowrap">
-        <button class="btn btn-sm" onclick="viewLaudo(${l.id})" title="Ver">👁</button>
-        <button class="btn btn-sm" onclick="editLaudo(${l.id})" title="Editar">✏️</button>
-        <button class="btn btn-sm btn-danger" onclick="delLaudo(${l.id})" title="Excluir">🗑</button>
-      </td>
-    </tr>`).join('')}</tbody>
+    <thead><tr>
+      <th class="th-check"><input type="checkbox" class="row-check" id="chk-l-all" onchange="laudoSelAll(this)" title="Selecionar todos"></th>
+      <th>Data</th><th>Paciente</th><th>Tipo</th><th>Tutor</th><th>Veterinário</th><th>Clínica</th><th>Resultado</th>
+    </tr></thead>
+    <tbody>${f.map(l => {
+      const sel = selectedLaudos.has(l.id);
+      return `<tr class="${sel ? 'row-sel' : ''}" onclick="laudoRowClick(event,${l.id})" ondblclick="viewLaudo(${l.id})" style="cursor:pointer">
+        <td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check row-check-l" data-id="${l.id}" ${sel?'checked':''} onchange="laudoSelToggle(${l.id},this)"></td>
+        <td style="white-space:nowrap;color:var(--text2)">${fmtD(l.data)}</td>
+        <td><strong>${l.paciente||'—'}</strong> <span style="color:var(--text3);font-size:12px">${l.especie||''}</span></td>
+        <td><span class="pill">${l.tipo||'—'}</span></td>
+        <td style="color:var(--text2)">${l.tutor||'—'}</td>
+        <td style="color:var(--text2)">${l.vet||'—'}</td>
+        <td style="color:var(--text2)">${l.clinica||'—'}</td>
+        <td><span class="badge badge-${(l.resultado||'Normal').toLowerCase().replace('ã','a').replace('ç','c')}">${l.resultado}</span></td>
+      </tr>`;
+    }).join('')}</tbody>
   </table></div>`;
+  const n = selectedLaudos.size;
+  footer.style.display = '';
+  footer.textContent = `Exibindo ${f.length} de ${laudos.length} laudo${laudos.length !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionado${n !== 1 ? 's' : ''}` : '');
+  const allChk = document.getElementById('chk-l-all');
+  if (allChk) allChk.checked = f.length > 0 && f.every(l => selectedLaudos.has(l.id));
+  laudoToolbarUpdate();
+}
+
+function laudoToolbarUpdate() {
+  const n = selectedLaudos.size;
+  const v = document.getElementById('ltb-l-view');
+  const e = document.getElementById('ltb-l-edit');
+  const d = document.getElementById('ltb-l-del');
+  if (v) v.disabled = n !== 1;
+  if (e) e.disabled = n !== 1;
+  if (d) d.disabled = n === 0;
+}
+
+function laudoSelToggle(id, cb) {
+  if (cb.checked) selectedLaudos.add(id); else selectedLaudos.delete(id);
+  cb.closest('tr').classList.toggle('row-sel', cb.checked);
+  const footer = document.getElementById('laudos-footer');
+  const n = selectedLaudos.size;
+  const total = laudos.length;
+  const vis = document.querySelectorAll('.row-check-l').length;
+  if (footer) footer.textContent = `Exibindo ${vis} de ${total} laudo${total !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionado${n !== 1 ? 's' : ''}` : '');
+  const allChk = document.getElementById('chk-l-all');
+  if (allChk) allChk.checked = vis > 0 && document.querySelectorAll('.row-check-l:not(:checked)').length === 0;
+  laudoToolbarUpdate();
+}
+
+function laudoSelAll(masterCb) {
+  document.querySelectorAll('.row-check-l').forEach(cb => {
+    const id = parseInt(cb.dataset.id);
+    cb.checked = masterCb.checked;
+    cb.closest('tr').classList.toggle('row-sel', masterCb.checked);
+    if (masterCb.checked) selectedLaudos.add(id); else selectedLaudos.delete(id);
+  });
+  renderLaudos();
+}
+
+function laudoRowClick(e, id) {
+  const cb = e.currentTarget.querySelector('.row-check-l');
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  laudoSelToggle(id, cb);
+}
+
+function laudoToolbarView() { if (selectedLaudos.size === 1) viewLaudo([...selectedLaudos][0]); }
+function laudoToolbarEdit() { if (selectedLaudos.size === 1) editLaudo([...selectedLaudos][0]); }
+function laudoToolbarDel() {
+  if (!selectedLaudos.size) return;
+  const ids = [...selectedLaudos];
+  confirmarAcao(
+    ids.length === 1 ? 'Excluir laudo' : `Excluir ${ids.length} laudos`,
+    ids.length === 1 ? 'Esta ação é permanente e não pode ser desfeita.' : `Excluir ${ids.length} laudos permanentemente. Esta ação não pode ser desfeita.`,
+    'Excluir',
+    function() {
+      ids.forEach(id => { marcarExcluido('uv_laudos', id); laudos = laudos.filter(l => l.id !== id); cloudDelete('uv_laudos', id); });
+      selectedLaudos.clear();
+      save(); renderLaudos(); updateDashboard();
+      toast(ids.length === 1 ? 'Laudo excluído.' : `${ids.length} laudos excluídos.`);
+    }
+  );
 }
 
 // ─── DASHBOARD ────────────────────────────────────────────────────────────────
@@ -2782,7 +2876,1486 @@ function marcarPago(id) {
   receitas = receitas.map(r => r.id===id ? {...r, status:'Pago'} : r);
   save(); renderReceitas(); renderReceber(); updateFinOverview(); 
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
 
+updateDashboard();
+initSidebar();
+document.getElementById('sb-logo').src = LOGO_B64;
+  toast('Marcado como pago!');
+}
+
+function delRec(id) {
+  confirmarAcao('Excluir receita', 'Deseja excluir este registro de receita permanentemente?', 'Excluir', function() {
+    receitas = receitas.filter(r => r.id!==id);
+    cloudDelete('uv_receitas', id);
+    save(); renderReceitas(); updateFinOverview();
+    toast('Receita excluída.');
+  }); 
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
+document.getElementById('sb-logo').src = LOGO_B64;
+}
+
+function renderReceitas() {
+  const q = (document.getElementById('rs-q').value||'').toLowerCase();
+  const st = document.getElementById('rs-st').value;
+  const f = receitas.filter(r => (!q||(r.desc||'').toLowerCase().includes(q)||(r.clinica||'').toLowerCase().includes(q)) && (!st||r.status===st));
+  const el = document.getElementById('rec-list');
+  if (!f.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma receita encontrada.</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Descrição</th><th>Clínica</th><th>Forma</th><th>Status</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${[...f].sort((a,b)=>b.id-a.id).map(r=>`<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(r.data)}</td>
+      <td>${r.desc}</td>
+      <td style="color:var(--text2)">${r.clinica||'—'}</td>
+      <td><span class="pill">${r.forma}</span></td>
+      <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+      <td style="text-align:right;font-weight:600;color:var(--teal)">${fmt(r.valor)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm btn-success" onclick="marcarPago(${r.id})" title="Marcar pago">✓</button>
+        <button class="btn btn-sm btn-danger" onclick="delRec(${r.id})" title="Excluir">🗑</button>
+      </td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── DESPESAS ────────────────────────────────────────────────────────────────
+function addDespesa() {
+  const v = parseCurrency('d-valor');
+  if (!document.getElementById('d-desc').value || !v) { alert('Preencha descrição e valor.'); return; }
+  despesas.push({id:Date.now(), data:document.getElementById('d-data').value, desc:document.getElementById('d-desc').value, cat:document.getElementById('d-cat').value, valor:v, rec:document.getElementById('d-rec').value, obs:document.getElementById('d-obs').value});
+  ['d-desc','d-valor','d-obs'].forEach(id => document.getElementById(id).value='');
+  save(); renderDespesas(); toast('Despesa adicionada!');
+}
+
+function delDesp(id) {
+  confirmarAcao('Excluir despesa', 'Deseja excluir este registro de despesa permanentemente?', 'Excluir', function() {
+    despesas = despesas.filter(d => d.id!==id);
+    cloudDelete('uv_despesas', id);
+    save(); renderDespesas(); updateFinOverview();
+    toast('Despesa excluída.');
+  });
+}
+
+function renderDespesas() {
+  const el = document.getElementById('desp-list');
+  if (!despesas.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma despesa lançada.</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Descrição</th><th>Categoria</th><th>Recorrente</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${[...despesas].sort((a,b)=>b.id-a.id).map(d=>`<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(d.data)}</td>
+      <td>${d.desc}</td>
+      <td style="color:var(--text2)">${d.cat}</td>
+      <td>${d.rec==='sim'?'<span class="badge badge-pendente">Mensal</span>':'—'}</td>
+      <td style="text-align:right;font-weight:600;color:var(--red)">${fmt(d.valor)}</td>
+      <td><button class="btn btn-sm btn-danger" onclick="delDesp(${d.id})">🗑</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── A RECEBER ────────────────────────────────────────────────────────────────
+function renderReceber() {
+  const pend = receitas.filter(r => r.status !== 'Pago');
+  document.getElementById('ar-tot').textContent = fmt(pend.reduce((s,r)=>s+r.valor,0));
+  document.getElementById('ar-pend').textContent = fmt(pend.filter(r=>r.status==='Pendente').reduce((s,r)=>s+r.valor,0));
+  document.getElementById('ar-atras').textContent = fmt(pend.filter(r=>r.status==='Atrasado').reduce((s,r)=>s+r.valor,0));
+  const el = document.getElementById('ar-list');
+  if (!pend.length) { el.innerHTML='<div class="empty-state"><p>Nenhuma pendência. 🎉</p></div>'; return; }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Data</th><th>Descrição</th><th>Clínica</th><th>Status</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+    <tbody>${[...pend].sort((a,b)=>b.id-a.id).map(r=>`<tr>
+      <td style="white-space:nowrap;color:var(--text2)">${fmtD(r.data)}</td>
+      <td>${r.desc}</td>
+      <td style="color:var(--text2)">${r.clinica||'—'}</td>
+      <td><span class="badge badge-${r.status.toLowerCase()}">${r.status}</span></td>
+      <td style="text-align:right;font-weight:600">${fmt(r.valor)}</td>
+      <td><button class="btn btn-sm btn-success" onclick="marcarPago(${r.id})">✓ Pago</button></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── CLÍNICAS ─────────────────────────────────────────────────────────────────
+function addClinica() {
+  var _btn = document.getElementById('cl-btn-salvar');
+  if (_btn && (_btn.textContent||'').indexOf('Cadastrar') >= 0) editClId = null;
+  if (!document.getElementById('cl-nome').value) { alert('Informe o nome da clínica.'); return; }
+  const dados = {nome:document.getElementById('cl-nome').value, sigla:document.getElementById('cl-sigla').value, responsavel:document.getElementById('cl-responsavel').value, telefone:document.getElementById('cl-telefone').value, email:document.getElementById('cl-email').value, cond:document.getElementById('cl-cond').value, desc:document.getElementById('cl-desc').value||0, endereco:document.getElementById('cl-endereco').value, obs:document.getElementById('cl-obs').value};
+  if (editClId) {
+    // modo edição: atualiza o registro existente
+    const idx = clinicas.findIndex(c => c.id === editClId);
+    if (idx >= 0) clinicas[idx] = Object.assign(clinicas[idx], dados);
+    cancelEditCl();
+    toast('Clínica atualizada!');
+  } else {
+    clinicas.push(Object.assign({id:Date.now()}, dados));
+    ['cl-nome','cl-sigla','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value='');
+    toast('Clínica cadastrada!');
+  }
+  save(); renderClinicas(); populateClinicaSelects();
+}
+
+function editClinica(id) {
+  const c = clinicas.find(x => x.id === id);
+  if (!c) return;
+  editClId = id;
+  document.getElementById('cl-nome').value        = c.nome        || '';
+  document.getElementById('cl-sigla').value       = c.sigla       || '';
+  document.getElementById('cl-responsavel').value = c.responsavel || c.contato || '';
+  document.getElementById('cl-telefone').value    = c.telefone    || '';
+  document.getElementById('cl-email').value       = c.email       || '';
+  document.getElementById('cl-cond').value        = c.cond        || 'À vista';
+  document.getElementById('cl-desc').value        = c.desc        || '';
+  document.getElementById('cl-endereco').value    = c.endereco    || '';
+  document.getElementById('cl-obs').value         = c.obs         || '';
+  document.getElementById('cl-btn-salvar').textContent = '💾 Salvar alterações';
+  document.getElementById('cl-btn-cancelar').style.display = '';
+  // rola até o formulário
+  document.getElementById('cl-nome').scrollIntoView({behavior:'smooth', block:'center'});
+  document.getElementById('cl-nome').focus();
+}
+
+function cancelEditCl() {
+  editClId = null;
+  ['cl-nome','cl-sigla','cl-responsavel','cl-telefone','cl-email','cl-desc','cl-endereco','cl-obs'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('cl-btn-salvar').textContent = '+ Cadastrar clínica';
+  document.getElementById('cl-btn-cancelar').style.display = 'none';
+}
+
+function delCl(id) {
+  confirmarAcao('Excluir clínica', 'Deseja excluir esta clínica permanentemente? Esta ação não pode ser desfeita.', 'Excluir', function() {
+    if (editClId === id) cancelEditCl();
+    clinicas = clinicas.filter(c => c.id!==id);
+    cloudDelete('uv_clinicas', id);
+    save(); renderClinicas(); populateClinicaSelects();
+    toast('Clínica excluída.');
+  });
+}
+
+function renderClinicas() {
+  const el = document.getElementById('cl-list');
+  const footer = document.getElementById('cl-footer');
+  if (!clinicas.length) {
+    el.innerHTML = '<div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div>';
+    if (footer) footer.style.display = 'none';
+    return;
+  }
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr>
+      <th class="th-check"><input type="checkbox" class="row-check" id="chk-c-all" onchange="clSelAll(this)" title="Selecionar todas"></th>
+      <th>Clínica</th><th>Responsável</th><th>Telefone</th><th>E-mail</th><th>Condição</th><th>Desconto</th><th>Laudos</th><th>Receita total</th>
+    </tr></thead>
+    <tbody>${clinicas.map(c => {
+      const tot = receitas.filter(r=>(r.clinica||'').toLowerCase()===c.nome.toLowerCase()).reduce((s,r)=>s+r.valor,0);
+      const qtdLaudos = laudos.filter(l=>(l.clinica||'').toLowerCase()===c.nome.toLowerCase()).length;
+      const sel = selectedCl.has(c.id);
+      return `<tr class="${sel ? 'row-sel' : ''}" onclick="clRowClick(event,${c.id})" style="cursor:pointer">
+        <td class="td-check" onclick="event.stopPropagation()"><input type="checkbox" class="row-check row-check-c" data-id="${c.id}" ${sel?'checked':''} onchange="clSelToggle(${c.id},this)"></td>
+        <td><strong>${c.nome}</strong>${c.sigla?` <span style="font-size:11px;background:var(--teal-bg);color:var(--teal-text);padding:1px 6px;border-radius:4px;vertical-align:middle">${c.sigla}</span>`:''}${c.endereco?`<div style="font-size:11px;color:var(--text3);margin-top:2px">${c.endereco} <a href="https://maps.google.com/?q=${encodeURIComponent(c.endereco)}" target="_blank" style="color:var(--teal);text-decoration:none;white-space:nowrap" onclick="event.stopPropagation()">🗺 Maps</a></div>`:''}${c.obs?`<div style="font-size:11px;color:var(--text3)">${c.obs}</div>`:''}</td>
+        <td style="color:var(--text2)">${c.responsavel||c.contato||'—'}</td>
+        <td style="color:var(--text2);white-space:nowrap">${c.telefone||'—'}</td>
+        <td style="color:var(--text2)">${c.email||'—'}</td>
+        <td><span class="pill">${c.cond}</span></td>
+        <td>${c.desc>0?c.desc+'%':'—'}</td>
+        <td style="color:var(--text2)">${qtdLaudos}</td>
+        <td style="font-weight:600;color:var(--teal)">${fmt(tot)}</td>
+      </tr>`;
+    }).join('')}</tbody></table></div>`;
+  const n = selectedCl.size;
+  if (footer) {
+    footer.style.display = '';
+    footer.textContent = `${clinicas.length} clínica${clinicas.length !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionada${n !== 1 ? 's' : ''}` : '');
+  }
+  const allChk = document.getElementById('chk-c-all');
+  if (allChk) allChk.checked = clinicas.length > 0 && clinicas.every(c => selectedCl.has(c.id));
+  clToolbarUpdate();
+}
+
+function clToolbarUpdate() {
+  const n = selectedCl.size;
+  const e = document.getElementById('ltb-c-edit');
+  const d = document.getElementById('ltb-c-del');
+  if (e) e.disabled = n !== 1;
+  if (d) d.disabled = n === 0;
+}
+
+function clSelToggle(id, cb) {
+  if (cb.checked) selectedCl.add(id); else selectedCl.delete(id);
+  cb.closest('tr').classList.toggle('row-sel', cb.checked);
+  const footer = document.getElementById('cl-footer');
+  const n = selectedCl.size;
+  if (footer) footer.textContent = `${clinicas.length} clínica${clinicas.length !== 1 ? 's' : ''}` + (n ? ` · ${n} selecionada${n !== 1 ? 's' : ''}` : '');
+  const allChk = document.getElementById('chk-c-all');
+  if (allChk) allChk.checked = clinicas.every(c => selectedCl.has(c.id));
+  clToolbarUpdate();
+}
+
+function clSelAll(masterCb) {
+  document.querySelectorAll('.row-check-c').forEach(cb => {
+    const id = parseInt(cb.dataset.id);
+    cb.checked = masterCb.checked;
+    cb.closest('tr').classList.toggle('row-sel', masterCb.checked);
+    if (masterCb.checked) selectedCl.add(id); else selectedCl.delete(id);
+  });
+  renderClinicas();
+}
+
+function clRowClick(e, id) {
+  const cb = e.currentTarget.querySelector('.row-check-c');
+  if (!cb) return;
+  cb.checked = !cb.checked;
+  clSelToggle(id, cb);
+}
+
+function clToolbarEdit() { if (selectedCl.size === 1) editClinica([...selectedCl][0]); }
+function clToolbarDel() {
+  if (!selectedCl.size) return;
+  const ids = [...selectedCl];
+  confirmarAcao(
+    ids.length === 1 ? 'Excluir clínica' : `Excluir ${ids.length} clínicas`,
+    ids.length === 1 ? 'Esta ação é permanente.' : `Excluir ${ids.length} clínicas permanentemente.`,
+    'Excluir',
+    function() {
+      ids.forEach(id => { marcarExcluido('uv_clinicas', id); clinicas = clinicas.filter(c => c.id !== id); cloudDelete('uv_clinicas', id); });
+      selectedCl.clear();
+      save(); renderClinicas(); populateClinicaSelects();
+      toast(ids.length === 1 ? 'Clínica excluída.' : `${ids.length} clínicas excluídas.`);
+    }
+  );
+}
+
+// ─── RELATÓRIOS ───────────────────────────────────────────────────────────────
+function renderRpLaudos() {
+  const total = laudos.length;
+  const mes = laudos.filter(l => isMes(l.data)).length;
+  const abdom = laudos.filter(l => l.tipo === 'Abdominal total').length;
+  const gest = laudos.filter(l => l.tipo === 'Gestacional').length;
+  document.getElementById('rp-total-laudos').textContent = total;
+  document.getElementById('rp-laudos-mes').textContent = mes;
+  document.getElementById('rp-abdom').textContent = abdom;
+  document.getElementById('rp-gest').textContent = gest;
+
+  // laudos por mês (6 meses)
+  const meses = [];
+  for (let i = 5; i >= 0; i--) { const d = new Date(); d.setMonth(d.getMonth() - i); meses.push({key:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`, label:`${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getFullYear()).slice(2)}`}); }
+  const maxL = Math.max(...meses.map(m => laudos.filter(l => l.data && l.data.startsWith(m.key)).length), 1);
+  document.getElementById('rp-laudos-fc').innerHTML = meses.map(m => {
+    const cnt = laudos.filter(l => l.data && l.data.startsWith(m.key)).length;
+    return `<div class="bar-item"><div class="bar-labels"><span>${m.label}</span><span>${cnt} laudo${cnt !== 1 ? 's' : ''}</span></div><div class="bar-track"><div class="bar-fill fill-teal" style="width:${Math.round(cnt/maxL*100)}%"></div></div></div>`;
+  }).join('');
+
+  // resultados
+  const res = [['Normal','fill-teal'],['Atenção','fill-amber'],['Alterado','fill-red']];
+  const totRes = laudos.length || 1;
+  document.getElementById('rp-resultados').innerHTML = res.map(([r, c]) => {
+    const cnt = laudos.filter(l => l.resultado === r).length;
+    const pct = Math.round(cnt / totRes * 100);
+    return `<div class="bar-item"><div class="bar-labels"><span>${r}</span><span>${cnt} (${pct}%)</span></div><div class="bar-track"><div class="bar-fill ${c}" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function renderRpFinanceiro() {
+  const recTot = receitas.reduce((s, r) => s + r.valor, 0);
+  const despTot = despesas.reduce((s, d) => s + d.valor, 0);
+  const margem = recTot - despTot;
+  document.getElementById('rp-rec-total').textContent = fmt(recTot);
+  document.getElementById('rp-desp-total').textContent = fmt(despTot);
+  const el = document.getElementById('rp-margem');
+  el.textContent = fmt(margem);
+  el.className = 'metric-value ' + (margem >= 0 ? 'green' : 'red');
+  renderBarFC('rp-fat-fc', 6);
+  renderBarForma('rp-forma-fat');
+}
+
+function renderRpClinicas() {
+  const el = document.getElementById('rp-clinicas-rank');
+  if (!clinicas.length) { el.innerHTML = '<div class="empty-state"><p>Nenhuma clínica cadastrada.</p></div>'; return; }
+  const dados = clinicas.map(c => ({
+    nome: c.nome,
+    laudos: laudos.filter(l => (l.clinica||'').toLowerCase() === c.nome.toLowerCase()).length,
+    receita: receitas.filter(r => (r.clinica||'').toLowerCase() === c.nome.toLowerCase()).reduce((s,r) => s + r.valor, 0)
+  })).sort((a, b) => b.receita - a.receita);
+  const maxR = Math.max(...dados.map(d => d.receita), 1);
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Clínica</th><th>Laudos</th><th style="text-align:right">Receita total</th><th style="width:200px">Participação</th></tr></thead>
+    <tbody>${dados.map(d => `<tr>
+      <td><strong>${d.nome}</strong></td>
+      <td>${d.laudos}</td>
+      <td style="text-align:right;font-weight:600;color:var(--teal)">${fmt(d.receita)}</td>
+      <td><div class="bar-track" style="margin:0"><div class="bar-fill fill-teal" style="width:${Math.round(d.receita/maxR*100)}%"></div></div></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+function renderRpVets() {
+  const el = document.getElementById('rp-vets-rank');
+  const mapa = {};
+  laudos.forEach(l => { const v = (l.vet || '').trim(); if (v) mapa[v] = (mapa[v] || 0) + 1; });
+  const dados = Object.entries(mapa).sort((a, b) => b[1] - a[1]);
+  if (!dados.length) { el.innerHTML = '<div class="empty-state"><p>Nenhum veterinário registrado ainda.</p></div>'; return; }
+  const maxV = dados[0][1] || 1;
+  el.innerHTML = `<div class="table-wrap"><table class="data-table">
+    <thead><tr><th>Veterinário</th><th>Laudos solicitados</th><th style="width:200px">Frequência</th></tr></thead>
+    <tbody>${dados.map(([v, cnt]) => `<tr>
+      <td><strong>${v}</strong></td>
+      <td>${cnt}</td>
+      <td><div class="bar-track" style="margin:0"><div class="bar-fill fill-purple" style="width:${Math.round(cnt/maxV*100)}%"></div></div></td>
+    </tr>`).join('')}</tbody></table></div>`;
+}
+
+// ─── BACKUP ───────────────────────────────────────────────────────────────────
+function exportarBackup() {
+  const dados = { versao: '1.9', exportadoEm: new Date().toISOString(), laudos, receitas, despesas, clinicas };
+  const blob = new Blob([JSON.stringify(dados, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'vetroutine_backup_' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup exportado com sucesso!');
+}
+
+function importarBackup(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const dados = JSON.parse(e.target.result);
+      if (!dados.laudos || !dados.receitas) { alert('Arquivo de backup inválido.'); return; }
+      if (!confirm('Importar backup irá substituir todos os dados atuais. Deseja continuar?')) return;
+      laudos = dados.laudos || [];
+      receitas = dados.receitas || [];
+      despesas = dados.despesas || [];
+      clinicas = dados.clinicas || [];
+      save();
+      populateClinicaSelects();
+      
+// ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  const collapsed = sb.classList.toggle('sb-col');
+  if (main) main.classList.toggle('sb-col', collapsed);
+  localStorage.setItem('uv_sb_col', collapsed ? '1' : '0');
+}
+function initSidebar() {
+  const isMobile = window.innerWidth <= 900;
+  const savedCol  = localStorage.getItem('uv_sb_col') === '1';
+  if (isMobile || savedCol) {
+    const sb   = document.querySelector('.sidebar');
+    const main = document.querySelector('.main');
+    if (sb)   sb.classList.add('sb-col');
+    if (main) main.classList.add('sb-col');
+  }
+}
+window.addEventListener('resize', function() {
+  const sb   = document.querySelector('.sidebar');
+  const main = document.querySelector('.main');
+  if (!sb || !main) return;
+  if (window.innerWidth <= 900) {
+    sb.classList.add('sb-col');
+    main.classList.add('sb-col');
+  } else if (localStorage.getItem('uv_sb_col') !== '1') {
+    sb.classList.remove('sb-col');
+    main.classList.remove('sb-col');
+  }
+});
+
+updateDashboard();
+initSidebar();
+document.getElementById('sb-logo').src = LOGO_B64;
+      toast('Backup importado! ' + laudos.length + ' laudos, ' + receitas.length + ' receitas.');
+    } catch(err) {
+      alert('Erro ao ler o arquivo: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+  input.value = '';
+}
+
+// ─── PAINEL DE CONTROLE ───────────────────────────────────────────────────────
+function renderPainel() {
+  const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  document.getElementById('cfg-nome').value  = cfg.nome  || 'Patrine Cagnini';
+  document.getElementById('cfg-esp').value   = cfg.esp   || 'Médica Veterinária | Ultrassonografista';
+  document.getElementById('cfg-crmv').value  = cfg.crmv  || 'CRMV-SC 09377';
+  const logo = getLogo();
+  const prev = document.getElementById('logo-preview');
+  prev.innerHTML = logo
+    ? '<img src="' + logo + '" style="max-height:90px;max-width:160px;object-fit:contain">'
+    : '<span style="color:var(--text3);font-size:12px">Nenhuma logo carregada</span>';
+  const lc = cfg.laudo || {};
+  document.getElementById('cfg-titulo').value           = lc.titulo         || 'Relatório Ultrassonográfico';
+  document.getElementById('cfg-cor').value              = lc.cor            || '#3d7a52';
+  document.getElementById('cfg-label-achados').value    = lc.labelAchados   || 'Achados Ultrassonográficos';
+  document.getElementById('cfg-label-conclusao').value  = lc.labelConclusao || 'Impressão Diagnóstica';
+  document.getElementById('cfg-sec-achados').checked    = lc.secAchados     !== false;
+  document.getElementById('cfg-sec-conclusao').checked  = lc.secConclusao   !== false;
+  document.getElementById('cfg-sec-assinatura').checked = lc.secAssinatura  !== false;
+  document.getElementById('cfg-sec-fotos').checked      = lc.secFotos       !== false;
+  document.getElementById('cfg-sec-footer').checked    = lc.secFooter      !== false;
+  document.getElementById('cfg-modelo-conclusao').value = lc.modeloConclusao || '';
+  document.getElementById('cfg-modelo-obs').value       = lc.modeloObs       || '';
+  document.getElementById('cfg-fonte').value            = lc.fonte        || 'Arial, sans-serif';
+  document.getElementById('cfg-fontsize').value         = lc.fontsize     || '12';
+  document.getElementById('cfg-lineh').value            = lc.lineh        || '1.6';
+  document.getElementById('cfg-margens').value          = lc.margens      || '12mm';
+  document.getElementById('cfg-papel').value            = lc.papel        || 'A4';
+  document.getElementById('cfg-header-style').value     = lc.headerStyle  || 'gray';
+  document.getElementById('cfg-logo-altura').value      = lc.logoAltura   || '70';
+  const lbl = document.getElementById('sync-label');
+  const el = document.getElementById('painel-sync-status');
+  if (el) el.textContent = lbl ? lbl.textContent : '—';
+  stpc(curPSec);
+}
+
+function renderPrevia() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : {
+    paciente: 'Rex', tutor: 'João Silva', especie: 'Canino', raca: 'Labrador',
+    sexo: 'Macho', idade: '5 anos',
+    data: new Date().toISOString().split('T')[0],
+    tipo: 'Abdominal', resultado: 'Normal',
+    orgAbdom: { bexiga: { texto: orgDefaults.bexiga }, figado: { texto: orgDefaults.figado }, rins: { texto: orgDefaults.rins } },
+    conclusao: 'Exame dentro dos limites da normalidade. Aspectos sonográficos não revelam alterações significativas na janela avaliada.'
+  };
+  document.getElementById('previa-area').innerHTML =
+    '<div class="card" style="padding:0;overflow:hidden;max-width:780px">' + buildLaudoHTML(l) + '</div>';
+}
+
+function abrirJanelaPDF(l, titulo) {
+  const lc      = getConfig().laudo || {};
+  const margens = lc.margens || '12mm';
+  const papel   = lc.papel   || 'A4';
+  const fonte   = lc.fonte   || 'Arial, sans-serif';
+  const body    = buildLaudoHTML(l);
+  const win     = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">'
+    + '<title>' + titulo + '</title>'
+    + '<style>'
+    + '*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}'
+    + 'body{background:#fff;font-family:' + fonte + '}'
+    + 'table,td,th,span,div{font-family:inherit}'
+    + '@page{size:' + papel + ';margin:0}'
+    + '.pdf-dica{position:fixed;top:0;left:0;right:0;z-index:9999;background:#1a5fa8;color:#fff;display:flex;align-items:center;justify-content:center;gap:10px;padding:11px 20px;font-size:13px;font-family:Arial,sans-serif}'
+    + '.pdf-dica b{font-weight:700}'
+    + '.pdf-btn{background:#fff;color:#1a5fa8;border:none;border-radius:4px;padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0}'
+    + '.pdf-conteudo{padding:' + margens + '}'
+    + '@media print{.pdf-dica{display:none}.pdf-conteudo{padding:' + margens + '}}'
+    + '</style></head><body>'
+    + '<div class="pdf-dica">'
+    +   '📥 No diálogo que abrir: em <b>Destino</b> selecione <b>Salvar como PDF</b>'
+    +   '<button class="pdf-btn" onclick="window.print()">Salvar PDF agora</button>'
+    + '</div>'
+    + '<div class="pdf-conteudo">' + body + '</div>'
+    + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script>'
+    + '</body></html>');
+  win.document.close();
+}
+
+// Encontra a última linha "branca" antes do ponto ideal de corte
+function findSafeYCut(canvas, idealY, searchRange) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width;
+  const start = Math.min(Math.floor(idealY), canvas.height - 1);
+  const end   = Math.max(0, Math.floor(start - searchRange));
+  for (let y = start; y > end; y--) {
+    const d = ctx.getImageData(0, y, w, 1).data;
+    let white = true;
+    for (let i = 0; i < d.length; i += 4) {
+      if (d[i] < 245 || d[i+1] < 245 || d[i+2] < 245) { white = false; break; }
+    }
+    if (white) return y;
+  }
+  return idealY; // nenhuma linha branca encontrada: usa o ponto original
+}
+
+async function baixarLaudoPDF() {
+  const l = viewId ? laudos.find(x => x.id === viewId) : getLaudoData();
+  if (!l) return;
+  renderPreview(l);
+  const lc     = getConfig().laudo || {};
+  const papel  = lc.papel || 'A4';
+  const format = papel === 'letter' ? 'letter' : 'a4';
+  const el = document.querySelector('#viz-area .card') || document.getElementById('viz-area');
+  if (!el) { toast('Erro ao gerar PDF.'); return; }
+  const nomeArq = nomeArquivoLaudo(l) + '.pdf';
+  toast('Gerando PDF…');
+  try {
+    const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 });
+    const { jsPDF } = window.jspdf;
+    const pdf    = new jsPDF({ orientation: 'portrait', unit: 'mm', format });
+    const pageW  = pdf.internal.pageSize.getWidth();
+    const pageH  = pdf.internal.pageSize.getHeight();
+    const pxPerMm   = canvas.width / pageW;
+    const pageHpx   = pageH * pxPerMm;
+    const searchPx  = pageHpx * 0.12; // busca até 12% da altura acima do corte
+
+    let yPx = 0;
+    let first = true;
+    while (yPx < canvas.height) {
+      const idealCut = yPx + pageHpx;
+      const cutPx = idealCut >= canvas.height
+        ? canvas.height
+        : findSafeYCut(canvas, idealCut, searchPx);
+      const sliceHpx = cutPx - yPx;
+
+      // Cria canvas temporário com o trecho desta página
+      const tmp = document.createElement('canvas');
+      tmp.width  = canvas.width;
+      tmp.height = sliceHpx;
+      const tctx = tmp.getContext('2d');
+      tctx.fillStyle = '#ffffff';
+      tctx.fillRect(0, 0, tmp.width, tmp.height);
+      tctx.drawImage(canvas, 0, yPx, canvas.width, sliceHpx, 0, 0, canvas.width, sliceHpx);
+
+      const imgData  = tmp.toDataURL('image/jpeg', 0.93);
+      const sliceHmm = sliceHpx / pxPerMm;
+
+      if (!first) pdf.addPage();
+      pdf.addImage(imgData, 'JPEG', 0, 0, pageW, sliceHmm, '', 'FAST');
+      first = false;
+      yPx   = cutPx;
+    }
+    pdf.save(nomeArq);
+    toast('PDF baixado com sucesso!');
+  } catch(e) {
+    console.error(e);
+    toast('Erro ao gerar PDF. Use o botão Imprimir como alternativa.');
+  }
+}
+
+async function baixarPreviasPDF() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : null;
+  if (!l) { toast('Nenhum laudo salvo para exportar.'); return; }
+  const el = document.getElementById('previa-area');
+  if (!el || !el.innerHTML.trim()) { toast('Carregue a prévia primeiro.'); return; }
+  const lc = getConfig().laudo || {};
+  const format = (lc.papel || 'A4') === 'letter' ? 'letter' : 'a4';
+  toast('Gerando PDF…');
+  try {
+    const canvas = await html2canvas(el, { scale: 2, useCORS: true, logging: false, backgroundColor: '#ffffff', scrollX: 0, scrollY: 0 });
+    const imgData = canvas.toDataURL('image/png');
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const imgH  = (canvas.height * pageW) / canvas.width;
+    let yPos = 0, rem = imgH;
+    pdf.addImage(imgData, 'PNG', 0, yPos, pageW, imgH, '', 'FAST');
+    rem -= pageH;
+    while (rem > 0) { yPos -= pageH; pdf.addPage(); pdf.addImage(imgData, 'PNG', 0, yPos, pageW, imgH, '', 'FAST'); rem -= pageH; }
+    pdf.save(nomeArquivoLaudo(l) + '.pdf');
+    toast('PDF baixado com sucesso!');
+  } catch(e) { console.error(e); toast('Erro ao gerar PDF. Use o botão Imprimir como alternativa.'); }
+}
+
+function imprimirPrevia() {
+  const l = laudos.length > 0 ? laudos[laudos.length - 1] : null;
+  if (!l) { toast('Nenhum laudo salvo para imprimir.'); return; }
+  const lc = getConfig().laudo || {};
+  const margens = lc.margens || '12mm';
+  const papel   = lc.papel   || 'A4';
+  const fonte   = lc.fonte   || 'Arial, sans-serif';
+  const body = buildLaudoHTML(l);
+  const win = window.open('', '_blank');
+  win.document.write('<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8"><title>Prévia — ' + (l.paciente||'VetRoutine') + '</title><style>*{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}body{background:#fff;padding:' + margens + ';font-family:' + fonte + '}table,td,th,span,div{font-family:inherit}@page{size:' + papel + ';margin:0}@media print{body{padding:' + margens + '}}</style></head><body>' + body + '<scr' + 'ipt>window.onload=function(){window.print()}</' + 'script></body></html>');
+  win.document.close();
+}
+
+function salvarConfig() {
+  const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  cfg.nome = document.getElementById('cfg-nome').value;
+  cfg.esp  = document.getElementById('cfg-esp').value;
+  cfg.crmv = document.getElementById('cfg-crmv').value;
+  localStorage.setItem('uv_config', JSON.stringify(cfg));
+  toast('Configurações salvas!');
+}
+
+function salvarConfigLaudo() {
+  const cfg = JSON.parse(localStorage.getItem('uv_config') || '{}');
+  cfg.laudo = {
+    titulo:         document.getElementById('cfg-titulo').value || 'Relatório Ultrassonográfico',
+    cor:            document.getElementById('cfg-cor').value || '#3d7a52',
+    labelAchados:   document.getElementById('cfg-label-achados').value || 'Achados Ultrassonográficos',
+    labelConclusao: document.getElementById('cfg-label-conclusao').value || 'Impressão Diagnóstica',
+    secAchados:     document.getElementById('cfg-sec-achados').checked,
+    secConclusao:   document.getElementById('cfg-sec-conclusao').checked,
+    secAssinatura:  document.getElementById('cfg-sec-assinatura').checked,
+    secFotos:       document.getElementById('cfg-sec-fotos').checked,
+    secFooter:      document.getElementById('cfg-sec-footer').checked,
+    modeloConclusao: document.getElementById('cfg-modelo-conclusao').value,
+    modeloObs:       document.getElementById('cfg-modelo-obs').value,
+    fonte:       document.getElementById('cfg-fonte').value,
+    fontsize:    document.getElementById('cfg-fontsize').value,
+    lineh:       document.getElementById('cfg-lineh').value,
+    margens:     document.getElementById('cfg-margens').value,
+    papel:       document.getElementById('cfg-papel').value,
+    headerStyle: document.getElementById('cfg-header-style').value,
+    logoAltura:  document.getElementById('cfg-logo-altura').value,
+  };
+  localStorage.setItem('uv_config', JSON.stringify(cfg));
+  toast('Configuração do laudo salva!');
+}
+
+function carregarLogo(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    localStorage.setItem('uv_logo', e.target.result);
+    renderPainel();
+    toast('Logo carregada!');
+  };
+  reader.readAsDataURL(file);
+  input.value = '';
+}
+
+function removerLogo() {
+  if (!confirm('Remover a logo atual?')) return;
+  localStorage.removeItem('uv_logo');
+  renderPainel();
+  toast('Logo removida.');
+}
+
+function getDefaultLogoSVG() {
+  const cfg  = getConfig();
+  const cor  = (cfg.laudo && cfg.laudo.cor) || '#3d7a52';
+  const nome = (cfg.nome || 'Patrine Cagnini').toUpperCase();
+  const crmv =  cfg.crmv || 'CRMV-SC 09377';
+  const s = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 80" width="300" height="80">'
+    // arcos de ultrassom emanando da pata
+    + '<path d="M40 76 A32 32 0 0 1 8 44"  fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".16"/>'
+    + '<path d="M40 76 A32 32 0 0 0 72 44" fill="none" stroke="' + cor + '" stroke-width="2"   stroke-linecap="round" opacity=".16"/>'
+    + '<path d="M40 76 A22 22 0 0 1 18 54" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".34"/>'
+    + '<path d="M40 76 A22 22 0 0 0 62 54" fill="none" stroke="' + cor + '" stroke-width="2.5" stroke-linecap="round" opacity=".34"/>'
+    + '<path d="M40 76 A11 11 0 0 1 29 65" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".62"/>'
+    + '<path d="M40 76 A11 11 0 0 0 51 65" fill="none" stroke="' + cor + '" stroke-width="3"   stroke-linecap="round" opacity=".62"/>'
+    // pata principal
+    + '<ellipse cx="40" cy="68" rx="8.5" ry="7.5" fill="' + cor + '"/>'
+    // dedos
+    + '<ellipse cx="24" cy="56" rx="5.5" ry="6"   fill="' + cor + '"/>'
+    + '<ellipse cx="34" cy="52" rx="5.5" ry="5.5" fill="' + cor + '"/>'
+    + '<ellipse cx="46" cy="52" rx="5.5" ry="5.5" fill="' + cor + '"/>'
+    + '<ellipse cx="56" cy="56" rx="5.5" ry="6"   fill="' + cor + '"/>'
+    // linha separadora vertical
+    + '<line x1="84" y1="8" x2="84" y2="74" stroke="' + cor + '" stroke-width="1" opacity=".28"/>'
+    // nome
+    + '<text x="98" y="30" font-family="Arial,sans-serif" font-size="14" font-weight="700" fill="#1e1e1c" letter-spacing="1.5">' + nome + '</text>'
+    // especialidade
+    + '<text x="98" y="46" font-family="Arial,sans-serif" font-size="9"   fill="#5a5854" letter-spacing="2.4">MÉDICA VETERINÁRIA</text>'
+    + '<text x="98" y="60" font-family="Arial,sans-serif" font-size="9"   fill="#5a5854" letter-spacing="2.4">ULTRASSONOGRAFISTA</text>'
+    // CRMV
+    + '<text x="98" y="73" font-family="Arial,sans-serif" font-size="8.5" fill="' + cor + '" letter-spacing="1.5">' + crmv + '</text>'
+    + '</svg>';
+  return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(s);
+}
+
+// LOGO DO LAUDO (veterinário) — aparece APENAS no laudo impresso. Nunca usar na sidebar.
+// Retorna vazio se nenhuma logo foi carregada pelo veterinário (Configurações → Identidade visual).
+function getLogo() {
+  return localStorage.getItem('uv_logo') || '';
+}
+
+function getConfig() {
+  return JSON.parse(localStorage.getItem('uv_config') || '{}');
+}
+
+// ─── AGENDA ───────────────────────────────────────────────────────────────────
+function renderAgenda() {
+  if (agendaViewMode === 'mes') renderCalMes();
+  else if (agendaViewMode === 'semana') renderCalSemana();
+  else renderCalDia();
+  updateAgendaToolbar();
+}
+
+function updateAgendaToolbar() {
+  const lbl = document.getElementById('ag-month-label');
+  if (!lbl) return;
+  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  if (agendaViewMode === 'mes') {
+    lbl.textContent = meses[agendaViewDate.getMonth()] + ' ' + agendaViewDate.getFullYear();
+  } else if (agendaViewMode === 'semana') {
+    const seg = getMonday(agendaViewDate);
+    const dom = new Date(seg); dom.setDate(dom.getDate() + 6);
+    lbl.textContent = fmtD(dateToStr(seg)) + ' – ' + fmtD(dateToStr(dom));
+  } else {
+    lbl.textContent = fmtD(dateToStr(agendaViewDate));
+  }
+}
+
+function getMonday(d) {
+  const dt = new Date(d);
+  const day = dt.getDay();
+  const diff = (day === 0) ? -6 : 1 - day;
+  dt.setDate(dt.getDate() + diff);
+  return dt;
+}
+
+function dateToStr(d) {
+  return d.toISOString().split('T')[0];
+}
+
+function agendaNav(dir) {
+  if (agendaViewMode === 'mes') agendaViewDate.setMonth(agendaViewDate.getMonth() + dir);
+  else if (agendaViewMode === 'semana') agendaViewDate.setDate(agendaViewDate.getDate() + dir * 7);
+  else agendaViewDate.setDate(agendaViewDate.getDate() + dir);
+  renderAgenda();
+}
+
+function agendaToday() {
+  agendaViewDate = new Date();
+  renderAgenda();
+}
+
+function setAgendaMode(mode) {
+  agendaViewMode = mode;
+  document.querySelectorAll('.view-toggle button').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('vt-' + mode);
+  if (btn) btn.classList.add('active');
+  renderAgenda();
+}
+
+function renderCalMes() {
+  const y = agendaViewDate.getFullYear();
+  const m = agendaViewDate.getMonth();
+  const todayStr = today();
+  const start = new Date(y, m, 1);
+  const startDow = start.getDay();
+  start.setDate(start.getDate() - (startDow === 0 ? 6 : startDow - 1));
+
+  const diasHdr = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  let html = '<div class="cal-grid">';
+  diasHdr.forEach(d => { html += '<div class="cal-header">' + d + '</div>'; });
+
+  const cur = new Date(start);
+  for (let week = 0; week < 6; week++) {
+    let allOther = true;
+    for (let i = 0; i < 7; i++) { if (new Date(cur.getTime() + i*86400000).getMonth() === m) { allOther = false; break; } }
+    if (allOther && week >= 4) break;
+    for (let dow = 0; dow < 7; dow++) {
+      const ds = dateToStr(cur);
+      const isToday = ds === todayStr;
+      const isOther = cur.getMonth() !== m;
+      const dayEvs = agenda.filter(a => a.data === ds).sort((a,b) => (a.hora||'').localeCompare(b.hora||''));
+      html += '<div class="cal-cell' + (isToday ? ' today' : '') + (isOther ? ' other-month' : '') + '" onclick="abrirNovaAgenda(\'' + ds + '\')">';
+      html += '<div class="day-num">' + cur.getDate() + '</div>';
+      dayEvs.slice(0, 3).forEach(ev => {
+        const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')" title="' + (ev.hora||'') + ' · ' + (ev.paciente||'') + '">'
+          + (ev.hora ? ev.hora.slice(0,5) + ' ' : '') + (ev.paciente || 'Agendamento') + '</div>';
+      });
+      if (dayEvs.length > 3) html += '<div class="ev-more" onclick="event.stopPropagation();agendaViewDate=new Date(\'' + ds + 'T12:00:00\');setAgendaMode(\'dia\')">+' + (dayEvs.length - 3) + ' mais</div>';
+      html += '</div>';
+      cur.setDate(cur.getDate() + 1);
+    }
+  }
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function renderCalSemana() {
+  const seg = getMonday(agendaViewDate);
+  const todayStr = today();
+  const dias = [];
+  for (let i = 0; i < 7; i++) { const d = new Date(seg); d.setDate(d.getDate() + i); dias.push(d); }
+  const nomesDia = ['Seg','Ter','Qua','Qui','Sex','Sáb','Dom'];
+  const horas = [];
+  for (let h = 7; h <= 20; h++) horas.push(h.toString().padStart(2,'0') + ':00');
+
+  let html = '<div class="week-grid" style="overflow-x:auto">';
+  html += '<div class="wg-header" style="border-right:1px solid var(--border)"></div>';
+  dias.forEach((d, i) => {
+    const ds = dateToStr(d);
+    const isToday = ds === todayStr;
+    html += '<div class="wg-header' + (isToday ? '" style="color:var(--teal);border-bottom:2px solid var(--teal)' : '') + '">'
+      + nomesDia[i] + ' <strong>' + d.getDate() + '</strong></div>';
+  });
+  horas.forEach(hora => {
+    html += '<div class="wg-time">' + hora + '</div>';
+    dias.forEach(d => {
+      const ds = dateToStr(d);
+      const isToday = ds === todayStr;
+      const evs = agenda.filter(a => a.data === ds && (a.hora||'').startsWith(hora.slice(0,2)));
+      html += '<div class="wg-slot' + (isToday ? ' today-col' : '') + '" onclick="abrirNovaAgenda(\'' + ds + '\',\'' + hora.slice(0,5) + '\')">';
+      evs.forEach(ev => {
+        const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+        html += '<div class="ev-pill" style="background:' + cor + '" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')">'
+          + (ev.paciente || 'Agendamento') + '</div>';
+      });
+      html += '</div>';
+    });
+  });
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function renderCalDia() {
+  const ds = dateToStr(agendaViewDate);
+  const todayStr = today();
+  const isToday = ds === todayStr;
+  const horas = [];
+  for (let h = 7; h <= 20; h++) horas.push(h.toString().padStart(2,'0') + ':00');
+
+  let html = '<div class="day-grid">';
+  html += '<div class="wg-header" style="border-right:1px solid var(--border)"></div>';
+  html += '<div class="wg-header' + (isToday ? '" style="color:var(--teal);border-bottom:2px solid var(--teal)' : '') + '">'
+    + fmtD(ds) + '</div>';
+  horas.forEach(hora => {
+    const evs = agenda.filter(a => a.data === ds && (a.hora||'').startsWith(hora.slice(0,2)));
+    html += '<div class="wg-time">' + hora + '</div>';
+    html += '<div class="wg-slot' + (isToday ? ' today-col' : '') + '" style="min-height:56px" onclick="abrirNovaAgenda(\'' + ds + '\',\'' + hora.slice(0,5) + '\')">';
+    evs.forEach(ev => {
+      const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+      html += '<div style="background:' + cor + ';color:#fff;border-radius:6px;padding:6px 10px;margin-bottom:4px;cursor:pointer" onclick="event.stopPropagation();abrirEditAgenda(' + ev.id + ')">'
+        + '<div style="font-weight:600;font-size:13px">' + (ev.hora||'') + ' · ' + (ev.paciente || 'Agendamento') + '</div>'
+        + '<div style="font-size:11px;opacity:.85">' + [ev.tipo, ev.vet].filter(Boolean).join(' · ') + '</div>'
+        + '</div>';
+    });
+    html += '</div>';
+  });
+  html += '</div>';
+  document.getElementById('ag-cal').innerHTML = html;
+}
+
+function abrirNovaAgenda(data, hora) {
+  agendaEditId = null;
+  document.getElementById('ag-pac').value = '';
+  document.getElementById('ag-tutor').value = '';
+  document.getElementById('ag-esp').value = 'Canino';
+  document.getElementById('ag-data').value = data || today();
+  document.getElementById('ag-hora').value = hora || '09:00';
+  document.getElementById('ag-tipo').value = 'Abdominal total';
+  document.getElementById('ag-clinica-modal').value = '';
+  document.getElementById('ag-local').value = '';
+  document.getElementById('ag-vet').value = '';
+  document.getElementById('ag-obs').value = '';
+  document.getElementById('ag-status').value = 'Agendado';
+  document.getElementById('ag-del-btn').style.display = 'none';
+  document.getElementById('ag-gcal-btn').style.display = 'none';
+  document.getElementById('ag-ics-btn').style.display = 'none';
+  document.getElementById('ag-laudo-btn').style.display = 'none';
+  document.getElementById('ag-maps-btn').style.display = 'none';
+  document.getElementById('ag-modal-title').textContent = 'Novo agendamento';
+  document.getElementById('modal-agenda').classList.add('open');
+}
+
+function abrirEditAgenda(id) {
+  const ev = agenda.find(a => a.id === id);
+  if (!ev) return;
+  agendaEditId = id;
+  document.getElementById('ag-pac').value = ev.paciente || '';
+  document.getElementById('ag-tutor').value = ev.tutor || '';
+  document.getElementById('ag-esp').value = ev.especie || 'Canino';
+  document.getElementById('ag-data').value = ev.data || today();
+  document.getElementById('ag-hora').value = ev.hora || '09:00';
+  document.getElementById('ag-tipo').value = ev.tipo || 'Abdominal total';
+  document.getElementById('ag-clinica-modal').value = ev.clinica || '';
+  document.getElementById('ag-local').value = ev.local || '';
+  document.getElementById('ag-vet').value = ev.vet || '';
+  document.getElementById('ag-obs').value = ev.obs || '';
+  atualizarMapsBtn();
+  document.getElementById('ag-status').value = ev.status || 'Agendado';
+  document.getElementById('ag-del-btn').style.display = '';
+  document.getElementById('ag-gcal-btn').style.display = '';
+  document.getElementById('ag-ics-btn').style.display = '';
+  document.getElementById('ag-laudo-btn').style.display = '';
+  atualizarGcalLink();
+  document.getElementById('ag-modal-title').textContent = 'Editar agendamento';
+  document.getElementById('modal-agenda').classList.add('open');
+}
+
+function fecharAgenda() {
+  document.getElementById('modal-agenda').classList.remove('open');
+  agendaEditId = null;
+}
+
+function salvarAgenda() {
+  const ev = {
+    id: agendaEditId || Date.now(),
+    paciente: document.getElementById('ag-pac').value,
+    tutor: document.getElementById('ag-tutor').value,
+    especie: document.getElementById('ag-esp').value,
+    data: document.getElementById('ag-data').value,
+    hora: document.getElementById('ag-hora').value,
+    tipo: document.getElementById('ag-tipo').value,
+    clinica: document.getElementById('ag-clinica-modal').value,
+    local: document.getElementById('ag-local').value,
+    vet: document.getElementById('ag-vet').value,
+    obs: document.getElementById('ag-obs').value,
+    status: document.getElementById('ag-status').value,
+  };
+  if (!ev.data) { toast('Informe a data do agendamento.'); return; }
+  if (agendaEditId) {
+    const idx = agenda.findIndex(a => a.id === agendaEditId);
+    if (idx >= 0) agenda[idx] = ev; else agenda.push(ev);
+  } else {
+    agenda.push(ev);
+  }
+  saveAgenda();
+  fecharAgenda();
+  renderAgenda();
+  toast('Agendamento salvo.');
+}
+
+function excluirAgenda() {
+  if (!agendaEditId) return;
+  if (!confirm('Excluir este agendamento?')) return;
+  const id = agendaEditId;
+  agenda = agenda.filter(a => a.id !== id);
+  saveAgenda();
+  cloudDelete('uv_agenda', id);
+  fecharAgenda();
+  renderAgenda();
+  toast('Agendamento excluído.');
+}
+
+function gerarLaudoFromAgenda() {
+  const ev = agenda.find(a => a.id === agendaEditId);
+  if (!ev) return;
+  fecharAgenda();
+  editId = null;
+  clearLaudoForm();
+  document.getElementById('f-pac').value = ev.paciente || '';
+  document.getElementById('f-tutor').value = ev.tutor || '';
+  document.getElementById('f-esp').value = ev.especie || 'Canino';
+  document.getElementById('f-data').value = ev.data || today();
+  document.getElementById('f-vet').value = ev.vet || '';
+  if (ev.clinica) document.getElementById('f-clinica').value = ev.clinica;
+  if (ev.tipo && ev.tipo !== 'Outro') document.getElementById('f-tipo').value = ev.tipo;
+  toggleGest();
+  filtrarOrgaosPorSexo();
+  populateClinicaSelects();
+  goPage('novo-laudo');
+  toast('Dados do agendamento carregados no formulário.');
+}
+
+function atualizarGcalLink() {
+  const pac = (document.getElementById('ag-pac')||{}).value || '';
+  const tipo = (document.getElementById('ag-tipo')||{}).value || '';
+  const data = (document.getElementById('ag-data')||{}).value || '';
+  const hora = (document.getElementById('ag-hora')||{}).value || '';
+  const vet = (document.getElementById('ag-vet')||{}).value || '';
+  const obs = (document.getElementById('ag-obs')||{}).value || '';
+  const local = (document.getElementById('ag-local')||{}).value || '';
+  const btn = document.getElementById('ag-gcal-btn');
+  if (!btn || !data || !hora) return;
+  const ds = data.replace(/-/g,'');
+  const hs = hora.replace(':','') + '00';
+  const [hh, mm] = hora.split(':').map(Number);
+  const endMin = hh * 60 + mm + 45;
+  const endHs = Math.floor(endMin/60).toString().padStart(2,'0') + (endMin%60).toString().padStart(2,'0') + '00';
+  const title = encodeURIComponent((pac||'Exame') + ' – ' + (tipo||'Ultrassom Veterinário'));
+  const details = encodeURIComponent('Veterinário: ' + (vet||'—') + (obs ? '\n' + obs : ''));
+  const url = 'https://calendar.google.com/calendar/event?action=TEMPLATE&text=' + title
+    + '&dates=' + ds + 'T' + hs + '/' + ds + 'T' + endHs
+    + '&details=' + details
+    + (local ? '&location=' + encodeURIComponent(local) : '')
+    + '&sf=true&output=xml';
+  btn.onclick = function(e) { e.preventDefault(); window.open(url, '_blank'); };
+}
+
+function exportICS() {
+  const ev = agenda.find(a => a.id === agendaEditId);
+  if (!ev) return;
+  const blob = gerarICSBlob([ev]);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = (ev.paciente || 'agendamento').replace(/\s+/g,'_') + '.ics';
+  a.click();
+}
+
+function exportICSAll() {
+  if (!agenda.length) { toast('Nenhum agendamento para exportar.'); return; }
+  const blob = gerarICSBlob(agenda);
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'agenda_vetroutine.ics';
+  a.click();
+}
+
+function gerarICSBlob(evs) {
+  let events = '';
+  evs.forEach(ev => {
+    const ds = (ev.data || today()).replace(/-/g,'');
+    const hs = (ev.hora || '09:00').replace(':','') + '00';
+    const [hh, mm] = (ev.hora || '09:00').split(':').map(Number);
+    const endMin = hh * 60 + mm + 45;
+    const endHs = Math.floor(endMin/60).toString().padStart(2,'0') + (endMin%60).toString().padStart(2,'0') + '00';
+    events += 'BEGIN:VEVENT\r\n'
+      + 'UID:' + ev.id + '@vetroutine\r\n'
+      + 'DTSTART:' + ds + 'T' + hs + '\r\n'
+      + 'DTEND:' + ds + 'T' + endHs + '\r\n'
+      + 'SUMMARY:' + (ev.paciente||'Exame') + ' – ' + (ev.tipo||'Ultrassom') + '\r\n'
+      + 'DESCRIPTION:Tutor: ' + (ev.tutor||'—') + '\\nVet: ' + (ev.vet||'—') + (ev.obs ? '\\nObs: ' + ev.obs : '') + '\r\n'
+      + (ev.local ? 'LOCATION:' + ev.local + '\r\n' : '')
+      + 'STATUS:' + (ev.status === 'Cancelado' ? 'CANCELLED' : 'CONFIRMED') + '\r\n'
+      + 'END:VEVENT\r\n';
+  });
+  const ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//VetRoutine//PT\r\nCALSCALE:GREGORIAN\r\n' + events + 'END:VCALENDAR';
+  return new Blob([ics], {type:'text/calendar;charset=utf-8'});
+}
+
+function renderAgendaDia() {
+  const todayStr = today();
+  const el = document.getElementById('d-agenda-list');
+  const dataEl = document.getElementById('d-agenda-data');
+  const badge = document.getElementById('d-agenda-badge');
+  if (!el) return;
+
+  // formata data por extenso
+  if (dataEl) {
+    const dt = new Date(todayStr + 'T12:00:00');
+    const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+    const dias = ['domingo','segunda-feira','terça-feira','quarta-feira','quinta-feira','sexta-feira','sábado'];
+    dataEl.textContent = dias[dt.getDay()] + ', ' + dt.getDate() + ' de ' + meses[dt.getMonth()];
+  }
+
+  const todayEvs = agenda
+    .filter(a => a.data === todayStr)
+    .sort((a, b) => (a.hora || '23:59').localeCompare(b.hora || '23:59'));
+
+  const pendentes = todayEvs.filter(a => a.status !== 'Cancelado' && a.status !== 'Realizado').length;
+  if (badge) {
+    if (pendentes > 0) { badge.textContent = pendentes + ' pendente' + (pendentes > 1 ? 's' : ''); badge.style.display = ''; }
+    else { badge.style.display = 'none'; }
+  }
+
+  if (!todayEvs.length) {
+    el.innerHTML = '<div class="empty-state" style="padding:20px 0"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:32px;height:32px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg><p>Nenhum exame agendado para hoje.</p></div>';
+    return;
+  }
+
+  el.innerHTML = todayEvs.map(ev => {
+    const cor = AGENDA_CORES[ev.status] || '#1a5fa8';
+    const isRealizado = ev.status === 'Realizado';
+    const isCancelado = ev.status === 'Cancelado';
+    const pendente = !isRealizado && !isCancelado;
+    return '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);opacity:' + (isCancelado ? '.45' : '1') + ';flex-wrap:wrap">'
+      + '<div style="font-size:16px;font-weight:700;color:var(--teal);min-width:46px;text-align:center;letter-spacing:-.5px">' + (ev.hora || '—') + '</div>'
+      + '<div style="flex:1;min-width:160px">'
+        + '<div style="font-weight:600;font-size:14px;color:var(--text)' + (isRealizado ? ';text-decoration:line-through;color:var(--text3)' : '') + '">'
+          + (ev.paciente || 'Sem nome')
+          + (ev.especie ? ' <span style="font-weight:400;color:var(--text3);font-size:12px">· ' + ev.especie + '</span>' : '')
+        + '</div>'
+        + '<div style="font-size:12px;color:var(--text2);margin-top:2px">' + [ev.tipo, ev.vet, ev.clinica].filter(Boolean).join(' · ') + '</div>'
+      + '</div>'
+      + '<span style="background:' + cor + ';color:#fff;font-size:11px;padding:2px 9px;border-radius:12px;white-space:nowrap">' + ev.status + '</span>'
+      + (pendente ? '<button class="btn btn-sm" style="white-space:nowrap" onclick="marcarRealizadoAgenda(' + ev.id + ')">✓ Realizado</button>' : '')
+      + (pendente ? '<button class="btn btn-sm btn-primary" style="white-space:nowrap" onclick="gerarLaudoFromAgendaId(' + ev.id + ')">📋 Gerar laudo</button>' : '')
+      + '<button class="btn btn-sm" style="white-space:nowrap" onclick="abrirEditAgenda(' + ev.id + ')">✎</button>'
+      + '</div>';
+  }).join('');
+}
+
+function marcarRealizadoAgenda(id) {
+  const idx = agenda.findIndex(a => a.id === id);
+  if (idx < 0) return;
+  agenda[idx].status = 'Realizado';
+  saveAgenda();
+  renderAgendaDia();
+  if (document.getElementById('ag-cal')) renderAgenda();
+  toast('Exame marcado como realizado.');
+}
+
+function gerarLaudoFromAgendaId(id) {
+  agendaEditId = id;
+  gerarLaudoFromAgenda();
+}
+
+function autoFillLocalFromClinica() {
+  const nome = (document.getElementById('ag-clinica-modal')||{}).value || '';
+  const cl = clinicas.find(c => c.nome === nome);
+  const localEl = document.getElementById('ag-local');
+  if (cl && cl.endereco && localEl && !localEl.value) localEl.value = cl.endereco;
+  atualizarGcalLink();
+  atualizarMapsBtn();
+}
+
+function atualizarMapsBtn() {
+  const local = (document.getElementById('ag-local')||{}).value || '';
+  const btn = document.getElementById('ag-maps-btn');
+  if (!btn) return;
+  if (local) {
+    btn.href = 'https://maps.google.com/?q=' + encodeURIComponent(local);
+    btn.style.display = '';
+  } else {
+    btn.style.display = 'none';
+  }
+}
+
+
+function compartilharLaudo() {
+  var lId = viewId || (laudos.length ? laudos[laudos.length-1].id : null);
+  if (!lId) { toast('Salve o laudo antes de compartilhar.'); return; }
+  var l = laudos.find(function(x){ return x.id === lId; });
+  if (!l) { toast('Laudo não encontrado.'); return; }
+  var url = window.location.origin + window.location.pathname + '?laudo=' + lId;
+  var cfg = getConfig();
+  var vet = cfg.nome || 'Patrine Cagnini';
+  var pac = l.paciente || '—';
+  var tut = l.tutor || '—';
+  var dat = l.data ? l.data.split('-').reverse().join('/') : '—';
+  var msg = 'Olá!\n\nSeu laudo ultrassonográfico já está disponível para visualização.\n\nPaciente: ' + pac + '\nTutor: ' + tut + '\nData: ' + dat + '\n\nAcesse pelo link abaixo:\n' + url + '\n\nQualquer dúvida, fico à disposição.\n\nAtenciosamente,\nDra. ' + vet;
+  var modal = document.createElement('div');
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:700;display:flex;align-items:center;justify-content:center';
+  modal.onclick = function(e){ if(e.target===modal) modal.remove(); };
+  modal.innerHTML = '<div style="background:#fff;border-radius:12px;width:480px;max-height:85vh;overflow:hidden;box-shadow:0 12px 40px rgba(0,0,0,.2);display:flex;flex-direction:column">'
+    + '<div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">'
+      + '<div style="font-size:15px;font-weight:700">📎 Compartilhar laudo</div>'
+      + '<button onclick="this.closest(\'[style*=fixed]\').remove()" style="background:none;border:none;cursor:pointer;font-size:20px;color:var(--text2)">✕</button>'
+    + '</div>'
+    + '<div style="padding:16px 20px;overflow-y:auto;flex:1">'
+      + '<label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">🔗 Link direto</label>'
+      + '<div style="display:flex;gap:8px;margin-bottom:16px">'
+        + '<input id="_surl" value="' + url + '" readonly style="flex:1;font-size:12px;font-family:monospace;background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 8px">'
+        + '<button class="btn btn-sm btn-primary" onclick="var e=document.getElementById(\'_surl\');e.select();document.execCommand(\'copy\');toast(\'Link copiado!\')">Copiar</button>'
+      + '</div>'
+      + '<label style="font-size:12px;font-weight:600;color:var(--text2);display:block;margin-bottom:4px">💬 Mensagem pronta (WhatsApp / e-mail)</label>'
+      + '<textarea id="_smsg" rows="11" style="width:100%;font-size:13px;line-height:1.6;resize:vertical;border:1px solid var(--border);border-radius:6px;padding:8px">' + msg + '</textarea>'
+      + '<button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="var e=document.getElementById(\'_smsg\');e.select();document.execCommand(\'copy\');toast(\'Mensagem copiada!\')">📋 Copiar mensagem completa</button>'
+    + '</div>'
+  + '</div>';
+  document.body.appendChild(modal);
+}
+
+
+function abrirModoVisualizacaoPublica(id) {
+  var sb = document.querySelector('.sidebar');
+  var mn = document.querySelector('.main');
+  var tb = document.querySelector('.topbar');
+  if (sb) sb.style.display = 'none';
+  if (mn) { mn.style.marginLeft = '0'; mn.style.width = '100%'; }
+  if (tb) tb.style.display = 'none';
+  document.body.style.background = '#f5f4f0';
+
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'max-width:880px;margin:0 auto;padding:20px';
+
+  wrap.innerHTML = '<div style="display:flex;gap:10px;margin-bottom:16px;align-items:center;background:#fff;padding:12px 16px;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.1)">'
+    + '<img src="logo.png" style="max-height:40px;object-fit:contain" onerror="this.style.display=\'none\'">'
+    + '<span style="font-size:13px;color:#666;flex:1">VetRoutine — Laudo Ultrassonográfico</span>'
+    + '<button onclick="window.print()" style="padding:8px 18px;background:#0f7a5a;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:14px;font-weight:600">🖨 Imprimir / Salvar PDF</button>'
+    + '</div>'
+    + '<div id="_vc" style="background:#fff;border-radius:8px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.1);padding:40px;text-align:center;color:#999">⏳ Carregando laudo...</div>';
+
+  document.body.innerHTML = '';
+  document.body.appendChild(wrap);
+
+  fetch(SB_URL + '/rest/v1/uv_laudos?id=eq.' + id, {
+    headers: { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY }
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(rows) {
+    var el = document.getElementById('_vc');
+    if (!el) return;
+    if (!rows || !rows.length) {
+      el.innerHTML = '<div style="padding:40px;text-align:center;color:#999">❌ Laudo não encontrado ou link inválido.</div>';
+      return;
+    }
+    var l = rows[0].payload || rows[0];
+    laudos = [l];
+    el.style.padding = '0';
+    el.innerHTML = buildLaudoHTML(l);
+  })
+  .catch(function(e) {
+    var el = document.getElementById('_vc');
+    if (el) el.innerHTML = '<div style="padding:40px;text-align:center;color:#c00">⚠️ Erro ao carregar o laudo. Verifique sua conexão.</div>';
+  });
+}
+
+
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var laudoId = params.get('laudo');
+  if (laudoId) {
+    document.addEventListener('DOMContentLoaded', function() {
+      abrirModoVisualizacaoPublica(parseInt(laudoId));
+    });
+  }
+})();
+
+function saveAgenda() {
+  localStorage.setItem('uv_agenda', JSON.stringify(agenda));
+  try { sbUpsert('uv_agenda', agenda); } catch(e) {}
+}
+
+// ─── EXTRATO FINANCEIRO ───────────────────────────────────────────────────────
+function populateExtratoClinicos() {
+  const sel = document.getElementById('ext-clinica');
+  if (!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Todas</option>';
+  [...new Set(laudos.map(l => l.clinica).filter(Boolean))].sort().forEach(c => {
+    const o = document.createElement('option');
+    o.value = c; o.textContent = c;
+    if (c === cur) o.selected = true;
+    sel.appendChild(o);
+  });
+}
+
+function getExtratoRows() {
+  const de  = document.getElementById('ext-de')  ? document.getElementById('ext-de').value  : '';
+  const ate = document.getElementById('ext-ate') ? document.getElementById('ext-ate').value : '';
+  const cl  = document.getElementById('ext-clinica') ? document.getElementById('ext-clinica').value : '';
+  const st  = document.getElementById('ext-status')  ? document.getElementById('ext-status').value  : '';
+  return laudos
+    .filter(l => {
+      if (de  && l.data < de)  return false;
+      if (ate && l.data > ate) return false;
+      if (cl  && (l.clinica || '') !== cl) return false;
+      if (st  && (l.fpago   || '') !== st) return false;
+      return true;
+    })
+    .sort((a, b) => (b.data || '').localeCompare(a.data || ''));
+}
+
+function renderRpExtrato() {
+  const rows = getExtratoRows();
+
+  // totais
+  const totalCobrado  = rows.reduce((s, l) => s + (l.valor || 0), 0);
+  const totalRecebido = rows.reduce((s, l) => s + (l.valorRec > 0 ? l.valorRec : (l.valor || 0)), 0);
+  const pagos    = rows.filter(l => l.fpago === 'Pago').reduce((s, l) => s + (l.valorRec > 0 ? l.valorRec : (l.valor || 0)), 0);
+  const pendente = rows.filter(l => l.fpago !== 'Pago').reduce((s, l) => s + (l.valorRec > 0 ? l.valorRec : (l.valor || 0)), 0);
+  document.getElementById('ext-totais').innerHTML =
+    '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Exames filtrados</div>'
+      + '<div class="metric-value" style="font-size:22px">' + rows.length + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Total cobrado</div>'
+      + '<div class="metric-value green" style="font-size:22px">' + fmt(totalCobrado) + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Total recebido</div>'
+      + '<div class="metric-value green" style="font-size:22px">' + fmt(totalRecebido) + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">Pago</div>'
+      + '<div class="metric-value green" style="font-size:22px">' + fmt(pagos) + '</div></div>'
+    + '<div class="metric-card" style="padding:10px 16px;flex:0 0 auto">'
+      + '<div class="metric-label">A receber</div>'
+      + '<div class="metric-value amber" style="font-size:22px">' + fmt(pendente) + '</div></div>';
+
+  // tabela
+  if (!rows.length) {
+    document.getElementById('ext-tabela').innerHTML = '<div class="empty-state"><p>Nenhum registro encontrado com os filtros aplicados.</p></div>';
+    return;
+  }
+  const statusBadge = st => {
+    const cls = st === 'Pago' ? 'teal' : st === 'Atrasado' ? 'red' : 'amber';
+    return '<span class="badge badge-' + cls + '">' + (st || '—') + '</span>';
+  };
+  document.getElementById('ext-tabela').innerHTML =
+    '<table class="data-table">'
+    + '<thead><tr>'
+      + '<th>Data</th><th>Clínica</th><th>Paciente</th><th>Tutor</th>'
+      + '<th>Veterinário</th><th>Exame</th><th>Origem</th><th>Tipo atend.</th>'
+      + '<th style="text-align:right">Cobrado</th><th style="text-align:right">Recebido</th><th>Status</th>'
+    + '</tr></thead>'
+    + '<tbody>'
+    + rows.map(l => {
+        const vRec = l.valorRec > 0 ? l.valorRec : l.valor || 0;
+        const origemTag = l.origem ? '<span style="font-size:11px;background:var(--teal-bg);color:var(--teal-text);padding:2px 6px;border-radius:4px">' + l.origem + '</span>' : '—';
+        return '<tr>'
+          + '<td style="white-space:nowrap">' + fmtD(l.data) + '</td>'
+          + '<td>' + (l.clinica || '—') + '</td>'
+          + '<td><strong>' + (l.paciente || '—') + '</strong>'
+            + (l.especie ? '<div style="font-size:11px;color:var(--text3)">' + l.especie + '</div>' : '')
+          + '</td>'
+          + '<td>' + (l.tutor || '—') + '</td>'
+          + '<td>' + (l.vet || '—') + '</td>'
+          + '<td>' + (l.tipo || '—') + '</td>'
+          + '<td>' + origemTag + '</td>'
+          + '<td style="font-size:12px;color:var(--text2)">' + (l.tipoAtend || '—') + '</td>'
+          + '<td style="text-align:right;font-weight:600">' + fmt(l.valor || 0) + '</td>'
+          + '<td style="text-align:right;font-weight:600;color:var(--teal)">' + fmt(vRec) + '</td>'
+          + '<td>' + statusBadge(l.fpago) + '</td>'
+          + '</tr>';
+      }).join('')
+    + '<tr style="border-top:2px solid var(--border);font-weight:700">'
+      + '<td colspan="8" style="text-align:right;color:var(--text2)">Total</td>'
+      + '<td style="text-align:right">' + fmt(totalCobrado) + '</td>'
+      + '<td style="text-align:right;color:var(--teal)">' + fmt(totalRecebido) + '</td>'
+      + '<td></td></tr>'
+    + '</tbody></table>';
+}
+
+function limparFiltrosExtrato() {
+  ['ext-de','ext-ate'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; });
+  ['ext-clinica','ext-status'].forEach(id => { const el = document.getElementById(id); if(el) el.selectedIndex=0; });
+  renderRpExtrato();
+}
+
+function exportarCSVExtrato() {
+  const rows = getExtratoRows();
+  if (!rows.length) { toast('Nenhum dado para exportar.'); return; }
+  const headers = ['Data','Clínica','Paciente','Tutor','Veterinário','Exame/Procedimento','Origem','Tipo atendimento','Valor cobrado (R$)','Valor recebido (R$)','Status pagamento'];
+  const csvRows = [headers, ...rows.map(l => {
+    const vRec = l.valorRec > 0 ? l.valorRec : l.valor || 0;
+    return [
+      fmtD(l.data),
+      l.clinica || '',
+      l.paciente || '',
+      l.tutor || '',
+      l.vet || '',
+      l.tipo || '',
+      l.origem || '',
+      l.tipoAtend || '',
+      (l.valor || 0).toFixed(2).replace('.', ','),
+      vRec.toFixed(2).replace('.', ','),
+      l.fpago || ''
+    ];
+  })];
+  const csv = '﻿' + csvRows.map(r => r.map(c => '"' + String(c).replace(/"/g, '""') + '"').join(';')).join('\r\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'extrato_vetroutine_' + today() + '.csv';
+  a.click();
+  toast('CSV exportado com sucesso.');
+}
+
+// ─── SUPABASE ─────────────────────────────────────────────────────────────────
+const SB_URL = 'https://iisxmfepvqpswdnurtuo.supabase.co';
+const SB_KEY = 'sb_publishable_4yj6xy0vvxLypajgqtEMCQ_fR6nE2DY';
+const SB_H = { 'apikey': SB_KEY, 'Authorization': 'Bearer ' + SB_KEY, 'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=minimal' };
+
+function setSyncStatus(s) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  if (s === 'ok')      { dot.style.background = '#0f7a5a'; lbl.textContent = 'Sincronizado'; }
+  else if (s === 'sync') { dot.style.background = '#b35c00'; lbl.textContent = 'Sincronizando…'; }
+  else                 { dot.style.background = '#c0392b'; lbl.textContent = 'Offline (local)'; }
+}
+
+async function sbFetch(table) {
+  const r = await fetch(SB_URL + '/rest/v1/' + table + '?select=*', { headers: SB_H });
+  if (!r.ok) throw new Error(r.status);
+  const rows = await r.json();
+  return rows.map(row => row.payload);
+}
+
+async function sbUpsert(table, items) {
+  if (!items.length) return;
+  await fetch(SB_URL + '/rest/v1/' + table, {
+    method: 'POST',
+    headers: SB_H,
+    body: JSON.stringify(items.map(item => ({ id: item.id, payload: item })))
+  });
+}
+
+async function cloudDelete(table, id) {
+  try {
+    await fetch(SB_URL + '/rest/v1/' + table + '?id=eq.' + id, {
+      method: 'DELETE',
+      headers: SB_H
+    });
+  } catch(e) {}
+}
+
+function mergeWithLocal(cloudItems, localItems) {
+  var cloudIds = {};
+  cloudItems.forEach(function(i){ cloudIds[i.id] = true; });
+  var soLocal = localItems.filter(function(i){ return !cloudIds[i.id]; });
+  return cloudItems.concat(soLocal);
+}
+
+async function syncCloud(tentativa) {
+  tentativa = tentativa || 0;
+  setSyncStatus('sync');
+  try {
+    await Promise.all([
+      sbUpsert('uv_laudos',   laudos),
+      sbUpsert('uv_receitas', receitas),
+      sbUpsert('uv_despesas', despesas),
+      sbUpsert('uv_clinicas', clinicas),
+      sbUpsert('uv_agenda',   agenda),
+    ]);
+    setSyncStatus('ok');
+  } catch(e) {
+    setSyncStatus('offline');
+    if (tentativa < 3) {
+      setTimeout(function(){ syncCloud(tentativa + 1); }, 5000 * (tentativa + 1));
+    }
+  }
+}
+
+async function initCloud() {
+  // Se houve um save local nos últimos 90s, apenas envia para nuvem — não sobrescreve dados locais frescos
+  if (Date.now() - localSaveTs < 600000) {
+    try { await syncCloud(); } catch(e) {}
+    setSyncStatus('ok');
+    return;
+  }
+  setSyncStatus('sync');
+  try {
+    const [rl, rr, rd, rc] = await Promise.all([
+      sbFetch('uv_laudos'),
+      sbFetch('uv_receitas'),
+      sbFetch('uv_despesas'),
+      sbFetch('uv_clinicas'),
+    ]);
+    laudos    = mergeWithLocal(filtrarExcluidos('uv_laudos',   rl), laudos);
+    receitas  = mergeWithLocal(filtrarExcluidos('uv_receitas', rr), receitas);
+    despesas  = mergeWithLocal(filtrarExcluidos('uv_despesas', rd), despesas);
+    clinicas  = mergeWithLocal(filtrarExcluidos('uv_clinicas', rc), clinicas);
+    save();
+    populateClinicaSelects();
+    
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
 function toggleSidebar() {
   const sb = document.querySelector('.sidebar');
@@ -2830,6 +4403,11 @@ document.getElementById('sb-logo').src = LOGO_B64;
 window.addEventListener('focus', () => { if (document.getElementById('sync-dot')) initCloud(); });
 setInterval(() => { if (document.getElementById('sync-dot')) initCloud(); }, 60000);
 
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+load();
+document.getElementById('r-data').value = today();
+document.getElementById('d-data').value = today();
+populateClinicaSelects();
 
 // ─── SIDEBAR TOGGLE ───────────────────────────────────────────────────────
 function toggleSidebar() {
@@ -3098,8 +4676,8 @@ let fotoPanelOpen = false;
 
 function toggleFotoPanel() {
   fotoPanelOpen = !fotoPanelOpen;
-  const panel   = document.getElementById('foto-panel-lateral');
-  const btn     = document.getElementById('foto-panel-btn');
+  const panel    = document.getElementById('foto-panel-lateral');
+  const btn      = document.getElementById('foto-panel-btn');
   const backdrop = document.getElementById('foto-panel-backdrop');
   const isMobile = window.innerWidth <= 900;
   const largura  = isMobile ? Math.round(window.innerWidth * 0.85) : Math.max(300, Math.round(window.innerWidth * 0.30));
@@ -3184,10 +4762,9 @@ function atualizarBotaoFotoPanel() {
   </div>
 </div>
 
-<!-- BACKDROP: fecha o painel de fotos ao tocar fora (mobile) -->
+<!-- ═══ PAINEL LATERAL DE IMAGENS ══════════════════════════════════════════ -->
 <div id="foto-panel-backdrop" onclick="toggleFotoPanel()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:209"></div>
 
-<!-- ═══ PAINEL LATERAL DE IMAGENS ══════════════════════════════════════════ -->
 <div id="foto-panel-lateral" style="
   position:fixed;right:0;top:0;bottom:0;width:0;
   background:#fff;border-left:2px solid var(--teal);
